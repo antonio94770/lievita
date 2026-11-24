@@ -4,8 +4,8 @@
     {
       "name": "lievita",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8765", "--bind", "127.0.0.1"],
-      "port": 8765
+      "runtimeArgs": ["-m", "http.server", "4317", "--bind", "127.0.0.1"],
+      "port": 4317
     }
   ]
 }

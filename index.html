@@ -154,9 +154,14 @@ button{cursor:pointer}
 .fld output{color:var(--ink);font-variant-numeric:tabular-nums}
 .row{display:flex;flex-wrap:wrap;gap:12px}
 .row>.fld{flex:1 1 120px}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:.9rem;font-weight:700;color:var(--muted)}
-.chip:hover{border-color:var(--accent);color:var(--accent)}
+.dchips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+@media (min-width:640px){.dchips{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.dchip{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:14px;padding:10px 12px;color:var(--ink)}
+.dchip b{font-size:.98rem}
+.dchip span{font-size:.8rem;color:var(--muted);line-height:1.3}
+.dchip:hover{border-color:var(--accent)}
+.dchip.on{border-color:var(--accent);background:var(--accent-soft)}
+.dchip.on b{color:var(--accent)}
 .count-big{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .count-big .lbl{font-weight:700;font-size:1.05rem}
 .stepper{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface-2)}
@@ -1053,6 +1058,32 @@ function pgStyle(){
     return opt(`style`,k,k===state.style,ART.style(k),`<span class="ot"><b>${s.name}</b>${lvl(i.lvl)}</span><span class="od">${s.desc}</span>${pc(i)}`);}).join(``)}</div>`;
 }
 function dinnerAt(add){ const d=new Date(); d.setDate(d.getDate()+add); d.setHours(20,0,0,0); return d; }
+/* Lievitazione più lunga possibile con la cena all'orario t, partendo da adesso (null se non c'è tempo). */
+function longestPlanFor(t){
+  const keep=state.dinner, mode=state.prepMode===`existing`?`now`:(state.prepMode||`plan`);
+  state.dinner=new Date(t);
+  try{
+    const P=params(state), cfg={...state,prepMode:mode,method:`diretto`}, now=Date.now();
+    return [`h72`,`h48`,`h24`,`giornata`].find(k=>buildPlan(k,P,cfg,now).ok)||null;
+  } finally { state.dinner=keep; }
+}
+/* Scorciatoie per la cena, in ordine di tempo. "Stasera" sparisce quando non c'è più tempo per farcela. */
+function dinnerChips(){
+  const sel=new Date(state.dinner).getTime();
+  // Sempre quattro scelte: se stasera non si fa in tempo, si aggiunge un giorno in fondo.
+  const items=[];
+  for(let add=0;items.length<4;add++){
+    const d=dinnerAt(add), t=d.getTime(), pk=longestPlanFor(t);
+    if(add===0&&!pk) continue;
+    const wd=DAYS[d.getDay()];
+    const name=add===0?`Stasera`:add===1?`Domani`:add===2?`Dopodomani`:wd[0].toUpperCase()+wd.slice(1);
+    const day=add===0?`alle 20`:`${wd.slice(0,3)} ${d.getDate()}/${d.getMonth()+1}, alle 20`;
+    const what=!pk?`non c'è tempo`:pk===`giornata`?`in giornata`:`lievitazione fino a ${PLANS[pk].h} ore`;
+    const on=sel===t;
+    items.push(`<button type="button" class="dchip${on?` on`:``}" data-dinner="${add}" aria-pressed="${on}"><b>${name}</b><span>${day}</span><span>${what}</span></button>`);
+  }
+  return `<div class="dchips">${items.join(``)}</div>`;
+}
 /* Con la cena troppo vicina nessun percorso nuovo è possibile: lo diciamo subito, nella pagina Quando. */
 function timeBlock(mode){
   mode=mode||state.prepMode||`plan`;
@@ -1071,7 +1102,7 @@ function pgWhen(){
   return `${qty}
   <h3 class="sect">Prima pizza in tavola</h3>
   <div class="card"><label class="fld" for="dinner">Giorno e ora<input id="dinner" type="datetime-local" value="${toLocalInput(state.dinner)}"></label>
-    <div class="chips"><button type="button" class="chip" data-dinner="0">Stasera alle 20</button><button type="button" class="chip" data-dinner="1">Domani alle 20</button><button type="button" class="chip" data-dinner="2">Dopodomani alle 20</button><button type="button" class="chip" data-dinner="3">Fra tre giorni</button></div>
+    <div id="dinner-chips">${dinnerChips()}</div>
     <p class="hint">Questa è l’ora in cui vuoi mangiare la prima pizza.</p></div>
   <div id="when-avail">${whenAvail()}</div>`;
 }
@@ -1302,6 +1333,7 @@ function renderResults(){
   if(ui.page===LAST){ renderOut(); return; }
   const pl=$(`#plans`); if(pl) pl.innerHTML=plansHtml();
   const wa=$(`#when-avail`); if(wa) wa.innerHTML=whenAvail();
+  const dc=$(`#dinner-chips`); if(dc) dc.innerHTML=dinnerChips();
   renderLive(); renderNav();
 }
 function go(i){
