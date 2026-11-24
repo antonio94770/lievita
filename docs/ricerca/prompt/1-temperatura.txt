@@ -1,0 +1,5 @@
+COMPITO 1: temperatura e frigorifero.
+a) Trova studi scientifici o dati tecnici (produttori di lievito come Lesaffre/Saf-instant, Lallemand, AB Mauri; manuali di panificazione; articoli peer-reviewed) sulla produzione di gas del lievito di birra nell'impasto in funzione della temperatura tra 2 e 30 °C. Mi serve: Q10 o aumento % per grado, attività relativa a 4–6 °C rispetto a 20 °C.
+b) Quanto tempo impiega un panetto da 250–280 g (o una massa da 1–2 kg in contenitore) a scendere da 22 °C a 5 °C in un frigo domestico? Cerca misure reali.
+c) Che temperatura hanno davvero i frigoriferi domestici (indagini, studi sulla sicurezza alimentare)? Media e dispersione.
+d) Confronta con il nostro modello (fT a 4 °C ≈ 0,19; +14,5%/°C sopra 12 °C; 2 h di transizione per i panetti, 4 h per la massa). È sensato? Cosa cambieresti?

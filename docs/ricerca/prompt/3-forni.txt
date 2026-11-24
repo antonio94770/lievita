@@ -1,0 +1,8 @@
+COMPITO 3: cottura per tipo di forno. Per ognuno trova istruzioni del produttore o di pizzaioli/test affidabili (temperature, tempi, posizione, preriscaldo):
+a) forno di casa con pietra refrattaria: ripiano consigliato, minuti di preriscaldo, minuti di cottura, uso del grill. Noi diciamo: ripiano alto a 10–15 cm dalla resistenza, 60 min di preriscaldo, 6–8 min, grill negli ultimi 2–3 min.
+b) forno di casa con piastra d'acciaio (baking steel): noi diciamo ripiano alto, 50 min, 5–6 min, grill nell'ultimo minuto.
+c) forno di casa con sola teglia: noi diciamo teglia capovolta sul ripiano basso, carta forno, 6–8 min poi mozzarella e ripiano alto 3–4 min.
+d) fornetto elettrico tipo G3 Ferrari Delizia / Pizza Express: tempi, uso del termostato, peso massimo del panetto e idratazione consigliati (noi avvisiamo sopra 240 g e 65%).
+e) forno a gas Ooni / Gozney Roccbox / Arc: temperatura pietra, tempi, preriscaldo (noi: 400–450 °C, 30 min, 60–90 s).
+f) forno a legna domestico: tempi di accensione e temperatura della platea (noi: 120 min, 430–480 °C, 60–90 s).
+g) Olio nell'impasto per forno di casa: è vero che il 2% di olio aiuta quando la cottura è lunga (forno a 250–280 °C)? Fonti.

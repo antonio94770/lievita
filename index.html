@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Lievita">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#2F6B4F">
+<meta name="description" content="Dosi, lievito e orari per la pizza fatta in casa, contando all'indietro dall'ora di cena.">
+<title>Lievita</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+<style>
+/* Layout: procedura a pagine (una domanda alla volta), poi il piano completo. */
+:root{
+  --bg:#F6F1E9; --surface:#FFFFFF; --surface-2:#FBF6EE; --ink:#211B15; --muted:#6B6157; --line:#E5DBCD;
+  --accent:#2F6B4F; --accent-ink:#FFFFFF; --accent-soft:#E2EEE6;
+  --ember:#B4461F; --ember-soft:#FBE7DD;
+  --warn:#8A5300; --warn-soft:#FFF2D2;
+  --a-crust:#E8BA7A; --a-sauce:#C8442B; --a-cheese:#FFF9EC; --a-basil:#3E8E5A; --a-char:#5A3A22;
+  --a-tray:#8E9196; --a-metal:#DDD6CB; --a-metal2:#CBC3B6; --a-glass:#3A302A; --a-glow:#F4A259; --a-dial:#7A7065;
+  --a-stone:#9C9086; --a-steel:#4A4F57; --a-dark:#2B231E; --a-flame:#F08A3C; --a-brick:#C0704A;
+  --a-sack:#F0E7D7; --a-sack-line:#C7B69C; --a-yeast:#E9D08A; --a-ink:#4D4237; --a-moon:#F2C14E; --a-cold:#7FB3D5;
+  --shadow:0 1px 2px rgba(60,40,20,.06),0 6px 20px rgba(60,40,20,.07);
+  --font-d:'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-b:'Atkinson Hyperlegible', 'Segoe UI', system-ui, sans-serif;
+  --r:16px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15120F; --surface:#1F1A16; --surface-2:#262019; --ink:#F1EAE0; --muted:#B3A79A; --line:#3A322B;
+    --accent:#7CC9A0; --accent-ink:#0E1A13; --accent-soft:#1E3328;
+    --ember:#F0915F; --ember-soft:#3B2219; --warn:#F1C46C; --warn-soft:#352A10;
+    --a-cheese:#F3EAD6; --a-metal:#5E574F; --a-metal2:#4D463F; --a-glass:#0F0C0A; --a-dial:#A89E92;
+    --a-sack:#4A4036; --a-sack-line:#6E604F; --a-ink:#EADFCF; --a-dark:#100D0B;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15120F; --surface:#1F1A16; --surface-2:#262019; --ink:#F1EAE0; --muted:#B3A79A; --line:#3A322B;
+  --accent:#7CC9A0; --accent-ink:#0E1A13; --accent-soft:#1E3328;
+  --ember:#F0915F; --ember-soft:#3B2219; --warn:#F1C46C; --warn-soft:#352A10;
+  --a-cheese:#F3EAD6; --a-metal:#5E574F; --a-metal2:#4D463F; --a-glass:#0F0C0A; --a-dial:#A89E92;
+  --a-sack:#4A4036; --a-sack-line:#6E604F; --a-ink:#EADFCF; --a-dark:#100D0B;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%}
+body.noscroll{overflow:hidden}
+h1,h2,h3,h4{font-family:var(--font-d);line-height:1.15;margin:0;text-wrap:balance;font-weight:700}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:8px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.app{max-width:1120px;margin:0 auto;padding:16px 16px 0}
+/* testata */
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:4px 0 16px}
+.brand{display:flex;gap:12px;align-items:center}
+.brand h1{font-size:1.8rem;letter-spacing:-.01em}
+.brand p{margin:0;color:var(--muted);font-size:.92rem}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
+.tabs button{border:0;background:transparent;padding:8px 16px;border-radius:999px;font-weight:700;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.count{font-variant-numeric:tabular-nums;opacity:.8}
+.storage{background:var(--warn-soft);color:var(--ink);border-radius:var(--r);padding:10px 14px;margin-bottom:16px;font-size:.9rem}
+/* barra dei passaggi */
+.steps{margin:0 0 20px}
+.steps ol{list-style:none;margin:0;padding:0;display:flex;gap:6px;align-items:center}
+.steps li{flex:1;min-width:0;display:flex;align-items:center;gap:6px}
+.steps li:not(:last-child)::after{content:"";flex:1;height:2px;background:var(--line);border-radius:2px;min-width:8px}
+.steps li.ok:not(:last-child)::after{background:var(--accent)}
+.steps button{border:0;background:none;padding:4px;display:flex;align-items:center;gap:8px;color:var(--muted);font-weight:700;font-size:.88rem;white-space:nowrap;border-radius:999px}
+.steps button:disabled{cursor:default;opacity:.6}
+.steps .dot{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;border:2px solid var(--line);background:var(--surface);font-size:.85rem;flex:none;font-variant-numeric:tabular-nums}
+.steps .ok .dot{border-color:var(--accent);color:var(--accent)}
+.steps .cur .dot{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.steps .cur{color:var(--ink)}
+@media (max-width:720px){.steps .lbl{display:none}.steps .cur .lbl{display:inline}.steps li.cur{flex:0 0 auto}.steps li.cur:not(:last-child)::after{flex:0 0 12px}}
+/* pagine */
+.page{max-width:920px;margin:0 auto;animation:in .25s ease}
+.page.wide{max-width:none}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.lead{margin-bottom:18px}
+.lead h2{font-size:clamp(1.7rem,4.5vw,2.4rem);letter-spacing:-.01em}
+.lead p{margin:6px 0 0;color:var(--muted);max-width:60ch}
+.sect{margin:26px 0 10px;font-family:var(--font-d);font-size:1.2rem}
+.hint{margin:6px 0 0;font-size:.88rem;color:var(--muted)}
+/* schede di scelta */
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.opts.small{grid-template-columns:repeat(3,minmax(0,1fr))}
+.opts.two{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+.opt{position:relative;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:var(--r);padding:0;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow);transition:transform .15s,border-color .15s,box-shadow .15s}
+.opt:hover:not(:disabled){transform:translateY(-2px);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.opt.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft),var(--shadow)}
+.opt.on::after{content:"✓";position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:700;font-size:.9rem}
+.opt:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
+.art{display:block;background:var(--surface-2);border-bottom:1px solid var(--line);padding:10px 18px}
+.art svg{display:block;width:100%;height:auto;max-height:170px}
+.opts.small .art{padding:8px 14px}
+.opts.small .art svg{max-height:90px}
+.ob{display:flex;flex-direction:column;gap:6px;padding:12px 14px 14px}
+.ot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.ot b{font-size:1.05rem}
+.od{font-size:.88rem;color:var(--muted);line-height:1.4}
+.ox{font-size:.8rem;color:var(--muted)}
+.opt.on .ot b{color:var(--accent)}
+.lvl{display:inline-flex;align-items:center;gap:3px;font-size:.75rem;font-weight:700;color:var(--muted)}
+.lvl i{width:7px;height:7px;border-radius:50%;background:var(--line);display:inline-block}
+.lvl i.f{background:var(--ember)}
+.lvl em{font-style:normal;margin-left:4px}
+.pc{display:flex;flex-direction:column;gap:4px;margin-top:2px;font-size:.86rem;line-height:1.35}
+.pc>span{display:flex;gap:8px;align-items:flex-start}
+.pc>span::before{flex:none;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.8rem;margin-top:1px}
+.pc .pro::before{content:"+";background:var(--accent-soft);color:var(--accent)}
+.pc .con::before{content:"–";background:var(--ember-soft);color:var(--ember)}
+.tag{font-style:normal;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 8px;border-radius:999px;background:var(--accent);color:var(--accent-ink)}
+.tag.warn{background:var(--warn-soft);color:var(--warn)}
+.when{font-size:.85rem;font-weight:700;color:var(--ink);background:var(--surface-2);border-radius:8px;padding:6px 8px}
+.opt:disabled .when{color:var(--muted)}
+/* campi */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px}
+.fld{display:flex;flex-direction:column;gap:6px;font-size:.92rem;font-weight:700;color:var(--muted);position:relative}
+.fld input{font-weight:400;color:var(--ink);background:var(--surface-2);border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;width:100%;font-variant-numeric:tabular-nums;font-size:1rem}
+.fld input[type=range]{padding:0;border:0;background:transparent;accent-color:var(--accent);height:28px}
+.fld i{position:absolute;right:12px;bottom:12px;font-style:normal;font-weight:400;color:var(--muted);pointer-events:none}
+.fld output{color:var(--ink);font-variant-numeric:tabular-nums}
+.row{display:flex;flex-wrap:wrap;gap:12px}
+.row>.fld{flex:1 1 120px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:.9rem;font-weight:700;color:var(--muted)}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.count-big{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.count-big .lbl{font-weight:700;font-size:1.05rem}
+.stepper{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface-2)}
+.stepper button{border:0;background:transparent;width:52px;height:48px;font-size:1.5rem;color:var(--accent)}
+.stepper output{min-width:44px;text-align:center;font-weight:700;font-size:1.3rem;color:var(--ink);font-variant-numeric:tabular-nums;font-family:var(--font-d)}
+.pizzas{display:flex;flex-wrap:wrap;gap:6px;min-height:28px}
+.pizzas svg{width:26px;height:26px}
+.thermo{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);font-weight:700;margin-top:-4px}
+.temp-say{font-size:.9rem;color:var(--muted);margin:0}
+/* dettagli personalizza */
+.custom{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-top:22px;box-shadow:var(--shadow)}
+.custom summary{cursor:pointer;list-style:none;font-family:var(--font-d);font-size:1.15rem;font-weight:700;display:flex;align-items:center;gap:10px}
+.custom summary::-webkit-details-marker{display:none}
+.custom summary::after{content:"+";margin-left:auto;font-size:1.4rem;color:var(--muted)}
+.custom[open] summary::after{content:"–"}
+.custom .row{margin-top:14px}
+/* riepilogo dal vivo e navigazione */
+.live{max-width:920px;margin:22px auto 0;background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:10px 14px;font-size:.92rem;color:var(--muted)}
+.live b{color:var(--ink)}
+.live:empty{display:none}
+.pnav{position:sticky;bottom:0;z-index:5;margin:16px -16px 0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--line)}
+.pnav-in{max-width:920px;margin:0 auto;display:flex;gap:12px;justify-content:space-between;align-items:center}
+.pnav .btn{padding:12px 22px;font-size:1rem}
+.pnav .spacer{flex:1}
+/* bottoni */
+.btn{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 16px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.small{padding:5px 12px;font-size:.85rem}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--ember);border-color:var(--ember)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.linkbtn{border:0;background:none;color:var(--accent);font-weight:700;padding:0;font-size:.88rem;text-decoration:underline;text-underline-offset:3px}
+/* piano */
+.plan-grid{display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:980px){.plan-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);align-items:start}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.hero{background:var(--accent);color:var(--accent-ink);border-radius:var(--r);padding:18px;display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:12px 16px;align-items:center;box-shadow:var(--shadow)}
+.hero .art-h{grid-row:1/3;grid-column:2;background:color-mix(in srgb,var(--accent-ink) 14%,transparent);border-radius:12px;padding:6px}
+.hero .art-h svg{display:block;width:100%;height:auto}
+.hero .times{display:flex;gap:24px;flex-wrap:wrap}
+.hero .lbl{display:block;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;opacity:.85;font-weight:700}
+.hero .big{font-family:var(--font-d);font-size:2rem;font-variant-numeric:tabular-nums;line-height:1.05}
+.hero .meta{font-size:.9rem;opacity:.92}
+.linked{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;background:var(--surface);border:1px dashed var(--accent);border-radius:12px;padding:10px 14px;font-size:.92rem}
+.dirty{color:var(--ember);font-weight:700}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow)}
+.panel h3{font-size:1.2rem;margin-bottom:10px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.choices{display:flex;flex-direction:column;margin:0;padding:0;list-style:none}
+.choices li{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line);font-size:.92rem}
+.choices li:last-child{border-bottom:0}
+.choices span{color:var(--muted)}
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.cmp section{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px}
+.cmp h5{margin:0 0 6px;font-size:1rem}
+.cmp dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:.88rem}
+.cmp dt{color:var(--muted)}.cmp dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums}
+.cmp p{margin:8px 0 0;font-size:.85rem}
+table.ing{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.ing td{padding:9px 0;border-bottom:1px solid var(--line)}
+.ing td:nth-child(2){text-align:right;font-weight:700;font-size:1.1rem;white-space:nowrap}
+.ing td:nth-child(3){text-align:right;color:var(--muted);font-size:.82rem;width:64px}
+.ing tr:last-child td{border-bottom:0}
+.ing small{color:var(--muted)}
+.why{font-size:.85rem;color:var(--muted);margin:10px 0 0}
+.alerts{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.alerts li{border-left:4px solid var(--accent);background:var(--surface);border-radius:0 10px 10px 0;padding:10px 12px;font-size:.92rem}
+.alerts li.warn{border-color:var(--ember);background:var(--ember-soft)}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.day{font-family:var(--font-d);font-size:1rem;color:var(--muted);text-transform:capitalize;padding:14px 0 6px;border-bottom:1px solid var(--line)}
+.step{display:grid;grid-template-columns:60px minmax(0,1fr);gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.step .time{font-variant-numeric:tabular-nums;font-weight:700;font-size:1.05rem}
+.step h4{font-family:var(--font-b);font-size:1.02rem;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.badge{font-family:var(--font-b);font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--ember-soft);color:var(--ember)}
+.badge.wait{background:var(--accent-soft);color:var(--accent)}
+.step .body{font-size:.93rem}
+.step .body p{margin:6px 0}
+.step.past{opacity:.55}
+.note{background:var(--warn-soft);border-radius:8px;padding:8px 10px;font-size:.9rem;margin-top:8px;white-space:pre-wrap}
+.note b{display:block;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--warn)}
+.note-edit textarea,.dlg textarea,.dlg input[type=text]{width:100%;min-height:72px;border:1.5px solid var(--line);border-radius:8px;padding:8px;background:var(--surface-2)}
+.dlg input[type=text]{min-height:0}
+.step-actions{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px}
+.sub{font-weight:700;font-size:.9rem;color:var(--muted);margin-top:4px}
+.empty{color:var(--muted);text-align:center;padding:40px 16px}
+footer{margin:28px auto 0;color:var(--muted);font-size:.82rem;max-width:70ch;text-align:center;padding-bottom:16px}
+/* ricette */
+.rec-head{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;margin-bottom:16px}
+.rec-head h2{font-size:1.8rem}
+.rec-list{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.rec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.rec h3{font-size:1.2rem}
+.rec .meta{font-size:.85rem;color:var(--muted)}
+.versions{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.versions li{border:1px solid var(--line);border-radius:10px;padding:10px;font-size:.88rem;display:flex;flex-direction:column;gap:4px}
+.vhead{display:flex;justify-content:space-between;gap:8px;align-items:center;font-weight:700}
+.diff{margin:0;padding-left:18px;color:var(--muted)}
+.stars{color:var(--ember);letter-spacing:1px}
+/* finestre */
+#modal{position:fixed;inset:0;background:rgba(20,12,6,.5);display:grid;place-items:center;padding:16px;z-index:50}
+#modal[hidden]{display:none}
+.dlg{background:var(--surface);border-radius:var(--r);padding:20px;width:min(580px,100%);max-height:90vh;overflow:auto;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.dlg h3{font-size:1.35rem}
+.dlg p{margin:0}
+.dlg .actions{justify-content:flex-end}
+.fromto{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-weight:700}
+.fromto s{color:var(--muted);font-weight:400}
+.fromto .arr{color:var(--accent)}
+.expl{display:flex;flex-direction:column;gap:8px;font-size:.95rem}
+table.chg{width:100%;border-collapse:collapse;font-size:.9rem;font-variant-numeric:tabular-nums}
+.chg th{text-align:left;font-weight:700;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;padding:4px 0;border-bottom:1px solid var(--line)}
+.chg td{padding:6px 0;border-bottom:1px solid var(--line)}
+.chg td:nth-child(2),.chg td:nth-child(3),.chg th:nth-child(2),.chg th:nth-child(3){text-align:right}
+.chg td:nth-child(2){color:var(--muted)}
+.chg td:nth-child(3){font-weight:700}
+.cal-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;font-size:.9rem}
+.cal-list li{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding:6px 0}
+.cal-list a{color:var(--accent);font-weight:700;white-space:nowrap}
+/* modalità cucina */
+#cook{position:fixed;inset:0;background:var(--bg);z-index:40;display:flex;flex-direction:column}
+#cook[hidden]{display:none}
+.ck-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.ck-bar{height:4px;background:var(--line)}
+.ck-bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.ck-main{flex:1;overflow:auto;padding:24px 16px}
+.ck-inner{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.ck-when{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:700}
+.ck-inner h2{font-size:clamp(1.8rem,6vw,2.5rem)}
+.ck-body{font-size:1.15rem;line-height:1.6}
+.ck-body p{margin:0 0 12px}
+.timer{display:flex;flex-wrap:wrap;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.timer .clock{font-family:var(--font-d);font-size:2.4rem;font-variant-numeric:tabular-nums;min-width:120px}
+.timer.done{border-color:var(--ember);background:var(--ember-soft)}
+.ck-nav{display:flex;gap:12px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+.ck-nav .btn{flex:1;justify-content:center;padding:14px;font-size:1.05rem}
+.rate{display:flex;gap:6px}
+.rate button{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;width:52px;height:52px;font-size:1.5rem;color:var(--muted)}
+.rate button.on{color:var(--ember);border-color:var(--ember);background:var(--ember-soft)}
+@media (max-width:520px){
+  .opts{grid-template-columns:minmax(0,1fr)}
+  .opts.small{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hero{grid-template-columns:minmax(0,1fr) 84px}
+  .hero .big{font-size:1.6rem}
+  .pnav .btn{padding:12px 16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <svg width="46" height="46" viewBox="0 0 44 44" aria-hidden="true"><rect width="44" height="44" rx="13" fill="var(--accent)"/><circle cx="22" cy="24" r="13" fill="var(--a-crust)"/><circle cx="22" cy="24" r="9.5" fill="var(--a-sauce)"/><circle cx="18.5" cy="21.5" r="2.6" fill="var(--a-cheese)"/><circle cx="25.5" cy="23" r="2.2" fill="var(--a-cheese)"/><circle cx="21" cy="28" r="2.4" fill="var(--a-cheese)"/><ellipse cx="25" cy="28.2" rx="2.2" ry="1.1" transform="rotate(-30 25 28.2)" fill="var(--a-basil)"/><path d="M16 9c1.3-1.3 1.3-2.7 0-4M22 8c1.3-1.3 1.3-2.7 0-4M28 9c1.3-1.3 1.3-2.7 0-4" stroke="var(--accent-ink)" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+      <div><h1>Lievita</h1><p>Dimmi quando vuoi mangiare: dosi, orari e passaggi li calcolo io.</p></div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sezioni">
+      <button id="tab-new" role="tab" aria-selected="true" type="button">Nuovo impasto</button>
+      <button id="tab-rec" role="tab" aria-selected="false" type="button">Le mie ricette <span class="count" id="rec-count"></span></button>
+    </nav>
+  </header>
+  <div id="storage-note" class="storage" hidden>Questo browser non permette di salvare dati: le ricette restano solo finché la pagina è aperta. Usa “Esporta” per non perderle.</div>
+  <main id="view-new">
+    <nav class="steps" aria-label="Avanzamento"><ol id="steps"></ol></nav>
+    <div id="page" class="page"></div>
+    <div id="live" class="live" aria-live="polite"></div>
+    <div id="pnav" class="pnav"></div>
+  </main>
+  <main id="view-rec" hidden></main>
+  <footer>Le dosi di lievito sono stime calcolate da tempo e temperatura: guarda sempre l'impasto, non solo l'orologio. Le ricette restano salvate in questo browser; esportale per tenerne una copia.</footer>
+</div>
+<div id="modal" hidden></div>
+<div id="cook" hidden></div>
+
+
+<script id="engine">
+/* ================= MOTORE: dati e calcoli ================= */
+const H = 36e5, MIN = 6e4;
+
+const STYLES = {
+  classica:      {name:`Napoletana classica`, desc:`Morbida e sottile al centro, cornicione basso e soffice.`, hyd:62, salt:2.8, oil:0, ball:250},
+  contemporanea: {name:`Contemporanea`, desc:`Cornicione alto e alveolato, impasto più idratato.`, hyd:68, salt:2.8, oil:0, ball:270},
+  canotto:       {name:`Canotto`, desc:`Cornicione molto gonfio e leggero. La più impegnativa.`, hyd:74, salt:2.8, oil:0, ball:280, minLevel:2},
+  romana:        {name:`Tonda romana`, desc:`Sottile e croccante, stesa con il mattarello.`, hyd:57, salt:2.3, oil:4, ball:180},
+  teglia:        {name:`Pizza in teglia`, desc:`Alta, soffice dentro e croccante sotto. Perfetta nel forno di casa.`, hyd:78, salt:2.5, oil:3, gcm2:0.55, teglia:true, yeastK:2}
+};
+
+const FLOURS = {
+  debole: {name:`Farina 00 del supermercato`, sub:`Debole · W 150–220 circa`, ex:`La classica 00 generica da 1 kg`, level:1, maxH:24, maxHyd:60, short:`una 00 debole`},
+  media:  {name:`Farina per pizza`, sub:`Media · W 240–290 circa`, ex:`Es. Caputo Pizzeria, Caputo Nuvola, Le 5 Stagioni Napoletana`, level:2, maxH:48, maxHyd:70, short:`una farina per pizza media`},
+  mix:    {name:`Mix: 70% farina per pizza + 30% Manitoba`, sub:`Medio-forte`, ex:`Rinforzi la farina per pizza con un po' di Manitoba`, level:2.5, maxH:72, maxHyd:78, short:`il mix`},
+  forte:  {name:`Manitoba o farina forte`, sub:`Forte · W 300–380 circa`, ex:`Es. Manitoba del supermercato, Caputo Manitoba Oro`, level:3, maxH:72, maxHyd:82, short:`una farina forte`}
+};
+
+const OVENS = {
+  casa_teglia:  {name:`Forno di casa`, sub:`solo teglia`, maxT:250, preheat:30},
+  casa_pietra:  {name:`Forno di casa + pietra`, sub:`refrattaria`, maxT:280, preheat:60},
+  casa_acciaio: {name:`Forno di casa + acciaio`, sub:`piastra d'acciaio`, maxT:280, preheat:50},
+  fornetto:     {name:`Fornetto per pizza`, sub:`tipo G3 Ferrari`, maxT:400, preheat:15},
+  portatile:    {name:`Forno per pizza a gas`, sub:`tipo Ooni, Gozney`, maxT:450, preheat:30},
+  legna:        {name:`Forno a legna`, sub:``, maxT:480, preheat:120}
+};
+
+const PLANS = {
+  prefermento: {name:`Con prefermento`, short:`Prefermento, poi impasto finale con tempi personalizzati`, h:0},
+  giornata: {name:`In giornata`, short:`Fino a 8 ore, senza frigo`, h:8},
+  h24:      {name:`24 ore`, short:`Una notte in frigo`, h:24},
+  h48:      {name:`48 ore`, short:`Due notti in frigo`, h:48},
+  h72:      {name:`72 ore`, short:`Tre notti in frigo`, h:72}
+};
+
+const STEP_NAMES = {prefermento:`Prepara il prefermento`,maturazione:`Maturazione del prefermento`,bigainfrigo:`Metti la biga in frigo`,bigafrigo:`Biga in frigo`,bigafuori:`Togli la biga dal frigo`,avvio:`Riposo prima del frigo`,impasto:`Impasta`, puntata:`Prima lievitazione`, pieghe1:`Pieghe, 1ª serie`, pieghe2:`Pieghe, 2ª serie`, pieghe3:`Pieghe, 3ª serie`, staglio:`Panetti`, frigo:`Frigorifero`, appretto:`Seconda lievitazione`, preriscaldo:`Accendi il forno`, stesura:`Stesura`, cottura:`Cottura`};
+
+const state = {
+  method:`diretto`, prefPct:50, prefTemp:18, prefHours:18, prefFridge:0, prefOut:0, prefAdd:false, prefKind:`corta`,
+  prepMode:`plan`, prepClock:`08:00`, batch:{flour:0,water:0,yeast:0,started:0,cold:0},
+  style:`contemporanea`, flour:`media`, oven:`casa_acciaio`, plan:null, yeast:`fresco`, mixer:false,
+  over:{}, notes:{},
+  n:4, tw:30, th:40, tn:1, room:20, fridge:4,
+  dinner:(()=>{const d=new Date(); d.setDate(d.getDate()+1); d.setHours(20,0,0,0); return d;})(),
+  link:null, editing:null, customOpen:false
+};
+
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const q=h=>Math.round(h*4)/4;
+/* velocità relativa della fermentazione rispetto a 20 °C.
+   Taratura novembre 2026 (seconda versione, vedi docs/lievito.md): +14,5% per grado sopra i 12 °C, tra la tabella
+   di Craig (~+15%) e le altre fonti (~+12%); sotto i 12 °C +7% per grado, tarato sulle ricette italiane col frigo
+   (a 4 °C vale circa 0,19). */
+function fT(T){ T=clamp(T,2,35); return T>=12 ? Math.pow(1.145,T-20) : Math.pow(1.145,-8)*Math.pow(1.07,T-12); }
+/* ore equivalenti a 20 °C. In frigo l'impasto non si raffredda subito: le prime ore (2 per i panetti,
+   4 per la massa unica della teglia) contano alla temperatura media tra casa e frigo. */
+function heqOf(phases,room,teglia){
+  return phases.reduce((s,[k,d,T])=>{
+    if(k!==`frigo`) return s+d*fT(T);
+    const L=Math.min(d,teglia?4:2);
+    return s+L*fT((room+T)/2)+(d-L)*fT(T);
+  },0);
+}
+/* lievito di birra fresco in % sulla farina, dalle ore equivalenti a 20 °C.
+   Curva log-quadratica tarata insieme sulla tabella di Craig (pizzamaking.com) e su 18 riferimenti tra disciplinare
+   AVPN, mulini, tabelle italiane e video di pizzaioli (docs/riferimenti-lievito.json).
+   Oltre heq ≈ 27 (x < -1,5) prosegue in linea retta per non risalire. */
+function yeastPct(heq){
+  const x=Math.log(6/heq), x0=-1.5;
+  const e = x>=x0 ? 1.53*x+0.18*x*x : 1.53*x0+0.18*x0*x0+(1.53+0.36*x0)*(x-x0);
+  return clamp(0.55*Math.exp(e),0.02,3);
+}
+
+function nightAt(t){ const h=new Date(t).getHours(); return h>=23||h<7; }
+function firstNight(a,b){ for(let t=a;t<=b;t+=15*MIN){ if(nightAt(t)) return t; } return null; }
+function at(t,hour,addDays){ const d=new Date(t); d.setDate(d.getDate()+(addDays||0)); d.setHours(hour,0,0,0); return d.getTime(); }
+
+const DAYS=[`domenica`,`lunedì`,`martedì`,`mercoledì`,`giovedì`,`venerdì`,`sabato`];
+function pad(n){return String(n).padStart(2,`0`);}
+function hm(t){ const d=new Date(t); return pad(d.getHours())+`:`+pad(d.getMinutes()); }
+function dayLabel(t){
+  const a=new Date(); a.setHours(0,0,0,0); const b=new Date(t); b.setHours(0,0,0,0);
+  const diff=Math.round((b-a)/864e5);
+  if(diff===0) return `oggi`; if(diff===1) return `domani`; if(diff===-1) return `ieri`; if(diff===2) return `dopodomani`;
+  const d=new Date(t); return DAYS[d.getDay()]+` `+d.getDate()+`/`+(d.getMonth()+1);
+}
+function when(t){ return dayLabel(t)+` alle `+hm(t); }
+function fmtDur(h){ const m=Math.round(h*60); const Hh=Math.floor(m/60), M=m%60; return Hh ? (Hh+` h`+(M?` `+M+` min`:``)) : M+` min`; }
+function num(x,d){ return x.toLocaleString(`it-IT`,{maximumFractionDigits:d==null?1:d}); }
+function g(x){ return Math.round(x)+` g`; }
+function gy(x){ return x<10 ? num(x,x<1?2:1)+` g` : Math.round(x)+` g`; }
+
+function params(cfg){
+  const S=STYLES[cfg.style], F=FLOURS[cfg.flour], O=OVENS[cfg.oven], adapt=[];
+  let hyd=S.hyd, salt=S.salt, oil=S.oil;
+  if(hyd>F.maxHyd){ adapt.push(`Idratazione abbassata dal ${hyd}% al ${F.maxHyd}%: con ${F.short} un impasto più bagnato diventa difficile da gestire.`); hyd=F.maxHyd; }
+  if(O.maxT<350 && !S.teglia && cfg.style!==`romana` && oil===0){ oil=2; adapt.push(`Aggiunto un 2% di olio: nel forno di casa la cottura dura di più e l'olio evita che il cornicione si secchi.`); }
+  const o=cfg.over||{};
+  if(o.hyd!=null) hyd=o.hyd;
+  if(o.salt!=null) salt=o.salt;
+  if(o.oil!=null) oil=o.oil;
+  const ball=o.ball!=null?o.ball:S.ball, gcm2=o.gcm2!=null?o.gcm2:S.gcm2;
+  return {S,F,O,hyd,salt,oil,ball,gcm2,adapt};
+}
+
+function bakeInfo(ok,sk){
+  const r=sk===`romana`, t=sk===`teglia`;
+  if(t){
+    if(ok.startsWith(`casa`)){
+      const on = ok===`casa_pietra`?`appoggiata sulla pietra`:ok===`casa_acciaio`?`appoggiata sulla piastra d'acciaio`:`sul ripiano più basso del forno`;
+      return {per:20, timer:11, pre:`Accendi il forno statico al massimo (almeno 250 °C)${ok===`casa_pietra`?`, con la pietra sul ripiano più basso`:ok===`casa_acciaio`?`, con l'acciaio sul ripiano più basso`:``}.`,
+        how:`<p>Condisci solo con pomodoro, sale e un filo d'olio. Cuoci la teglia ${on} per 10–12 minuti, finché il fondo è ben dorato (sollevala con una spatola per controllare).</p><p>Poi aggiungi la mozzarella e sposta la teglia sul ripiano centrale per altri 5–8 minuti.</p>`};
+    }
+    if(ok===`legna`) return {per:15, timer:10, pre:`Accendi il forno a legna e lascialo scendere a 280–320 °C, con la brace spostata di lato.`, how:`<p>Cuoci la teglia lontano dalla fiamma per 10–12 minuti, girandola a metà cottura. La mozzarella va aggiunta negli ultimi minuti.</p>`, warn:`Nel forno a legna la pizza in teglia va cotta a temperature più basse del solito: tieni d'occhio il fondo.`};
+    return {per:15, timer:9, pre:`Porta il forno alla temperatura più bassa che riesce a tenere stabile (280–300 °C).`, how:`<p>Se la teglia entra, cuoci 8–10 minuti girandola spesso. La mozzarella va aggiunta alla fine.</p>`, warn:`La pizza in teglia rende meglio nel forno di casa: un ${OVENS[ok].name.toLowerCase()} di solito è troppo caldo e piccolo per una teglia.`};
+  }
+  if(ok===`legna`||ok===`portatile`){
+    if(r) return {per:3, timer:2.5, pre: ok===`legna`?`Accendi il forno con anticipo: la platea deve arrivare a circa 330–380 °C.`:`Accendi il forno e porta la pietra a circa 330–380 °C, con la fiamma media.`, how:`<p>Inforna e cuoci 2–3 minuti, girando la pizza ogni 30–40 secondi. La romana vuole meno calore e più tempo della napoletana, così diventa croccante.</p>`};
+    return {per:2, timer:1.5, pre: ok===`legna`?`Accendi il forno con anticipo: la platea deve arrivare a 430–480 °C.`:`Accendi il forno e porta la pietra a 400–450 °C. Se hai un termometro a infrarossi, controlla il centro della pietra.`, how:`<p>Inforna e cuoci 60–90 secondi, girando la pizza ogni 20–30 secondi perché cuocia in modo uniforme. È pronta quando il cornicione è gonfio e maculato.</p>`};
+  }
+  if(ok===`fornetto`){
+    if(r) return {per:6, timer:5, pre:`Accendi il fornetto con entrambe le resistenze al massimo per circa 15 minuti, poi abbassa un po' quella superiore.`, how:`<p>Inforna e cuoci 4–6 minuti: la romana vuole una cottura più lunga per diventare croccante.</p>`};
+    return {per:5, timer:4, pre:`Accendi il fornetto con entrambe le resistenze al massimo per circa 15 minuti, finché la pietra è ben calda.`, how:`<p>Inforna e cuoci 3–5 minuti, finché il cornicione è gonfio e dorato. Condisci con leggerezza: troppa mozzarella rallenta la cottura e bagna il centro.</p>`};
+  }
+  const base = {
+    casa_acciaio:{per:7, timer:6, pre:`Forno statico al massimo con la piastra d'acciaio sul ripiano alto, a circa 10–15 cm dalla resistenza superiore. Lascialo scaldare almeno 50 minuti.`, how:`<p>Inforna sulla piastra e cuoci 5–6 minuti. Se il forno ha il grill, accendilo nell'ultimo minuto per colorire il cornicione.</p>`},
+    casa_pietra:{per:9, timer:7, pre:`Forno statico al massimo con la pietra sul ripiano alto, a circa 10–15 cm dalla resistenza superiore. Lascialo scaldare almeno 60 minuti: la pietra ci mette tanto a diventare rovente.`, how:`<p>Inforna sulla pietra e cuoci 6–8 minuti. Se il forno ha il grill, accendilo negli ultimi 2–3 minuti per dorare il cornicione e la mozzarella.</p>`},
+    casa_teglia:{per:12, timer:7, pre:`Forno statico al massimo con una teglia capovolta sul ripiano più basso, che si scalda insieme al forno.`, how:`<p>Fai scivolare la pizza, su un foglio di carta forno, sulla teglia rovente e cuoci 6–8 minuti. Poi sfila la carta, aggiungi la mozzarella e sposta la pizza in alto per altri 3–4 minuti.</p>`}
+  }[ok];
+  const out={...base};
+  if(r) out.how+=`<p>Per la romana stendi bene sottile: è lo spessore che la rende croccante.</p>`;
+  return out;
+}
+
+function preparationWindow(cfg,now){
+  const mode=cfg.prepMode||`plan`;
+  if(![`plan`,`now`,`day`,`existing`].includes(mode)) return {ok:false,reason:`Scegli quando puoi iniziare la preparazione.`};
+  if(mode!==`day`) return {ok:true,start:now};
+  const match=/^(\d{2}):(\d{2})$/.exec(cfg.prepClock||`08:00`);
+  if(!match||+match[1]>23||+match[2]>59) return {ok:false,reason:`Inserisci un’ora valida per iniziare il giorno della pizza.`};
+  const d=new Date(state.dinner); d.setHours(+match[1],+match[2],0,0);
+  return {ok:true,start:Math.max(now,d.getTime())};
+}
+function buildPlan(pk,P,cfg,now){
+  const window=preparationWindow(cfg,now);
+  if(!window.ok) return {ok:false,pk,reason:window.reason};
+  now=window.start;
+  if(cfg.prepMode===`existing`&&(cfg.method||`diretto`)===`diretto`) return {ok:false,pk,reason:`Hai già un prefermento: scegli biga o poolish nella pagina Lievitazione e indica come lo hai preparato.`};
+  if((cfg.method||`diretto`)!==`diretto`) return buildPrefermentPlan(pk,P,cfg,now);
+  if(pk===`prefermento`) return {ok:false,pk,reason:`Scegli biga o poolish per questo percorso.`};
+  const S=P.S, room=state.room, fr=state.fridge, teglia=!!S.teglia;
+  const bk=bakeInfo(cfg.oven,cfg.style);
+  const tFirst=state.dinner.getTime();
+  const cottStart=tFirst-bk.per*MIN;
+  const stesDur=teglia?30:15;
+  const stesStart=cottStart-stesDur*MIN;
+  const pieghe=teglia||P.hyd>=66;
+  const A=teglia?clamp(q(4/fT(room)),3.5,6):clamp(q(4/fT(room)),2,6); // la massa della teglia esce fredda dal frigo: almeno 3,5 h
+  let phases, shiftNote=null;
+  if(pk===`giornata`){
+    const avail=(stesStart-now)/H;
+    if(avail<3) return {ok:false,pk,reason: avail<=0?`L'orario scelto è già passato.`:`Servono almeno 3 ore: ne hai solo ${fmtDur(avail)}.`};
+    let G=Math.min(8,avail);
+    const start=stesStart-G*H;
+    if(nightAt(start)){
+      const morning=(new Date(start).getHours()>=23 ? at(start,7,1) : at(start,7))+30*MIN;
+      const G2=(stesStart-morning)/H;
+      if(G2>=4) G=G2;
+    }
+    G=Math.floor(G*4)/4;
+    const B=clamp(q(G*0.3),1,2.5);
+    phases=[[`impasto`,.5,room],[`puntata`,B,room],[`staglio`,.25,room],[`appretto`,G-.75-B,room]];
+  } else {
+    const tot=PLANS[pk].h;
+    const B=pieghe?2:1.5;
+    const pre=teglia?.5+B:.5+B+.25;
+    let Fh=tot-pre-A-(teglia?.25:0);
+    let mix=stesStart-tot*H;
+    const fn=firstNight(mix,mix+pre*H);
+    if(fn!==null){
+      const h=new Date(fn).getHours();
+      const ev23=h>=23?at(fn,23):at(fn,23,-1);
+      const dEarlier=(mix+pre*H)-ev23;
+      const m07=h<7?at(fn,7):at(fn,7,1);
+      const dLater=m07-mix;
+      const okF=f=>f>=Math.max(8,Fh*0.65)&&f<=Fh*1.35;
+      const opts=[];
+      if(okF(Fh+dEarlier/H)&&mix-dEarlier>=now) opts.push(-dEarlier);
+      if(okF(Fh-dLater/H)) opts.push(dLater);
+      if(opts.length){
+        const d=opts.sort((a,b)=>Math.abs(a)-Math.abs(b))[0];
+        mix+=d; Fh-=d/H;
+        shiftNote=`Ho spostato l'inizio a ${when(mix)} per non farti impastare di notte: il frigo dura ${fmtDur(Fh)} invece di ${fmtDur(Fh+d/H)}.`;
+      }
+    }
+    if(mix<now) return {ok:false,pk,reason:`Dovresti iniziare ${when(mix)}, che è già passato.`};
+    phases = teglia
+      ? [[`impasto`,.5,room],[`puntata`,B,room],[`frigo`,Fh,fr],[`staglio`,.25,room],[`appretto`,A,room]]
+      : [[`impasto`,.5,room],[`puntata`,B,room],[`staglio`,.25,room],[`frigo`,Fh,fr],[`appretto`,A,room]];
+  }
+  const total=phases.reduce((s,p)=>s+p[1],0);
+  const mixStart=stesStart-total*H;
+  const heq=heqOf(phases,room,teglia);
+  const fridgeH=(phases.find(p=>p[0]===`frigo`)||[0,0])[1];
+  return {ok:true,pk,phases,mixStart,stesStart,cottStart,tFirst,stesDur,heq,yp:Math.min(3,yeastPct(heq)*(P.S.yeastK||1)),bk,A,pieghe,teglia,total,fridgeH,shiftNote,
+          flourOk: pk===`giornata`||PLANS[pk].h<=P.F.maxH};
+}
+
+function ingredients(P,pl,cfg){
+  const teglia=!!P.S.teglia;
+  const n=teglia?state.tn:state.n;
+  const piece=teglia?state.tw*state.th*P.gcm2:P.ball;
+  const total=piece*n*1.02;
+  const ypct=cfg.yeast===`secco`?pl.yp/3:pl.yp;
+  const flour=total/(1+(P.hyd+P.salt+P.oil+ypct)/100);
+  const ddt=pl.pk===`giornata`?23:22, friction=cfg.mixer?8:2;
+  const waterT=pl.pref?null:Math.round(clamp(3*ddt-2*state.room-friction,4,30));
+  const I={n,piece,total,flour,water:flour*P.hyd/100,salt:flour*P.salt/100,oil:flour*P.oil/100,yeast:flour*ypct/100,ypct,waterT};
+  if(pl.pref){
+    const pf=pl.pref.actual?pl.pref.actual.flour:flour*pl.pref.pct/100, pw=pl.pref.actual?pl.pref.actual.water:pf*pl.pref.hyd/100;
+    const div=cfg.yeast===`secco`?3:1, add=flour*(pl.pref.addYp||0)/div/100;
+    // Preparato esistente: il lievito già pesato resta quello registrato, senza ricalcolo.
+    if(pl.pref.actual){ I.yeast=pl.pref.actual.yeast+add; }
+    I.pref={flour:pf,water:pw,yeast:I.yeast-add};
+    I.final={flour:flour-pf,water:I.water-pw,salt:I.salt,oil:I.oil,yeast:add};
+    I.remixT=remixWaterT(I,pl.pref.mixT??pl.pref.temp,state.room,cfg.mixer);
+  }
+  return I;
+}
+
+/* Temperatura dell'acqua al rimpasto con bilancio termico pesato sulle masse (calori specifici
+   approssimati: acqua 4,18, farina 1,75 kJ/kg·K). Obiettivo 23 °C; attrito come nel diretto (2 a mano, 8 impastatrice).
+   Stima da verificare col termometro: con biga al 100% l'acqua è poca e pesa poco sul risultato. */
+function remixWaterT(I,prefTemp,room,mixer){
+  const cw=4.18, cf=1.75, f=I.final, p=I.pref;
+  const Cp=cf*p.flour+cw*p.water, Cf=cf*f.flour, Cw=cw*Math.max(f.water,1e-9);
+  const raw=((23-(mixer?8:2))*(Cp+Cf+Cw)-Cp*prefTemp-Cf*room)/Cw;
+  return {raw,t:Math.round(clamp(raw,2,35))};
+}
+/* Percorsi indiretti limitati: ipotesi e fonti in docs/prefermenti.md.
+   La curva degli impasti diretti NON viene usata per la maturazione del prefermento. */
+const METHODS={diretto:`Impasto diretto`,biga:`Biga`,poolish:`Poolish`};
+const PREP_MODES={plan:`Posso preparare anche nei giorni prima`,now:`Posso iniziare da adesso`,day:`Preparo solo il giorno della pizza`,existing:`Ho già preparato biga o poolish`};
+/* Domini supportati. Poolish 8–18 h e 18–24 °C (tabelle italiane); biga 14–20 h e 16–20 °C (Giorilli 16 h a 18–20 °C,
+   testimonianze in docs/ricerca/testimonianze-prefermenti.json). Revisioni in docs/prefermenti.md. */
+const PREF_LIMITS={biga:{pct:[50,100],temp:[16,20],hours:[14,20],fridge:18,fridgeAdd:24,ref:18,hyd:45,long:{temp:[18,20],hours:[22,26],cold:24,coldRange:[20,28],ref:24},frigo:{temp:[21,26],hours:[16,20],coldRange:[14,22],ref:18}},poolish:{pct:[30,50],temp:[18,24],hours:[8,18],fridge:24,ref:14,hyd:100}};
+/* Efficacia del lievito del prefermento nell'impasto finale, rispetto al lievito fresco della curva del diretto.
+   Mediane ricavate da 25 ricette e testimonianze con dosi e tempi completi (docs/ricerca/confronto-prefermenti.js):
+   poolish 1,35 (il lievito si moltiplica nell'impasto liquido), biga 0,81 (impasto duro, crescita minore). Da tarare in cucina. */
+const POOLISH_GROWTH=1.5;
+const BIGA_GROWTH=0.8;
+/* Biga lunga (Giorilli, Zaghini, Olivieri, Esposito): 24 h in frigo a 4–5 °C, poi 24 h a 18–20 °C, con l'1% di lievito
+   fresco come la biga corta. In frigo la biga è una massa unica che si raffredda lentamente: le prime 4 h contano alla
+   temperatura media (come la teglia in heqOf). La dose si scala con le ore equivalenti rispetto al riferimento
+   24 h a 4 °C + 24 h a 18 °C, con la stessa regola della biga corta. Percorso calcolato, da provare in cucina. */
+function bigaLongHeq(cold,fridgeT,hours,temp){ return heqOf([[`frigo`,cold,fridgeT]],temp,true)+hours*fT(temp); }
+const BIGA_LONG_REF=bigaLongHeq(24,4,24,18);
+/* Biga in frigo per le case calde (Stadler, Billy Parisi, Mirko Savoia; simile la risposta di Esposito a un lettore):
+   2–4 h fuori a 21–26 °C, poi 16–20 h in frigo. Le ore fuori servono solo ad avviarla: 6 ore equivalenti a 20 °C
+   (circa 3 h a 25 °C), tra 2 e 4. Qui la regola della biga corta non regge: darebbe circa il doppio del lievito
+   delle ricette. La dose si ancora quindi alle ricette, 0,8% fresco con 3 h a 25 °C e 18 h a 4 °C, scalata
+   con le ore equivalenti. Dopo il frigo la biga riposa 1 h a temperatura di casa prima del rimpasto. */
+function bigaColdOut(temp){ return q(clamp(6/fT(temp),2,4)); }
+function bigaColdHeq(out,temp,cold,fridgeT){ return out*fT(temp)+heqOf([[`frigo`,cold,fridgeT]],temp,true); }
+const BIGA_COLD_REF=bigaColdHeq(3,25,18,4);
+const BIGA_KINDS={corta:`Biga corta`,lunga:`Biga lunga`,frigo:`Biga in frigo`};
+/* Ore equivalenti a 20 °C per cui una dose fresca y basta secondo la curva del diretto (yeastPct è decrescente). */
+function heqForYeast(y){
+  let lo=.5, hi=80;
+  if(yeastPct(lo)<=y) return lo;
+  if(yeastPct(hi)>=y) return hi;
+  for(let i=0;i<60;i++){ const m=(lo+hi)/2; if(yeastPct(m)>y) lo=m; else hi=m; }
+  return (lo+hi)/2;
+}
+function prefFridgeMax(p){ return p.method===`biga`&&!p.add?18:24; }
+function prefermentSettings(cfg){
+  // prefKind: corta, lunga o frigo. Le configurazioni con il vecchio prefLong restano valide.
+  const biga=cfg.method===`biga`, k=biga?(cfg.prefKind||(cfg.prefLong?`lunga`:`corta`)):`corta`, kind=BIGA_KINDS[k]?k:`corta`;
+  const h=cfg.prefHours??18, temp=cfg.prefTemp??18, warm=kind===`frigo`;
+  // Biga in frigo: prefHours sono le ore in frigo; le ore fuori prima del frigo si calcolano dalla temperatura.
+  return {method:cfg.method||`diretto`,pct:cfg.prefPct??50,temp,hours:warm?bigaColdOut(temp):h,fridge:cfg.prefFridge??0,out:cfg.prefOut??0,add:biga&&!!cfg.prefAdd,
+    kind,long:kind===`lunga`,warm,cold:kind===`lunga`?24:warm?h:0,setHours:h};
+}
+function prefermentRest(P,p,room,yp){
+  const biga=p.method===`biga`;
+  // Dopo il frigo: tempo di rinvenimento. Le testimonianze con prefermento danno 1,5–2,5 h per i panetti
+  // a 20–21 °C (più corto del diretto, perché il lievito attivo è molto); la teglia esce in massa unica e resta più lenta.
+  if(p.fridge>0) return P.S.teglia?q(clamp(4/fT(room),3.5,6)):q(clamp(2.5/fT(room),2,4));
+  // Poolish o biga con aggiunta: appretto scelto, il lievito al rimpasto si adatta.
+  if(!biga||p.add) return q(clamp(3/fT(room),2,6));
+  // Biga senza aggiunta: l'impasto finale lievita finché il lievito della biga basta, secondo la stessa curva
+  // del diretto usata per l'aggiunta (efficacia BIGA_GROWTH). Si tolgono impasto, puntata e staglio.
+  const supply=BIGA_GROWTH*(yp??prefermentYeast(p))*p.pct/100/(P.S.yeastK||1);
+  const before=.5*fT(room)+q(1/fT(room))*fT(room)+.25*fT(room);
+  return q(clamp((heqForYeast(supply)-before)/fT(room),1,8));
+}
+function prefermentYeast(p){
+  // Biga: 1% fresco a 18 h/18 °C (Giorilli, Gozney; mediana su 15 ricette 1,02 volte il modello).
+  // Poolish: 0,25%·(12/h)^1,9 a 21 °C, adattata a 12 tabelle e ricette italiane (0,5–0,75% a 8 h, 0,2–0,3% a 12 h,
+  // 0,1–0,15% a 15–18 h). Le fonti straniere stanno più in alto (tabella in docs/prefermenti.md).
+  if(p.method===`biga`&&p.warm) return .8*BIGA_COLD_REF/bigaColdHeq(p.hours,p.temp,p.cold,p.fridgeT??(Number.isFinite(state.fridge)?state.fridge:4));
+  if(p.method===`biga`&&p.long) return BIGA_LONG_REF/bigaLongHeq(p.cold,p.fridgeT??(Number.isFinite(state.fridge)?state.fridge:4),p.hours,p.temp);
+  return p.method===`biga`?18/p.hours*fT(18)/fT(p.temp):0.25*Math.pow(12/p.hours,1.9)*fT(21)/fT(p.temp);
+}
+// Ricerca discreta di orari nei soli percorsi già supportati: non è un nuovo modello biologico.
+/* Lievito fresco da aggiungere al rimpasto, in % sulla farina totale (poolish, o biga se l'utente lo sceglie).
+   L'impasto finale segue la curva tarata del diretto (heqOf/yeastPct) sulle sole fasi dopo il rimpasto;
+   si sottrae il lievito del poolish moltiplicato per POOLISH_GROWTH. Euristica da provare in cucina. */
+function remixYeast(P,p,prefY,finalPhases,room,teglia){
+  if(p.method!==`poolish`&&!p.add) return {add:0,heq:null,need:null};
+  const heq=heqOf(finalPhases,room,teglia), need=Math.min(3,yeastPct(heq)*(P.S.yeastK||1));
+  const G=p.method===`poolish`?POOLISH_GROWTH:BIGA_GROWTH;
+  return {add:Math.max(0,need-G*prefY*p.pct/100),heq,need};
+}
+function prefermentNightActions(pl,P){
+  const actions=[];
+  let t=pl.mixStart;
+  for(const [k,d] of pl.phases){
+    const end=t+d*H;
+    if([`prefermento`,`impasto`,`staglio`].includes(k)) actions.push([t,end]);
+    if(k===`frigo`) actions.push([t,t+MIN],[end,end+MIN]);
+    if(k===`bigafrigo`) actions.push([t,t+MIN],[end,end+MIN]);
+    if(k===`puntata`&&pl.pieghe){
+      const every=d*H>=70*MIN?20:d*H>=55*MIN?15:10;
+      for(let i=1;i<=3;i++){ const ts=t+i*every*MIN; if(ts<end-10*MIN) actions.push([ts,ts+5*MIN]); }
+    }
+    t=end;
+  }
+  actions.push([pl.stesStart-P.O.preheat*MIN,pl.stesStart-P.O.preheat*MIN+MIN],
+    [pl.stesStart,pl.tFirst+pl.bk.per*((P.S.teglia?state.tn:state.n)-1)*MIN]);
+  // Controllo esatto del confine delle 23, anche per azioni di pochi minuti.
+  return actions.filter(([s,e])=>nightAt(s)||(at(s,23)>=s&&at(s,23)<e)).length;
+}
+function suggestPreferment(cfg,now){
+  if(cfg.prepMode===`existing`) return {ok:false,reason:`Il prefermento è già fatto: conserva dosi, temperatura e tempi reali. La ricerca automatica riguarda solo preparazioni nuove.`};
+  if(![`biga`,`poolish`].includes(cfg.method)) return {ok:false,reason:`Scegli biga o poolish per organizzare un impasto indiretto.`};
+  const P=params(cfg), window=preparationWindow(cfg,now);
+  if(!window.ok) return window;
+  if(P.hyd>P.F.maxHyd) return {ok:false,reason:`L’idratazione supera il limite consigliato per questa farina: riducila o scegli una farina adatta prima della ricerca automatica.`};
+  const pk0=prefermentSettings(cfg), L=pk0.long?PREF_LIMITS.biga.long:pk0.warm?PREF_LIMITS.biga.frigo:PREF_LIMITS[cfg.method], [min,max]=L.hours;
+  const fridges=[0];
+  if(Number.isFinite(state.fridge)&&state.fridge>=3&&state.fridge<=5) for(let f=8;f<=prefFridgeMax(prefermentSettings(cfg));f+=.5) fridges.push(f);
+  // Con casa calda (25 °C o più) l'impasto finale corre: a parità di notti si preferisce il freddo.
+  const warm=state.room>=25&&fridges.length>1;
+  let best=null, bestNoFridge=null, reason=``;
+  for(let h=min;h<=max;h+=.25) for(const f of fridges){
+    const choice={...cfg,prefHours:h,prefFridge:f,prefOut:0,plan:`prefermento`};
+    const pl=buildPrefermentPlan(`prefermento`,P,choice,window.start);
+    if(!pl.ok){ if(!reason) reason=pl.reason; continue; }
+    if(!pl.flourOk){ reason=`Il percorso supera le ore consigliate per questa farina. Scegli una farina più adatta o un percorso più breve.`; continue; }
+    const nights=prefermentNightActions(pl,P);
+    const score=[nights,warm?(f?0:1):0,warm?0:f,Math.abs(h-L.ref)];
+    const lt=(a,b)=>a.some((v,i)=>v<b[i]&&a.slice(0,i).every((x,j)=>x===b[j]));
+    if(!best||lt(score,best.score)) best={ok:true,cfg:choice,pl,nights,score,warm};
+    if(!f&&(!bestNoFridge||lt(score,bestNoFridge.score))) bestNoFridge={cfg:choice,pl,nights,score};
+  }
+  if(best){ best.I=ingredients(P,best.pl,best.cfg); best.noFridge=bestNoFridge&&bestNoFridge.pl!==best.pl?bestNoFridge:null; }
+  return best||{ok:false,reason:reason||`Nessun percorso compatibile: controlla disponibilità, temperatura, farina e ora della cena.`};
+}
+function buildPrefermentPlan(pk,P,cfg,now){
+  const p=prefermentSettings(cfg), biga=p.method===`biga`, existing=cfg.prepMode===`existing`;
+  const fail=reason=>({ok:false,pk,reason});
+  if(pk!==`prefermento`) return fail(`Con biga o poolish usa il percorso “Con prefermento”.`);
+  if(![`biga`,`poolish`].includes(p.method)) return fail(`Metodo non riconosciuto: scegli impasto diretto, biga o poolish.`);
+  if(![p.pct,p.temp,p.hours,p.fridge,p.out].every(Number.isFinite)) return fail(`Inserisci percentuale, temperatura e ore valide.`);
+  const Lm=PREF_LIMITS[p.method]||PREF_LIMITS.biga, Ld=p.long?Lm.long:p.warm?Lm.frigo:Lm;
+  const fMax=prefFridgeMax(p);
+  if(p.fridge!==0&&(p.fridge<8||p.fridge>fMax)) return fail(`Scegli 0 ore senza frigo oppure da 8 a ${fMax} ore in frigo dopo l’impasto finale.${biga&&!p.add&&p.fridge>18?` Oltre 18 ore la biga ha bisogno di un po’ di lievito al rimpasto: puoi attivarlo nella pagina Lievitazione.`:``}`);
+  if(p.fridge>0&&(!Number.isFinite(state.fridge)||state.fridge<3||state.fridge>5)) return fail(`Per questo percorso indiretto serve un frigo misurato tra 3 e 5 °C.`);
+  if(p.out!==0&&(p.out<1||p.out>10)) return fail(`Scegli 0 per il tempo fuori frigo suggerito, oppure da 1 a 10 ore.`);
+  let actual=null;
+  if(existing){
+    const b=cfg.batch||{};
+    if(![b.flour,b.water,b.yeast,b.started,b.cold].every(Number.isFinite)||b.flour<=0||b.water<=0||b.yeast<=0||b.started<=0) return fail(`Indica farina, acqua, lievito e giorno e ora reali del prefermento già preparato.`);
+    if(b.started>now) return fail(`La preparazione indicata è nel futuro: correggi giorno e ora.`);
+    if(p.long||p.warm){
+      const [c0,c1]=Ld.coldRange;
+      if(b.cold<c0||b.cold>c1) return fail(`Per la ${p.long?`biga lunga`:`biga in frigo`} indica le ore passate in frigo: sono supportate da ${c0} a ${c1}.`);
+      p.cold=b.cold;
+    } else if(b.cold!==0) return fail(`Hai indicato un prefermento passato in frigo. Conserviamo le quantità, ma questo percorso richiede una maturazione tutta alla temperatura indicata: non possiamo stimare la maturazione di questa storia termica.${biga?` Se hai fatto una biga lunga (circa 24 ore in frigo, poi fuori) o una biga in frigo (qualche ora fuori, poi in frigo), sceglila nella pagina Lievitazione.`:``}`);
+    const total=(P.S.teglia?state.tw*state.th*P.gcm2*state.tn:P.ball*state.n)*1.02;
+    const flour=(total-b.yeast)/(1+(P.hyd+P.salt+P.oil)/100);
+    if(flour<=0) return fail(`Il lievito registrato supera il peso dell’impasto richiesto: controlla le quantità.`);
+    p.pct=b.flour/flour*100;
+    actual={...b,totalFlour:flour,hyd:b.water/b.flour*100,yp:b.yeast*(cfg.yeast===`secco`?3:1)/b.flour*100};
+    if(Math.abs(actual.hyd-(biga?45:100))>.01) return fail(`Hai preparato un prefermento al ${num(actual.hyd)}% d’acqua. Registriamo queste proporzioni, ma il piano attuale supporta ${biga?`biga al 45%`:`poolish al 100%`}; non aggiungiamo né togliamo acqua al preparato.`);
+  }
+  if(p.pct<(biga?50:30)-1e-8||p.pct>(biga?100:50)+1e-8) return fail(existing?`Il prefermento già fatto copre il ${num(p.pct)}% della farina necessaria alle pizze scelte. Per ${biga?`la biga serve il 50–100%`:`il poolish serve il 30–50%`}: cambia quantità di pizze o peso dei panetti. Il preparato non viene ridimensionato.`:biga?`Biga: scegli dal 50 al 100% della farina totale.`:`Poolish: scegli dal 30 al 50% della farina totale.`);
+  if(p.temp<Ld.temp[0]||p.temp>Ld.temp[1]) return fail(p.warm?`La biga in frigo è pensata per le case calde: prima del frigo resta qualche ora tra 21 e 26 °C. Sotto i 21 °C scegli la biga corta.`:p.long?`Dopo il frigo la biga lunga matura in un posto stabile tra 18 e 20 °C.`:biga?`La biga richiede un posto stabile tra 16 e 20 °C. La temperatura di casa può essere diversa.`:`Il poolish richiede un posto stabile tra 18 e 24 °C.`);
+  const hv=p.warm?p.cold:p.hours;
+  if(!(p.warm&&existing)&&(hv<Ld.hours[0]||hv>Ld.hours[1])) return fail(p.warm?`Per la biga in frigo sono supportate 16–20 ore in frigo, dopo 2–4 ore fuori.`:p.long?`Per la biga lunga sono supportate 22–26 ore fuori frigo, dopo le 24 in frigo.`:biga?`Per la biga sono supportate 14–20 ore di maturazione.`:`Per il poolish sono supportate 8–18 ore di maturazione.`);
+  if(p.long&&P.F.level<3) return fail(`La biga lunga richiede una farina forte, come la Manitoba: in quasi due giorni di maturazione una farina più debole cede.`);
+  if((p.long||p.warm)&&!existing&&(!Number.isFinite(state.fridge)||state.fridge<3||state.fridge>5)) return fail(`${p.long?`La biga lunga passa 24 ore in frigo`:`La biga in frigo matura soprattutto al freddo`}: serve un frigo misurato tra 3 e 5 °C.`);
+  if(p.long||p.warm) p.fridgeT=Number.isFinite(state.fridge)?state.fridge:4;
+  if(P.F.level<(biga?2.5:2)) return fail(biga?`Per questo percorso con biga scegli il mix con Manitoba o una farina forte.`:`Per il poolish serve almeno una farina per pizza.`);
+  if(state.room<16||state.room>26) return fail(`L'impasto finale con prefermento è supportato solo tra 16 e 26 °C in casa.`);
+  const hyd=biga?45:100;
+  if(P.hyd-p.pct*hyd/100<5) return fail(`Resta troppo poca acqua per l'impasto finale: riduci la percentuale di prefermento o aumenta l'idratazione.`);
+  const bk=bakeInfo(cfg.oven,cfg.style), teglia=!!P.S.teglia, room=state.room;
+  const tFirst=state.dinner.getTime(), cottStart=tFirst-bk.per*MIN, stesDur=teglia?30:15, stesStart=cottStart-stesDur*MIN;
+  // Stima iniziale da validare: più farina prefermentata accorcia l'appretto.
+  const B=biga?q(1/fT(room)):q(clamp(1/fT(room),.75,2)), suggestedOut=prefermentRest(P,p,room,actual?actual.yp:undefined), A=p.out||suggestedOut;
+  if(p.out&&(A<suggestedOut*.5||A>suggestedOut*1.5)) return fail(`Il tempo finale scelto (${fmtDur(A)}) è troppo lontano dalla stima di ${fmtDur(suggestedOut)} a ${room} °C. Usa 0 per il suggerimento o resta tra ${fmtDur(suggestedOut*.5)} e ${fmtDur(suggestedOut*1.5)}. Per cambiare molto l’orario, modifica le ore in frigo o l’ora della cena.`);
+  const phases=existing?[[`impasto`,.5,room],[`puntata`,B,room]]:[[`prefermento`,.25,p.temp],...(p.long?[[`bigafrigo`,p.cold,state.fridge]]:[]),[`maturazione`,p.hours,p.temp],...(p.warm?[[`bigafrigo`,p.cold,state.fridge],[`acclimata`,1,room]]:[]),[`impasto`,.5,room],[`puntata`,B,room]];
+  // Teglia: massa in frigo e staglio dopo; tonde: panetti prima del freddo.
+  if(p.fridge>0&&teglia) phases.push([`frigo`,p.fridge,state.fridge]);
+  phases.push([`staglio`,.25,room]);
+  if(p.fridge>0&&!teglia){
+    if(biga) phases.push([`avvio`,1,room]);
+    phases.push([`frigo`,p.fridge,state.fridge]);
+  }
+  phases.push([`appretto`,A,room]);
+  const total=phases.reduce((s,x)=>s+x[1],0), mixStart=stesStart-total*H;
+  if(mixStart<now) return fail(`${existing?`L’impasto finale dovrebbe iniziare`:`Dovresti preparare ${biga?`la biga`:`il poolish`}`} ${when(mixStart)}, prima di quando puoi iniziare (${when(now)}). ${cfg.prepMode===`day`?`Questo percorso non entra nel giorno della pizza. Scegli un metodo più breve o preparalo prima.`:`Riduci le ore di frigo se previste, scegli un percorso più breve o sposta la cena più avanti.`}`);
+  // Dose fresca sulla farina del prefermento: biga 1% a 18 °C/18h;
+  // poolish 5 g fresco/350 g farina a 12h (Ooni), riferimento termico assunto 20 °C.
+  // Correzione termica limitata ai campi sopra; ipotesi dichiarate nella documentazione.
+  const prefY=prefermentYeast(p);
+  const fi=phases.findIndex(x=>x[0]===`impasto`), rx=remixYeast(P,p,actual?actual.yp:prefY,phases.slice(fi),room,teglia);
+  if(actual){
+    if(actual.yp<prefY*.5||actual.yp>prefY*1.5) return fail(`Il lievito già usato (${num(actual.yp,2)}% fresco equivalente sulla farina del prefermento) è lontano dal riferimento di questo percorso (${num(prefY,2)}%). Le quantità restano registrate, ma non stimiamo la maturazione con la dose di un’altra ricetta. Segui i tempi e i segnali della ricetta originale.`);
+    const mature=actual.started+.25*H+(p.cold+p.hours+(p.warm?1:0))*H;
+    if(mixStart<mature||mixStart>mature+.5*H) return fail(`Con le ore di maturazione indicate, il rimpasto è atteso intorno a ${when(mature)}; la cena scelta lo richiederebbe ${when(mixStart)}. Non prolunghiamo automaticamente l’attesa del prefermento maturo: modifica cena o riposo dell’impasto finale. Se è già collassato, questo piano non è applicabile.`);
+  }
+  return {ok:true,pk,phases,mixStart,stesStart,cottStart,tFirst,stesDur,bk,A,pieghe:teglia||P.hyd>=66,teglia,total,fridgeH:p.fridge,shiftNote:null,flourOk:(actual?(stesStart-actual.started)/H:total)<=P.F.maxH,
+    yp:(actual?actual.yp:prefY)*p.pct/100+rx.add,pref:{...p,mixT:p.warm?Math.min(room,(p.fridgeT??4)+4):p.temp,hyd,yp:actual?actual.yp:prefY,addYp:rx.add,finalHeq:rx.heq,needYp:rx.need,suggestedOut,actual},heq:null};
+}
+</script>
+
+<script>
+/* ================= INTERFACCIA ================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?``:s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const STORE=`lievita.v1`;
+let mem={recipes:[],last:null}, canStore=true;
+function load(){
+  try{ localStorage.setItem(STORE+`.t`,`1`); localStorage.removeItem(STORE+`.t`); const r=localStorage.getItem(STORE); if(r) mem=JSON.parse(r); }catch(e){ canStore=false; }
+  if(!mem||!Array.isArray(mem.recipes)) mem={recipes:[],last:null};
+}
+function persist(){ try{ localStorage.setItem(STORE,JSON.stringify(mem)); }catch(e){ canStore=false; $(`#storage-note`).hidden=false; } }
+const uid=()=>`r`+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const clone=o=>JSON.parse(JSON.stringify(o));
+
+function prefConfig(c){ const p=prefermentSettings(c); return {method:p.method,prefPct:p.pct,prefTemp:p.temp,prefHours:p.setHours,prefFridge:p.fridge,prefOut:p.out,prefAdd:p.add,prefKind:p.kind,prepMode:c.prepMode||`plan`,prepClock:c.prepClock||`08:00`,batch:clone(c.batch||{flour:0,water:0,yeast:0,started:0,cold:0})}; }
+function rememberForm(){
+  mem.last={...prefConfig(state),style:state.style,flour:state.flour,oven:state.oven,yeast:state.yeast,mixer:state.mixer,n:state.n,tw:state.tw,th:state.th,tn:state.tn,room:state.room,fridge:state.fridge};
+  persist();
+}
+
+function toLocalInput(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+
+/* ---------- calcolo completo ---------- */
+let R=null;
+function snap(){ return {...prefConfig(state),style:state.style,flour:state.flour,oven:state.oven,plan:R&&R.pk?R.pk:state.plan,yeast:state.yeast,mixer:state.mixer,over:clone(state.over),notes:clone(state.notes)}; }
+
+function compute(){
+  const now=Date.now();
+  const P=params(state);
+  const plans={}; for(const k in PLANS) plans[k]=buildPlan(k,P,state,now);
+  const rec=[`prefermento`,`h24`,`giornata`,`h48`,`h72`].find(k=>plans[k].ok&&plans[k].flourOk)||Object.keys(plans).find(k=>plans[k].ok);
+  const pk=state.plan&&plans[state.plan].ok?state.plan:rec;
+  if(!pk) return {P,plans,none:true,reason:state.method===`diretto`?plans.giornata.reason:plans.prefermento.reason};
+  const pl=plans[pk], I=ingredients(P,pl,state), steps=makeSteps(pl,P,I);
+  const W=[];
+  if(pl.pref) W.push({w:1,t:`Percorso calcolato, da provare in cucina. ${pl.pref.actual?`Usiamo tutto il prefermento già preparato, con il lievito reale registrato. Prima del rimpasto verifica che sia maturo e non collassato.`:pl.pref.warm?`Lascia la biga ${fmtDur(pl.pref.hours)} a ${pl.pref.temp} °C, poi ${fmtDur(pl.pref.cold)} in frigo.`:pl.pref.long?`Tieni la biga ${fmtDur(pl.pref.cold)} in frigo, poi ${fmtDur(pl.pref.hours)} a ${pl.pref.temp} °C.`:`Mantieni il prefermento a ${pl.pref.temp} °C per ${fmtDur(pl.pref.hours)}.`} L’appretto è una stima: controlla la crescita e la consistenza. ${pl.pref.addYp>0?`Al rimpasto aggiungi ${gy(I.final.yeast)} di lievito ${state.yeast}: è calcolato per le ore dopo il rimpasto${pl.fridgeH?`, frigo compreso`:``}.`:`Non aggiungere altro lievito nell’impasto finale.`}`});
+  if(pl.pref&&pl.fridgeH) W.push({w:1,t:`Il frigo rallenta la crescita, ma non la ferma subito. Le ${fmtDur(pl.fridgeH)} scelte si aggiungono al percorso${pl.pref.addYp>0||pl.pref.method===`poolish`||pl.pref.add?`: il lievito del rimpasto è già ridotto per tenerne conto`:`: il lievito della biga non cambia`}. Controlla il volume prima e dopo il freddo; se l’impasto è già molto gonfio o cede, il piano non descrive più il suo stato.`});
+  if(pl.pref&&pl.pref.out) W.push({w:0,t:`Hai scelto ${fmtDur(pl.A)} per il riposo finale a ${state.room} °C; la stima è ${fmtDur(pl.pref.suggestedOut)}. Gli orari seguono la tua scelta, la maturazione va verificata sull’impasto.`});
+  if(state.plan&&!plans[state.plan].ok) W.push({w:1,t:`La lievitazione “${PLANS[state.plan].name}” non è possibile con l'orario scelto, quindi ho usato “${PLANS[pk].name}”.`});
+  if(!pl.flourOk) W.push({w:1,t:`Con ${P.F.short} una lievitazione di ${PLANS[pk].name} è rischiosa: l'impasto può cedere e diventare appiccicoso. Meglio una lievitazione più corta o una farina più forte.`});
+  if(P.S.minLevel&&P.F.level<P.S.minLevel) W.push({w:1,t:`Per la canotto serve almeno una farina per pizza, meglio ancora il mix con la Manitoba: con una 00 debole il cornicione non si gonfia.`});
+  if(state.over.hyd!=null&&state.over.hyd>P.F.maxHyd) W.push({w:1,t:`Hai impostato il ${state.over.hyd}% di idratazione: con ${P.F.short} di solito si sta sotto il ${P.F.maxHyd}%. Si può fare, ma l'impasto sarà difficile da stendere.`});
+  if(P.O.maxT<350&&[`classica`,`contemporanea`,`canotto`].includes(state.style)) W.push({w:0,t:`Nel forno di casa non si arriva ai 430 °C della pizzeria: la pizza verrà buona ma diversa dall'originale.${state.oven!==`casa_acciaio`?` Con una piastra d'acciaio ti avvicini molto.`:``}`});
+  if(pl.bk.warn) W.push({w:1,t:pl.bk.warn});
+  if(state.oven===`fornetto`&&!P.S.teglia){
+    if(P.ball>240) W.push({w:0,t:`Nel fornetto la pietra è piccola (circa 31 cm): panetti da ${num(P.ball)} g danno pizze difficili da infornare. Meglio 200–240 g.`});
+    if(P.hyd>65) W.push({w:0,t:`Nel fornetto un impasto oltre il 65% di idratazione tende ad attaccarsi alla pietra: usa poca semola sotto la pizza e infornala con decisione.`});
+  }
+  const night=steps.filter(s=>s.hands&&s.key!==`preriscaldo`&&nightAt(s.start));
+  if(night.length) W.push({w:1,t:`Alcuni passaggi cadono di notte (${night.map(s=>s.title.toLowerCase()+` `+hm(s.start)).join(`, `)}). Puoi spostare la cena o scegliere un'altra lievitazione.`});
+  if(P.S.teglia&&!pl.pref) W.push({w:0,t:`La dose di lievito per la teglia è calcolata ma non ancora provata in cucina dal team. Se in frigo l'impasto cresce troppo, la prossima volta usane un po' meno.`});
+  if(state.room>=28) W.push({w:1,t:`Fa molto caldo: usa acqua fredda di frigo e controlla l'impasto più spesso, perché può lievitare prima del previsto.`});
+  if(state.room<=16&&!pl.pref) W.push({w:0,t:`In casa fa fresco e i tempi si allungano. Se puoi, metti l'impasto nel forno spento con la sola luce accesa.`});
+  if(pl.yp>=2.9) W.push({w:1,t:`Con così poco tempo serve tanto lievito: la pizza sarà meno digeribile e saprà di lievito. Se puoi, sposta la cena più avanti.`});
+  if(pl.shiftNote) W.push({w:0,t:pl.shiftNote});
+  P.adapt.forEach(t=>W.push({w:0,t}));
+  return {P,plans,rec,pk,pl,I,steps,W};
+}
+
+function makeSteps(pl,P,I){
+  const S=P.S, teglia=!!S.teglia, steps=[], hasFridge=pl.fridgeH>0, prefAvvio=pl.phases.some(p=>p[0]===`avvio`);
+  const canotto=state.style===`canotto`, romana=state.style===`romana`;
+  const yName=state.yeast===`secco`?`lievito secco`:`lievito di birra fresco`;
+  let t=pl.mixStart;
+  const readyTest=`<p>Come capire se è pronto: premi piano con un dito infarinato. Se l'impronta risale lentamente, è pronto. Se risale di scatto, aspetta ancora. Se il buco resta, è al limite: cuoci appena puoi.</p>`;
+  for(const [k,d] of pl.phases){
+    const s=t, e=t+d*H;
+    if(k===`prefermento`){
+      const name=METHODS[pl.pref.method], biga=pl.pref.method===`biga`;
+      steps.push({key:k,title:`Prepara ${biga?`la biga`:`il poolish`}`,start:s,end:e,hands:true,body:`<p>Pesa <b>${g(I.pref.flour)}</b> di farina, <b>${g(I.pref.water)}</b> d’acqua e <b>${gy(I.pref.yeast)}</b> di ${yName}. Sono dosi già comprese nel totale: non aggiungerle una seconda volta. Niente sale né olio in questa fase.</p>${prefermentWeighing(I.pref)}<p>Sciogli il lievito nell’acqua, poi aggiungi la farina. ${biga?`Mescola brevemente: devono restare grumi umidi e irregolari, senza farina asciutta. Non impastare fino a ottenere una palla liscia.`:`Mescola fino a ottenere una crema uniforme, senza farina asciutta.`} Metti in un contenitore capiente coperto, senza chiuderlo ermeticamente.</p>${pl.pref.warm?`<p>Questa è una biga per la casa calda: lasciala coperta a <b>${pl.pref.temp} °C</b> per circa <b>${fmtDur(pl.pref.hours)}</b>, giusto il tempo di avviarla, poi mettila in frigo per <b>${fmtDur(pl.pref.cold)}</b>.</p>`:pl.pref.long?`<p>Questa è una biga lunga: appena pronta, mettila subito in frigo, coperta, per circa <b>${fmtDur(pl.pref.cold)}</b>. Poi finirà di maturare fuori frigo a <b>${pl.pref.temp} °C</b>.</p>`:`<p>Misura con un termometro: ${name.toLowerCase()} e luogo di riposo devono essere vicini a <b>${pl.pref.temp} °C</b>. Regola l’acqua per raggiungere questa temperatura; non usare la temperatura dell’acqua prevista per un impasto diretto.</p>`}`});
+    }
+    if(k===`bigafrigo`){
+      if(pl.pref.warm) steps.push({key:`bigainfrigo`,title:`Metti la biga in frigo`,start:s,end:s+5*MIN,hands:true,body:`<p>Metti la biga, sempre coperta, in frigo su un ripiano centrale. Non aspettare che cresca: la maturazione la fa al freddo.</p>`});
+      steps.push({key:k,title:`La biga riposa in frigo`,start:s,end:e,hands:false,body:`<p>Tieni la biga coperta in frigo a <b>${state.fridge} °C</b> per circa <b>${fmtDur(d)}</b>, su un ripiano centrale. In questa fase cresce ${pl.pref.warm?`lentamente`:`pochissimo`}: è normale.</p>`});
+      steps.push({key:`bigafuori`,title:`Togli la biga dal frigo`,start:e,end:e+5*MIN,hands:true,body:`${pl.pref.warm?`<p>Lasciala coperta a temperatura di casa per circa un’ora, poi prepara l’impasto finale. La biga resta fredda: per questo l’acqua del rimpasto è più tiepida del solito.</p>`:`<p>Porta la biga, sempre coperta, in un posto stabile a <b>${pl.pref.temp} °C</b>. Lì finisce di maturare per circa <b>${fmtDur(pl.pref.hours)}</b>. Se il posto ha un’altra temperatura, aggiorna il piano.</p>`}`});
+    }
+    if(k===`maturazione`&&pl.pref.warm){
+      steps.push({key:k,title:`Lascia partire la biga`,start:s,end:e,hands:false,body:`<p>Lascia la biga coperta per circa <b>${fmtDur(d)}</b> a <b>${pl.pref.temp} °C</b>. Deve solo avviarsi: non aspettare che cresca molto. Con la casa calda la biga maturerebbe troppo in fretta, per questo il resto lo fa in frigo.</p>`});
+    } else if(k===`maturazione`){
+      steps.push({key:k,title:`Lascia maturare ${pl.pref.method===`biga`?`la biga`:`il poolish`}`,start:s,end:e,hands:false,body:`<p>Lascia coperto per circa <b>${fmtDur(d)}</b> a <b>${pl.pref.temp} °C stabili</b>. ${pl.pref.long?`Dopo il freddo la biga riprende a lavorare: è in questa fase che cresce di più.`:`Questo percorso non prevede il frigorifero.`} Se il posto scelto ha una temperatura diversa, aggiorna il piano prima di iniziare.</p><p>${pl.pref.method===`biga`?`La biga pronta è cresciuta, con una struttura interna alveolata e un profumo gradevole di fermentazione. Non aspettare che collassi.`:`Il poolish pronto è cresciuto, pieno di bollicine; il centro della superficie comincia appena ad abbassarsi.`} L’orario è indicativo: se è ancora fermo non usarlo come se fosse maturo. Se è molto collassato, non seguire automaticamente gli orari successivi: questo caso non è coperto dal piano.</p><p><b>Se non puoi impastare all’ora prevista:</b> ${pl.pref.method===`biga`?`la biga tollera un’attesa breve, fino a circa un’ora`:`il poolish maturo peggiora in fretta: impasta entro mezz’ora–un’ora`}. Per un ritardo più lungo mettilo in frigo, che lo rallenta, e impasta appena puoi, nella stessa giornata. In quel caso il piano non ricalcola i tempi: guarda l’impasto più dell’orologio.</p>`});
+    }
+    if(k===`impasto`&&pl.pref){
+      const f=I.final;
+      steps.push({key:k,title:`Prepara l’impasto finale`,start:s,end:e,hands:true,timer:10,body:`<p>Usa <b>tutto il prefermento maturo</b>. Aggiungi solo le dosi rimaste: <b>${g(f.flour)}</b> di farina, <b>${g(f.water)}</b> d’acqua, <b>${g(f.salt)}</b> di sale${f.oil?` e <b>${g(f.oil)}</b> d’olio`:``}. ${f.yeast>0?`Aggiungi anche <b>${gy(f.yeast)}</b> di ${yName}, sciolto nell’acqua: serve per la lievitazione dopo il rimpasto, che il solo ${pl.pref.method===`biga`?`lievito della biga`:`poolish`} non basta a sostenere nei tempi previsti.</p>${prefermentWeighing({yeast:f.yeast,water:f.water})}`:`<b>Non aggiungere altro lievito.</b></p>`}<p>${pl.pref.method===`biga`?`Spezza la biga in piccoli pezzi e ammorbidiscila con una parte dell’acqua rimasta.`:`Diluisci il poolish con una parte dell’acqua rimasta.`} ${f.flour>.01?`Incorpora la farina rimasta, poi il sale e il resto dell’acqua poco alla volta.`:`Incorpora il sale e il resto dell’acqua poco alla volta.`}${f.oil?` Aggiungi l’olio per ultimo.`:``} ${state.mixer?`Usa il gancio a velocità bassa, fermandoti se l’impasto si scalda.`:`Lavora in ciotola, con pause di 5–10 minuti se fatichi a incorporare il prefermento.`} Devi ottenere un impasto uniforme ed elastico.</p><p>${remixWaterHtml(I.remixT)}</p>`});
+    } else if(k===`impasto`){
+      const keep=P.hyd>=70, keepG=Math.round(I.water*.1);
+      let b=`<p>Pesa tutto prima di iniziare: <b>${g(I.flour)}</b> di farina, <b>${g(I.water)}</b> di acqua a circa <b>${I.waterT} °C</b>${I.waterT<10?` (fredda di frigo)`:``}, <b>${g(I.salt)}</b> di sale, <b>${gy(I.yeast)}</b> di ${yName}${I.oil>0?`, <b>${g(I.oil)}</b> di olio extravergine`:``}.</p>`;
+      const small=state.yeast===`secco`?I.yeast<0.7:I.yeast<2;
+      if(small){ const X=Math.round(I.yeast*100); b+=`<p>Il lievito è pochissimo e difficile da pesare. Sciogli 1 g di lievito in 100 g d'acqua e usa <b>${X} g</b> di questa soluzione (il resto si butta). L'acqua da aggiungere a parte scende così a <b>${g(I.water-X)}</b>.</p>`; }
+      if(state.mixer) b+=`<p>Nella ciotola dell'impastatrice versa l'acqua${keep?` (tienine da parte ${keepG} g)`:``} e scioglici il lievito. Aggiungi la farina in due o tre volte, con il gancio a velocità bassa. Quando l'impasto prende forma aggiungi il sale${keep?`, poi l'acqua tenuta da parte un po' alla volta, aggiungendo la successiva solo quando la precedente è stata assorbita`:``}${I.oil>0?` e per ultimo l'olio`:``}. Impasta 8–12 minuti, finché si stacca dalle pareti ed è liscio.</p>`;
+      else b+=`<p>In una ciotola capiente versa l'acqua${keep?` (tienine da parte ${keepG} g)`:``} e scioglici il lievito. Aggiungi la farina poco alla volta, mescolando con la mano. Quando non vedi più farina asciutta aggiungi il sale${keep?` e, un po' alla volta, l'acqua tenuta da parte`:``}${I.oil>0?`, poi l'olio`:``}.</p><p>Trasferisci sul piano e impasta 8–10 minuti, finché è liscio. Se si attacca alle mani non aggiungere farina: bagnati le mani, copri l'impasto, aspetta 10 minuti e riprendi. Vedrai che si lavora molto meglio.</p>`;
+      if(P.hyd>=70&&!state.mixer) b+=`<p>Al ${num(P.hyd)}% di idratazione l'impasto è molto morbido, ed è normale. Lavoralo in ciotola con la mano bagnata: le pieghe dei passaggi successivi gli daranno forza.</p>`;
+      steps.push({key:k,title:`Impasta`,start:s,end:e,hands:true,timer:10,body:b});
+    }
+    if(k===`puntata`){
+      const foldCount=pl.pieghe?[1,2,3].filter(i=>s+i*((e-s)>=70*MIN?20:(e-s)>=55*MIN?15:10)*MIN<e-10*MIN).length:0;
+      const ogni=(e-s)>=70*MIN?20:(e-s)>=55*MIN?15:10; // intervallo delle pieghe: 3 serie entrano anche nelle puntate brevi
+      steps.push({key:k,title:`Prima lievitazione (puntata)`,start:s,end:e,hands:false,body:`<p>Copri la ciotola con un coperchio o con la pellicola e lasciala a temperatura ambiente (${state.room} °C). L'impasto deve rilassarsi e iniziare appena a gonfiarsi.${foldCount?` Nel frattempo farai ${foldCount} serie di pieghe, ogni ${ogni} minuti.`:``}</p>`});
+      if(pl.pieghe){ for(let i=1;i<=3;i++){ const ts=s+i*ogni*MIN; if(ts<e-10*MIN){ steps.push({key:`pieghe`+i,title:`Pieghe, ${i}ª serie`,start:ts,end:ts+5*MIN,hands:true,timer:ts+ogni*MIN<e-10*MIN?ogni:null,body:`<p>Con la mano bagnata afferra un lembo di impasto, tiralo verso l'alto senza strapparlo e ripiegalo sopra il resto. Ruota la ciotola di un quarto e ripeti, 4 volte in tutto. Poi copri di nuovo.</p>${i===foldCount?`<p>Dopo questa serie l'impasto dovrebbe essere più liscio ed elastico.</p>`:``}`}); } } }
+    }
+    if(k===`avvio`){
+      steps.push({key:k,title:`Lascia riposare i panetti prima del frigo`,start:s,end:e,hands:false,body:`<p>Lascia i panetti coperti per ${fmtDur(d)} a ${state.room} °C, prima del passaggio in frigorifero alle <b>${hm(e)}</b>. Devono iniziare a rilassarsi: non aspettare il raddoppio.</p>`});
+    }
+    if(k===`staglio`){
+      let b;
+      if(teglia){
+        const pz=I.tw;
+        b=`<p>${hasFridge?`Togli l'impasto dal frigo. `:``}Rovescialo sul piano unto d'olio, ripiega i lembi verso il centro e forma ${I.n>1?`<b>${I.n} palle da ${g(I.total/I.n)}</b>`:`<b>una palla</b>`} ben tesa. Mettila in un contenitore unto e coperto.</p>`;
+      } else {
+        b=`<p>Rovescia l'impasto sul piano e dividilo in <b>${I.n} panetti da ${g(I.piece)}</b>, pesandoli con la bilancia.</p><p>Per ogni panetto porta i bordi verso il centro, giralo con la chiusura sotto e fallo ruotare sul piano con le mani a coppa, finché la superficie è liscia e tesa. Mettili ben distanziati in un contenitore con coperchio, leggermente unto${hasFridge&&!prefAvvio?`, e poi subito in frigorifero`:prefAvvio?`. Lasciali fuori frigo per il riposo indicato nel prossimo passaggio`:``}.</p>`;
+      }
+      steps.push({key:k,title:teglia?(hasFridge?`Fuori dal frigo: forma la palla`:`Forma la palla`):(hasFridge&&!prefAvvio?`Panetti e frigo`:`Forma i panetti`),start:s,end:e,hands:true,body:b});
+    }
+    if(k===`frigo`){
+      if(pl.pref){
+        steps.push({key:k,title:`Metti ${teglia?`l’impasto`:`i panetti`} in frigo`,start:s,end:e,hands:true,body:`<p>Metti ${teglia?`la massa in una ciotola coperta`:`i panetti in un contenitore coperto`} su un ripiano del frigo a <b>${state.fridge} °C misurati</b>, per <b>${fmtDur(d)}</b>. Non usare la porta. Il raffreddamento richiede tempo e la crescita continua: controlla che l’impasto non raggiunga già il limite.</p><p>Togli dal frigo alle <b>${hm(e)}</b>${teglia?`, poi forma le palle`:``}. Il riposo successivo fuori frigo dura ${fmtDur(pl.A)} a ${state.room} °C: tienilo coperto e segui i segnali dell’impasto.</p>`});
+      } else {
+      steps.push({key:k,title:teglia?`Metti l'impasto in frigo`:`In frigorifero`,start:s,end:e,hands:teglia,body:`<p>${teglia?`Copri bene la ciotola e mettila in frigo così com'è, su un ripiano.`:`I panetti restano su un ripiano del frigo.`} Non usare la porta: è il punto più caldo del frigo. A ${state.fridge} °C la lievitazione rallenta moltissimo: hai ${fmtDur(d)} senza nulla da fare. È qui che l'impasto sviluppa sapore e diventa più digeribile.</p>`});
+      }
+    }
+    if(k===`appretto`){
+      const after=hasFridge&&!teglia;
+      steps.push({key:k,title:after?`Togli i panetti dal frigo`:`Seconda lievitazione (appretto)`,start:s,end:e,hands:after,body:`<p>${after?`Tira fuori i panetti e lasciali coperti a temperatura ambiente. `:`Lascia ${teglia?`la palla coperta`:`i panetti coperti`} a temperatura ambiente. `}In circa ${fmtDur(d)} devono ${after?`tornare a temperatura e `:``}gonfiarsi, diventando morbidi e quasi raddoppiati.</p>${readyTest}<p>Se in casa fa più caldo del previsto possono essere pronti prima: controlla già dalle ${hm(Math.max(s,e-60*MIN))}.</p>`});
+    }
+    t=e;
+  }
+  const O=P.O;
+  steps.push({key:`preriscaldo`,title:state.oven===`legna`?`Accendi il forno a legna`:`Accendi il forno`,start:pl.stesStart-O.preheat*MIN,end:pl.stesStart,hands:true,body:`<p>${pl.bk.pre}</p>`});
+  const cond=`<p>Condisci in fretta: un velo di pomodoro e mozzarella ben sgocciolata (tagliala e lasciala scolare un paio d'ore prima). Meno ingredienti metti, meglio cuoce.</p><p>Prima di passare la pizza sulla pala, scuoti via la semola in eccesso: sulla pala ne basta un velo, perché quella in più brucia sul fondo. Una volta sulla pala, inforna subito: se aspetta, si attacca.</p>`;
+  let sb;
+  if(teglia) sb=`<p>Versa 1–2 cucchiai d'olio nella teglia e distribuiscilo bene. Adagia l'impasto e allargalo con i polpastrelli fino agli angoli. Se si ritira, aspetta 10 minuti e riprova.</p><p>Lascialo riposare in teglia 20–30 minuti prima di condire e infornare.</p>`;
+  else if(romana) sb=`<p>Spolvera il piano di farina e stendi il panetto con il mattarello fino a 2–3 mm, quasi senza bordo. Se in cottura fa bolle grandi, bucherella appena il centro con una forchetta.</p>`+cond;
+  else sb=`<p>Spolvera il piano con semola o farina. Prendi un panetto facendoci scivolare sotto una spatola, senza schiacciarlo e senza arrotolarlo su sé stesso: la parte piegata resta dura e si stende male. Con i polpastrelli premi dal centro verso l'esterno lasciando intatto un bordo di ${canotto?`2–3 cm: non toccarlo, è lì che si forma il canotto`:`1–2 cm`}. Allarga la pizza tirandola delicatamente con le mani, senza mattarello.</p>`+cond;
+  steps.push({key:`stesura`,title:teglia?`Stendi in teglia`:`Stendi e condisci`,start:pl.stesStart,end:pl.cottStart,hands:true,timer:teglia?25:null,body:sb});
+  const nn=teglia?state.tn:state.n;
+  steps.push({key:`cottura`,title:`Cuoci`,start:pl.cottStart,end:pl.cottStart+pl.bk.per*nn*MIN,hands:true,timer:pl.bk.timer,body:pl.bk.how+(teglia?``:`<p>Appena sfornata, appoggia la pizza un momento su una griglia prima di metterla nel piatto: il vapore esce e il fondo resta asciutto.</p>`)+(nn>1&&!teglia?`<p>Mentre cuoce una pizza, stendi la successiva. In tutto ti servono circa ${fmtDur(pl.bk.per*nn/60)}.</p>`:``)});
+  steps.sort((a,b)=>a.start-b.start);
+  return steps;
+}
+
+/* ---------- procedura, piano e conferme ---------- */
+let onModalClose=null;
+/* ---------- pregi e difetti di ogni scelta (testi del team) ---------- */
+const INFO={
+  style:{
+    classica:{lvl:1,pro:[`Impasto facile da lavorare, anche a mano`,`Perdona qualche errore: ottima per cominciare`],con:[`Dà il meglio nei forni molto caldi`,`Nel forno di casa il cornicione resta basso`]},
+    contemporanea:{lvl:2,pro:[`Cornicione alto, pieno d'aria e croccante fuori`,`Sapore ricco grazie alla maturazione lunga`],con:[`Impasto morbido e un po' appiccicoso`,`Serve almeno una farina per pizza`]},
+    canotto:{lvl:3,pro:[`Cornicione enorme e leggerissimo: fa sempre colpo`,`Interno molto soffice`],con:[`La più difficile da stendere senza sgonfiarla`,`Serve una farina forte e un forno molto caldo`]},
+    romana:{lvl:1,pro:[`Si stende col mattarello: niente paura di romperla`,`Sottile e croccante anche nel forno di casa`],con:[`Poco cornicione e poca morbidezza`,`Se cuoce troppo diventa secca`]},
+    teglia:{lvl:2,pro:[`La più adatta al forno di casa`,`Niente stesura difficile: si allarga con le dita`,`Una teglia sfama tutta la tavola`],con:[`Impasto molto idratato e appiccicoso`,`Serve una teglia della misura giusta`]}
+  },
+  flour:{
+    debole:{pro:[`Si trova ovunque e costa poco`,`Va bene per impasti in giornata e per la romana`],con:[`Regge al massimo circa 24 ore`,`Non tiene molta acqua: niente canotto`]},
+    media:{pro:[`La scelta giusta per quasi tutte le pizze`,`Regge fino a 48 ore`],con:[`Oltre le 48 ore l'impasto può cedere`]},
+    mix:{pro:[`Più forza per impasti idratati e lunghi`,`Regge fino a 72 ore`],con:[`Impasto più tenace da stendere`]},
+    forte:{pro:[`Regge molta acqua e 72 ore di frigo`,`Ideale per canotto e teglia`],con:[`Da sola dà una pizza più gommosa`,`Con lievitazioni brevi resta dura`]}
+  },
+  plan:{
+    giornata:{pro:[`Tutto nello stesso giorno, senza frigo`,`Perfetta per un'idea dell'ultimo minuto`],con:[`Meno sapore e meno digeribile`,`Dipende molto dalla temperatura di casa`]},
+    h24:{pro:[`Il miglior compromesso tra sapore e organizzazione`,`Il frigo fa quasi tutto il lavoro`],con:[`Va iniziata il giorno prima`]},
+    h48:{pro:[`Sapore più profondo e pizza più digeribile`],con:[`Serve almeno una farina per pizza`,`Occupa un ripiano del frigo per due giorni`]},
+    h72:{pro:[`Il massimo del sapore e del profumo`],con:[`Serve una farina forte`,`Se il frigo non è ben freddo, l'impasto rischia di lievitare troppo`]}
+  }
+};
+function pc(i){ return `<span class="pc">${i.pro.map(t=>`<span class="pro"><span class="sr">Pregio: </span>${t}</span>`).join(``)}${i.con.map(t=>`<span class="con"><span class="sr">Attenzione: </span>${t}</span>`).join(``)}</span>`; }
+function lvl(n){ const w=[``,`facile`,`media`,`difficile`][n]; return `<span class="lvl" aria-label="Difficoltà ${w}">${[1,2,3].map(i=>`<i class="${i<=n?`f`:``}"></i>`).join(``)}<em>${w}</em></span>`; }
+
+/* ---------- illustrazioni (SVG disegnati a mano, nessuna immagine esterna) ---------- */
+const svg=(inner,vb)=>`<svg viewBox="${vb||`0 0 200 150`}" aria-hidden="true" focusable="false">${inner}</svg>`;
+const cheese=l=>l.map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="var(--a-cheese)"/>`).join(``);
+const basil=l=>l.map(([x,y,a])=>`<ellipse cx="${x}" cy="${y}" rx="5.5" ry="2.8" transform="rotate(${a||-30} ${x} ${y})" fill="var(--a-basil)"/>`).join(``);
+const ART={
+  style(k){
+    if(k===`teglia`) return svg(`<rect x="20" y="10" width="160" height="92" rx="8" fill="var(--a-tray)"/><rect x="26" y="16" width="148" height="80" rx="5" fill="var(--a-crust)"/><rect x="31" y="21" width="138" height="70" rx="4" fill="var(--a-sauce)"/>${cheese([[58,40,10],[95,34,9],[132,44,11],[72,70,10],[112,72,9],[150,72,8]])}${basil([[80,52],[140,60,20],[104,56]])}<rect x="24" y="118" width="152" height="18" rx="4" fill="var(--a-crust)"/><rect x="28" y="116" width="144" height="3" rx="1.5" fill="var(--a-sauce)"/><path d="M18 138h164" stroke="var(--a-tray)" stroke-width="4" stroke-linecap="round"/>`);
+    const c={classica:{w:9,p:13,ch:1},contemporanea:{w:13,p:21,ch:1},canotto:{w:17,p:31,ch:1},romana:{w:4,p:5,ch:0}}[k];
+    const cx=100,cy=52,r=44,e=c.w*1.6,b=142;
+    const spots=c.ch?[20,65,110,150,200,245,290,330].map((a,i)=>{const rr=r-c.w/2,t=a*Math.PI/180;return `<circle cx="${(cx+rr*Math.cos(t)).toFixed(1)}" cy="${(cy+rr*Math.sin(t)).toFixed(1)}" r="${(1.4+(i%3)*.6).toFixed(1)}" fill="var(--a-char)" opacity=".55"/>`;}).join(``):``;
+    const romanaSpots=k===`romana`?[[78,40],[120,62],[96,74],[118,36]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.6" fill="var(--a-char)" opacity=".5"/>`).join(``):``;
+    return svg(`<circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--a-crust)"/>${spots}<circle cx="${cx}" cy="${cy}" r="${r-c.w}" fill="var(--a-sauce)"/>${cheese([[88,42,7],[112,47,6.5],[93,63,7],[114,63,5.5],[80,54,4.5]])}${basil([[101,53],[86,70,20],[118,38]])}${romanaSpots}
+      <rect x="44" y="${b-5}" width="112" height="5" rx="2" fill="var(--a-crust)"/><rect x="${44+2*e-4}" y="${b-6.5}" width="${112-4*e+8}" height="2" fill="var(--a-sauce)"/>
+      <ellipse cx="${44+e}" cy="${b-c.p/2}" rx="${e}" ry="${c.p/2}" fill="var(--a-crust)"/><ellipse cx="${156-e}" cy="${b-c.p/2}" rx="${e}" ry="${c.p/2}" fill="var(--a-crust)"/>`);
+  },
+  oven(k){
+    const V=`0 0 120 84`;
+    const home=inner=>svg(`<rect x="14" y="6" width="92" height="72" rx="9" fill="var(--a-metal)"/><circle cx="28" cy="14" r="3.2" fill="var(--a-dial)"/><circle cx="40" cy="14" r="3.2" fill="var(--a-dial)"/><rect x="66" y="12" width="30" height="4" rx="2" fill="var(--a-dial)"/><rect x="22" y="22" width="76" height="48" rx="5" fill="var(--a-glass)"/><rect x="22" y="22" width="76" height="48" rx="5" fill="var(--a-glow)" opacity=".28"/>${inner}`,V);
+    const pz=(y)=>`<ellipse cx="60" cy="${y}" rx="22" ry="3.2" fill="var(--a-crust)"/><ellipse cx="60" cy="${y-.6}" rx="17" ry="2" fill="var(--a-sauce)"/>`;
+    if(k===`casa_teglia`) return home(`<rect x="28" y="56" width="64" height="4" rx="1.5" fill="var(--a-tray)"/>${pz(54)}`);
+    if(k===`casa_pietra`) return home(`<rect x="28" y="55" width="64" height="8" rx="2" fill="var(--a-stone)"/>${pz(53)}`);
+    if(k===`casa_acciaio`) return home(`<rect x="28" y="38" width="64" height="3.5" rx="1" fill="var(--a-steel)"/>${pz(36)}<path d="M30 27h60" stroke="var(--a-flame)" stroke-width="2" stroke-dasharray="4 3"/>`);
+    if(k===`fornetto`) return svg(`<rect x="16" y="38" width="88" height="26" fill="var(--a-metal)"/><ellipse cx="60" cy="64" rx="44" ry="9" fill="var(--a-metal)"/><ellipse cx="60" cy="38" rx="44" ry="10" fill="var(--a-metal2)"/><rect x="50" y="24" width="20" height="6" rx="3" fill="var(--a-dial)"/><path d="M57 30v4M63 30v4" stroke="var(--a-dial)" stroke-width="2.5"/><path d="M38 64V54a5 5 0 0 1 5-5h34a5 5 0 0 1 5 5v10z" fill="var(--a-dark)"/><path d="M41 64v-8a3 3 0 0 1 3-3h32a3 3 0 0 1 3 3v8z" fill="var(--a-glow)" opacity=".55"/><circle cx="24" cy="51" r="3.4" fill="var(--a-dial)"/><circle cx="96" cy="51" r="3.4" fill="var(--a-dial)"/><path d="M28 72l-3 6M92 72l3 6" stroke="var(--a-dial)" stroke-width="3" stroke-linecap="round"/>`,V);
+    if(k===`portatile`) return svg(`<path d="M18 70 L29 24 Q31 16 39 16 H81 Q89 16 91 24 L102 70 Z" fill="var(--a-metal)"/><path d="M36 70 V52 Q36 43 45 43 H75 Q84 43 84 52 V70Z" fill="var(--a-dark)"/><path d="M48 70 q2 -12 9 -17 q-1 8 4 10 q4 -6 2 -13 q11 9 7 20z" fill="var(--a-flame)"/><path d="M26 70l-5 9M94 70l5 9" stroke="var(--a-dial)" stroke-width="3" stroke-linecap="round"/><rect x="14" y="68" width="92" height="5" rx="2.5" fill="var(--a-metal2)"/>`,V);
+    return svg(`<rect x="53" y="4" width="14" height="16" fill="var(--a-brick)"/><path d="M10 76 V54 A50 42 0 0 1 110 54 V76Z" fill="var(--a-brick)"/><path d="M22 46h76M14 60h92M30 34h60" stroke="var(--a-dark)" stroke-opacity=".18" stroke-width="1.5"/><path d="M40 76 V60 A20 18 0 0 1 80 60 V76Z" fill="var(--a-dark)"/><path d="M50 76 q2 -12 8 -16 q0 7 4 9 q3 -6 1 -12 q11 9 6 19z" fill="var(--a-flame)"/><rect x="6" y="74" width="108" height="6" rx="2" fill="var(--a-stone)"/>`,V);
+  },
+  flour(k){
+    const lv={debole:1,media:2,mix:2.5,forte:3}[k], txt={debole:`00`,media:`PIZZA`,mix:`MIX`,forte:`FORTE`}[k];
+    const bars=[0,1,2].map(i=>`<rect x="${47+i*9}" y="${60-i*5}" width="6" height="${8+i*5}" rx="1.5" fill="${i<Math.floor(lv)||(i===2&&lv===2.5)?`var(--accent)`:`var(--a-sack-line)`}" ${i===2&&lv===2.5?`opacity=".5"`:``}/>`).join(``);
+    const sack=(dx,s)=>`<g transform="translate(${dx} 0) scale(${s})"><path d="M34 20 Q60 12 86 20 L92 74 Q60 82 28 74 Z" fill="var(--a-sack)" stroke="var(--a-sack-line)" stroke-width="1.5"/><path d="M40 20 q20 -9 40 0" stroke="var(--a-sack-line)" stroke-width="2" fill="none"/></g>`;
+    const extra=k===`mix`?`<g opacity=".9">${sack(52,.6)}</g>`:``;
+    return svg(`${extra}${sack(0,1)}<rect x="40" y="34" width="40" height="16" rx="3" fill="var(--surface)" stroke="var(--a-sack-line)"/><text x="60" y="45.5" text-anchor="middle" font-size="9" font-weight="700" fill="var(--a-ink)" style="font-family:var(--font-b)">${txt}</text>${bars}`,`0 0 120 84`);
+  },
+  yeast(k){
+    if(k===`secco`) return svg(`<path d="M34 18h52v52H34z" fill="var(--a-sack)" stroke="var(--a-sack-line)" stroke-width="1.5"/><path d="M34 18l4-5 4 5 4-5 4 5 4-5 4 5 4-5 4 5 4-5 4 5 4-5 4 5" fill="none" stroke="var(--a-sack-line)" stroke-width="1.5"/><circle cx="52" cy="48" r="2" fill="var(--a-yeast)"/><circle cx="60" cy="44" r="2" fill="var(--a-yeast)"/><circle cx="68" cy="50" r="2" fill="var(--a-yeast)"/><circle cx="58" cy="54" r="2" fill="var(--a-yeast)"/><text x="60" y="34" text-anchor="middle" font-size="8" font-weight="700" fill="var(--a-ink)" style="font-family:var(--font-b)">7 g</text>`,`0 0 120 84`);
+    return svg(`<path d="M60 18 L90 32 L60 46 L30 32 Z" fill="var(--a-yeast)"/><path d="M30 32 L60 46 V72 L30 58 Z" fill="var(--a-yeast)" opacity=".8"/><path d="M90 32 L60 46 V72 L90 58 Z" fill="var(--a-yeast)" opacity=".62"/><path d="M60 18 L90 32 L60 46 L30 32 Z" fill="none" stroke="var(--a-sack-line)"/>`,`0 0 120 84`);
+  },
+  mixer(on){
+    if(on) return svg(`<rect x="28" y="70" width="64" height="8" rx="3" fill="var(--a-metal2)"/><path d="M78 70V26a8 8 0 0 0-8-8H40a8 8 0 0 0-8 8v8h46" fill="none" stroke="var(--a-metal)" stroke-width="12" stroke-linejoin="round"/><path d="M40 46h36l-4 22H44z" fill="var(--a-metal2)"/><path d="M58 34v18q0 6 -6 6" stroke="var(--a-dial)" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="58" cy="50" rx="12" ry="5" fill="var(--a-crust)"/>`,`0 0 120 84`);
+    return svg(`<path d="M24 46h72a36 26 0 0 1-72 0z" fill="var(--a-metal)"/><ellipse cx="60" cy="46" rx="36" ry="7" fill="var(--a-metal2)"/><ellipse cx="60" cy="44" rx="22" ry="7" fill="var(--a-crust)"/><path d="M50 30c2-10 6-14 10-14s5 4 5 8 M60 16c3-3 9-2 10 3s-1 9-4 12" stroke="var(--a-ink)" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M48 32q6 8 22 2" stroke="var(--a-ink)" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,`0 0 120 84`);
+  },
+  plan(k){
+    const n={giornata:0,h24:1,h48:2,h72:3}[k];
+    if(!n) return svg(`<circle cx="60" cy="40" r="16" fill="var(--a-moon)"/>${[0,45,90,135,180,225,270,315].map(a=>{const t=a*Math.PI/180;return `<path d="M${(60+22*Math.cos(t)).toFixed(1)} ${(40+22*Math.sin(t)).toFixed(1)}L${(60+29*Math.cos(t)).toFixed(1)} ${(40+29*Math.sin(t)).toFixed(1)}" stroke="var(--a-moon)" stroke-width="3" stroke-linecap="round"/>`;}).join(``)}`,`0 0 120 84`);
+    const moons=Array.from({length:n},(_,i)=>{const x=60+(i-(n-1)/2)*30;return `<path transform="translate(${x} 34)" d="M2 -12 A12 12 0 1 0 12 4 A9 9 0 1 1 2 -12Z" fill="var(--a-moon)"/>`;}).join(``);
+    return svg(`${moons}<rect x="44" y="56" width="32" height="20" rx="4" fill="var(--a-cold)" opacity=".35"/><path d="M60 59v14M54 62l12 8M66 62l-12 8" stroke="var(--a-cold)" stroke-width="2" stroke-linecap="round"/>`,`0 0 120 84`);
+  },
+  mini(){ return `<svg viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="12" fill="var(--a-crust)"/><circle cx="13" cy="13" r="8.5" fill="var(--a-sauce)"/><circle cx="10" cy="11" r="2.2" fill="var(--a-cheese)"/><circle cx="16" cy="14" r="2" fill="var(--a-cheese)"/></svg>`; }
+};
+
+/* ---------- procedura a pagine ---------- */
+const ui={page:0,reached:0,reviewed:false};
+const PAGES=[
+  [`Pizza`,`Che pizza vuoi?`,`Scegli lo stile. Per ognuno trovi i pregi e i punti a cui fare attenzione.`],
+  [`Quando`,`Quante e per quando?`,`Dimmi a che ora vuoi la prima pizza in tavola: gli orari li calcolo all'indietro da lì.`],
+  [`Cucina`,`La tua cucina`,`La temperatura di casa e il forno cambiano lievito, tempi e cottura.`],
+  [`Ingredienti`,`Che ingredienti hai?`,`Non serve conoscere la “W”: basta scegliere la categoria più vicina a quello che hai in dispensa.`],
+  [`Lievitazione`,`Quanta lievitazione?`,`Più tempo vuol dire più sapore, ma serve una farina che regga.`],
+  [`Piano`,`Il tuo piano`,``]
+];
+const LAST=PAGES.length-1;
+
+function opt(set,val,on,art,body,dis){ return `<button type="button" class="opt ${on?`on`:``}" data-set="${set}" data-val="${val}" aria-pressed="${on}" ${dis?`disabled`:``}><span class="art">${art}</span><span class="ob">${body}</span></button>`; }
+
+function pgStyle(){
+  return `<div class="opts">${Object.entries(STYLES).map(([k,s])=>{const i=INFO.style[k];
+    return opt(`style`,k,k===state.style,ART.style(k),`<span class="ot"><b>${s.name}</b>${lvl(i.lvl)}</span><span class="od">${s.desc}</span>${pc(i)}`);}).join(``)}</div>`;
+}
+function dinnerAt(add){ const d=new Date(); d.setDate(d.getDate()+add); d.setHours(20,0,0,0); return d; }
+function pgWhen(){
+  const S=STYLES[state.style];
+  const qty=S.teglia
+    ?`<div class="card"><div class="row"><label class="fld" for="tw">Larghezza teglia<input id="tw" type="number" inputmode="numeric" min="15" max="60" value="${state.tw}"><i>cm</i></label><label class="fld" for="th">Lunghezza teglia<input id="th" type="number" inputmode="numeric" min="15" max="80" value="${state.th}"><i>cm</i></label><label class="fld" for="tn">Quante teglie<input id="tn" type="number" inputmode="numeric" min="1" max="6" value="${state.tn}"></label></div><p class="hint">Misura il fondo della teglia, non il bordo esterno. Una teglia da forno di casa è di solito circa 30×40 cm.</p></div>`
+    :`<div class="card"><div class="count-big"><span class="lbl">Quante pizze?</span><div class="stepper"><button type="button" data-step="-1" aria-label="Una pizza in meno">−</button><output id="n-out">${state.n}</output><button type="button" data-step="1" aria-label="Una pizza in più">+</button></div></div><div class="pizzas" id="pizzas">${ART.mini().repeat(Math.min(state.n,16))}</div><p class="hint">Calcola una pizza a persona: i panetti sono da circa ${S.ball} g.</p></div>`;
+  return `${qty}
+  <h3 class="sect">Prima pizza in tavola</h3>
+  <div class="card"><label class="fld" for="dinner">Giorno e ora<input id="dinner" type="datetime-local" value="${toLocalInput(state.dinner)}"></label>
+    <div class="chips"><button type="button" class="chip" data-dinner="0">Stasera alle 20</button><button type="button" class="chip" data-dinner="1">Domani alle 20</button><button type="button" class="chip" data-dinner="2">Dopodomani alle 20</button><button type="button" class="chip" data-dinner="3">Fra tre giorni</button></div>
+    <p class="hint">Questa è l’ora in cui vuoi mangiare la prima pizza.</p></div>
+  <h3 class="sect">Da quando puoi preparare?</h3>
+  <div class="opts">${Object.entries(PREP_MODES).map(([k,label])=>opt(`prepMode`,k,(state.prepMode||`plan`)===k,``, `<b>${label}</b>`)).join(``)}</div>
+  ${state.prepMode===`day`?`<div class="card"><label class="fld" for="prep-clock">Il giorno della pizza posso iniziare dalle<input id="prep-clock" type="time" value="${esc(state.prepClock)}"></label><p class="hint">Nessun passaggio di preparazione verrà collocato nei giorni precedenti. Se biga o poolish non entrano nelle ore disponibili, ti spiego il motivo.</p></div>`:``}
+  <p class="hint">${state.prepMode===`existing`?`Nella pagina Lievitazione scegli biga o poolish e registra le quantità che hai già mescolato. Non le ridimensioniamo.`:`L’inizio viene calcolato a ritroso dalla cena, da ora in poi. “Da adesso” indica la tua disponibilità: il piano può iniziare più tardi. L’app non avvia automaticamente la preparazione.`}</p>`;
+}
+function tempSay(t){ return t<=17?`Fresco: i tempi si allungano, l'impasto lievita piano.`:t<=23?`Temperatura ideale per la maggior parte degli impasti.`:t<=27?`Caldo: l'impasto corre, userò meno lievito e acqua più fredda.`:`Molto caldo: controlla spesso l'impasto, può lievitare prima del previsto.`; }
+function pgKitchen(){
+  return `<div class="card">
+    <label class="fld" for="room">Temperatura in casa: <output id="room-out">${state.room} °C</output><input id="room" type="range" min="14" max="32" step="1" value="${state.room}"></label>
+    <div class="thermo" aria-hidden="true"><span>14 °C</span><span>20 °C</span><span>26 °C</span><span>32 °C</span></div>
+    <p class="temp-say" id="room-say">${tempSay(state.room)}</p>
+    <div class="row"><label class="fld" for="fridge">Temperatura del frigo<input id="fridge" type="number" inputmode="numeric" min="1" max="10" value="${state.fridge}"><i>°C</i></label></div>
+    <p class="hint">Non lo sai? La maggior parte dei frigoriferi sta tra 4 e 6 °C nel ripiano centrale.</p>
+  </div>
+  <h3 class="sect">Con che forno cuoci?</h3>
+  <div class="opts small">${Object.entries(OVENS).map(([k,o])=>opt(`oven`,k,k===state.oven,ART.oven(k),`<b>${o.name}</b>${o.sub?`<span class="ox">${o.sub}</span>`:``}<span class="ox">fino a ${o.maxT} °C</span>`)).join(``)}</div>
+  <h3 class="sect">Come impasti?</h3>
+  <div class="opts two">${opt(`mixer`,`false`,!state.mixer,ART.mixer(false),`<b>A mano</b><span class="od">Bastano una ciotola e 10 minuti di pazienza.</span>`)}${opt(`mixer`,`true`,state.mixer,ART.mixer(true),`<b>Con l'impastatrice</b><span class="od">Più comodo con gli impasti molto idratati.</span>`)}</div>`;
+}
+function pgIngr(){
+  return `<div class="opts">${Object.entries(FLOURS).map(([k,f])=>opt(`flour`,k,k===state.flour,ART.flour(k),`<b>${f.name}</b><span class="ox">${f.sub}</span><span class="od">${f.ex}</span>${pc(INFO.flour[k])}`)).join(``)}</div>
+  <p class="hint">Sul pacco trovi la “W” o le ore di lievitazione consigliate: scegli la categoria più vicina.</p>
+  <h3 class="sect">Che lievito hai?</h3>
+  <div class="opts two">${opt(`yeast`,`fresco`,state.yeast===`fresco`,ART.yeast(`fresco`),`<b>Lievito di birra fresco</b><span class="od">Il cubetto da 25 g del banco frigo.</span>`)}${opt(`yeast`,`secco`,state.yeast===`secco`,ART.yeast(`secco`),`<b>Lievito secco</b><span class="od">La bustina da 7 g. Ne serve circa un terzo del fresco.</span>`)}</div>`;
+}
+function plansHtml(){
+  return Object.entries(PLANS).filter(([k])=>state.method===`diretto`?k!==`prefermento`:k===`prefermento`).map(([k,p])=>{
+    const pl=R.plans[k], on=k===R.pk;
+    const tags=`${k===R.rec?`<em class="tag">consigliata</em>`:``}${pl.ok&&!pl.flourOk?`<em class="tag warn">farina debole</em>`:``}`;
+    return opt(`plan`,k,on,ART.plan(k),`<span class="ot"><b>${p.name}</b>${tags}</span><span class="od">${p.short}</span>${pc(INFO.plan[k]||{pro:[`Dosi divise in due fasi`],con:[`Richiede controllo della temperatura e della maturazione`]})}<span class="when">${pl.ok?`Inizi ${when(pl.mixStart)}`:pl.reason}</span>`,!pl.ok);
+  }).join(``);
+}
+function prefermentAdvice(){
+  if(state.method===`diretto`) return ``;
+  const pl=buildPrefermentPlan(`prefermento`,params(state),state,Date.now());
+  if(!pl.ok) return `<p class="hint" role="status">${esc(pl.reason)}</p>`;
+  let t=pl.mixStart;
+  const at={}; for(const [k,d] of pl.phases){ at[k]={start:t,end:t+d*H}; t+=d*H; }
+  if(pl.pref.actual) return `<div class="hint" role="status"><p><b>Riparti dal prefermento già fatto</b></p><p>Registrato ${when(pl.pref.actual.started)}: ${g(pl.pref.actual.flour)} di farina, ${g(pl.pref.actual.water)} d’acqua e ${gy(pl.pref.actual.yeast)} di lievito ${state.yeast}. Usa tutto il preparato per l’impasto finale ${when(pl.mixStart)}. Le dosi da aggiungere sono nella colonna “Impasto finale”.</p><p>La maturazione non si deduce solo dall’orologio: prima del rimpasto verifica volume, bolle e struttura. Se è collassato, non seguire questo piano.</p></div>`;
+  return `<div class="hint" role="status"><p><b>Come organizzarti con questi tempi</b></p><p>Prepara ${state.method===`biga`?`la biga`:`il poolish`} ${when(pl.mixStart)}.${at.bigafrigo?` Mettila in frigo ${when(at.bigafrigo.start)} e toglila ${when(at.bigafrigo.end)}.`:``} Impasto finale ${when(at.impasto.start)}.</p><p>${pl.fridgeH?`Metti ${pl.teglia?`la massa`:`i panetti`} in frigo ${when(at.frigo.start)}; togli dal frigo ${when(at.frigo.end)}. ${pl.teglia?`Forma le palle, poi lasciale`:`Lascia i panetti`} fuori per ${fmtDur(pl.A)} a ${state.room} °C.`:`Dopo l’impasto finale tutto resta fuori frigo: ${fmtDur((at.puntata.end-at.puntata.start)/H)} di prima lievitazione, poi panetti e ${fmtDur(pl.A)} di riposo finale a ${state.room} °C.`}</p><p>Riposo finale suggerito: <b>${fmtDur(pl.pref.suggestedOut)}</b>${pl.pref.out?`; hai scelto ${fmtDur(pl.A)}`:``}. ${pl.fridgeH?`Il frigo deve essere tra 3 e 5 °C. `:`Per organizzarti su due giorni puoi aggiungere 8–${prefFridgeMax(prefermentSettings(state))} ore in frigo dopo il rimpasto. `}Se i panetti sono ancora freddi e tenaci, aspetta e rimanda la cottura; se sono già molto gonfi e fragili, anticipala. Il timer da solo non indica che sono pronti.</p></div>`;
+}
+function preparedForm(){
+  if(state.prepMode!==`existing`) return ``;
+  const b=state.batch, hyd=b.flour>0?b.water/b.flour*100:null, yp=b.flour>0?b.yeast/b.flour*100:null;
+  return `<div class="card"><h4>Come hai preparato il prefermento?</h4><p class="hint">Registra le quantità effettive prima di usare il piano. Se usi solo una parte del preparato, indica qui soltanto quella parte e le relative dosi.</p><div class="row">${[[`flour`,`Farina già usata`],[`water`,`Acqua già usata`],[`yeast`,`Lievito già usato`]].map(([k,label])=>`<label class="fld" for="batch-${k}">${label}<input id="batch-${k}" data-batch="${k}" type="number" min="0" step="${k===`yeast`?`.01`:`1`}" value="${b[k]}"><i>g</i></label>`).join(``)}</div><div class="opts">${opt(`yeast`,`fresco`,state.yeast===`fresco`,``,`<b>Ho usato lievito fresco</b>`)}${opt(`yeast`,`secco`,state.yeast===`secco`,``,`<b>Ho usato lievito secco</b>`)}</div><div class="row"><label class="fld" for="batch-started">Quando hai iniziato a prepararlo?<input id="batch-started" data-batch="started" type="datetime-local" value="${b.started?toLocalInput(new Date(b.started)):``}"></label><label class="fld" for="batch-cold">Ore già trascorse in frigo<input id="batch-cold" data-batch="cold" type="number" min="0" step=".25" value="${b.cold}"><i>ore</i></label></div><p class="hint">${hyd==null?`Inserisci le dosi per vedere le proporzioni.`:`Proporzioni registrate: ${num(hyd)}% d’acqua e ${num(yp,2)}% di lievito ${state.yeast} sulla farina del prefermento.`} Temperatura e ore di maturazione nei campi sotto devono descrivere la ricetta che stai seguendo. Per ora gestiamo qui solo una maturazione senza frigo, biga al 45% o poolish al 100%. Le altre preparazioni restano registrate, con il motivo per cui non possiamo dare orari affidabili.</p></div>`;
+}
+const PREF_CHOICES=[{method:`biga`,pct:50},{method:`biga`,pct:100},{method:`poolish`,pct:30},{method:`poolish`,pct:50}];
+function prefermentChoice(index){
+  const v=PREF_CHOICES[index];
+  if(!v) return null;
+  const [min,max]=PREF_LIMITS[v.method].temp;
+  // La temperatura richiesta è sempre visibile e va confermata; non si presume un luogo disponibile.
+  const temp=state.prefTemp>=min&&state.prefTemp<=max?state.prefTemp:(v.method===`biga`?18:20);
+  // Il confronto riguarda la biga corta: la biga lunga si sceglie a parte.
+  return {...cfgNow(),method:v.method,prefPct:v.pct,prefTemp:temp,prefKind:`corta`};
+}
+function remixWaterHtml(w){
+  if(!w) return `Con un termometro controlla che l’impasto finito sia a circa 22–24 °C.`;
+  const note=w.raw<2?` Anche con acqua gelata l’impasto resterà un po’ sopra i 23 °C: impasta a velocità bassa e fai pause.`:w.raw>35?` Anche con acqua a 35 °C l’impasto resterà sotto i 23 °C: allunga un po’ i riposi.`:``;
+  return `Usa acqua a circa <b>${w.t} °C</b>, per un impasto finito intorno ai 23 °C. È una stima che tiene conto di temperatura e peso del prefermento, della farina a temperatura di casa e del modo di impastare: controlla con un termometro.${note}`;
+}
+function fridgeAdvice(proposal){
+  const pl=proposal.pl, nf=proposal.noFridge;
+  if(!pl.fridgeH) return `Il frigo non serve: gli orari stanno bene anche senza, e un passaggio in meno è più semplice.`;
+  const why=proposal.warm&&(!nf||nf.nights>=proposal.nights)?`Con ${state.room} °C in casa l’impasto finale corre: il freddo rende i tempi più controllabili.`:`Il frigo dopo il rimpasto evita lavorazioni notturne.`;
+  return `${why}${nf?` Senza frigo dovresti preparare il prefermento ${when(nf.pl.mixStart)}${nf.nights?`, con ${nf.nights} interventi tra le 23 e le 7`:``}.`:` Senza frigo non c’è un percorso compatibile con la cena e con quando puoi iniziare.`}`;
+}
+const PREF_TRAITS=[
+  {hand:`media`,trait:`Profumo di fermentazione moderato. Metà della farina si aggiunge fresca al rimpasto. Qui l’aggiunta facoltativa di lievito al rimpasto è più utile.`},
+  {hand:`difficile`,trait:`Il gusto di biga più marcato. Al rimpasto si aggiungono solo acqua e sale: a mano serve pazienza.`},
+  {hand:`facile`,trait:`Aroma delicato, impasto morbido ed estensibile. Una piccola dose di lievito va anche al rimpasto.`},
+  {hand:`facile`,trait:`Aroma più intenso del 30%. Resta meno acqua da aggiungere e serve meno lievito al rimpasto.`}];
+/* Confronto delle quattro opzioni sulle pizze, la cena e la disponibilità reali dell'utente. */
+function prefCompareHtml(){
+  if(state.prepMode===`existing`) return ``;
+  const now=Date.now();
+  const res=PREF_CHOICES.map((v,i)=>({v,s:suggestPreferment(prefermentChoice(i),now),t:PREF_TRAITS[i]}));
+  const cell=(r,fn)=>r.s.ok?fn(r.s,r.s.pl,r.s.I):`—`;
+  const rows=[
+    [`Posto per il prefermento`,r=>`${r.s.ok?r.s.cfg.prefTemp:r.v.method===`biga`?18:20} °C`],
+    [`Prepari il prefermento`,r=>cell(r,(s,pl)=>when(pl.mixStart))],
+    [`Maturazione`,r=>cell(r,(s,pl)=>fmtDur(pl.pref.hours))],
+    [`Lievito nel prefermento`,r=>cell(r,(s,pl,I)=>gy(I.pref.yeast))],
+    [`Lievito al rimpasto`,r=>cell(r,(s,pl,I)=>I.final.yeast>0?gy(I.final.yeast):`nessuno`)],
+    [`Acqua al rimpasto`,r=>cell(r,(s,pl,I)=>`${g(I.final.water)} a ~${I.remixT.t} °C`)],
+    [`Impasto finale`,r=>cell(r,(s,pl)=>when(pl.mixStart+(pl.pref.hours+pl.pref.cold+.25)*H))],
+    [`Frigo dopo il rimpasto`,r=>cell(r,(s,pl)=>pl.fridgeH?fmtDur(pl.fridgeH):`no`)],
+    [`Lavori tra le 23 e le 7`,r=>cell(r,s=>s.nights?String(s.nights):`nessuno`)],
+    [`Rimpasto a mano`,r=>r.t.hand]];
+  const fails=res.filter(r=>!r.s.ok).map(r=>`<li><b>${METHODS[r.v.method]} ${r.v.pct}%:</b> ${esc(r.s.reason)}</li>`).join(``);
+  return `<p><b>Per le tue ${state.style===`teglia`?`teglie`:`pizze`} e la tua cena</b>, ecco il percorso migliore che trovo per ciascuna opzione:</p>
+    <div class="cmp" aria-label="Confronto sui tuoi orari">${res.map(r=>`<section><h5>${METHODS[r.v.method]} ${r.v.pct}%</h5>${r.s.ok?`<dl>${rows.map(([l,fn])=>`<dt>${l}</dt><dd>${fn(r)}</dd>`).join(``)}</dl>`:`<p>Non disponibile con questi orari.</p>`}<p><b>Cosa aspettarti:</b> ${r.t.trait}</p></section>`).join(``)}</div>
+    ${fails?`<ul class="hint">${fails}</ul>`:``}
+    <p class="hint">“Cosa aspettarti” riassume le tendenze descritte da pizzaioli e mulini, non una promessa: a parità di farina e idratazione le differenze possono essere piccole. Più biga o poolish significa più sapore di fermentazione, non per forza una pizza migliore.</p>`;
+}
+function prefermentGuideHtml(){
+  if(state.prepMode===`existing`) return ``;
+  const P=params(state), p=prefermentSettings(state), biga=state.method===`biga`;
+  const cols=PREF_CHOICES.map(v=>({name:METHODS[v.method]+` `+v.pct+`%`,pf:10*v.pct,pw:10*v.pct*(v.method===`biga`?.45:1)}));
+  const row=(label,fn)=>`<tr><th scope="row">${label}</th>${cols.map(c=>`<td>${fn(c)<0?`Non compatibile`:g(fn(c))}</td>`).join(``)}</tr>`;
+  return `<section class="card" aria-label="Guida agli impasti indiretti"><h4>Ti aiuto a scegliere e organizzare</h4>
+    <p>${biga?`Con biga al 50% aggiungi metà della farina al rimpasto. Al 100% tutta la farina è già nella biga: devi incorporare acqua e sale senza farina nuova; può essere più impegnativo a mano.`:`Nel poolish acqua e farina pesano uguale. Aumentandolo dal 30 al 50% sposti più acqua nella prima fase: ne resta meno da aggiungere al rimpasto.`} La percentuale riguarda la farina, non l’idratazione. Il 100% di biga non significa il doppio delle ore né una pizza necessariamente migliore.</p>
+    <p>Per ${biga?`la tua biga`:`il tuo poolish`} al ${num(p.pct)}%, mantengo la temperatura indicata di <b>${num(p.temp)} °C</b> e cerco maturazione, riposo finale e frigo compatibili con la cena e con quando puoi iniziare. Preferisco meno interventi tra le 23 e le 7, poi meno ore in frigo. Le dosi si ricalcolano con gli orari.</p>
+    <button type="button" class="btn primary" id="pref-auto">Organizza per me</button>
+    <p class="hint">Puoi rivedere tutto prima di confermare. La ricerca usa maturazioni di ${p.warm?`16–20 ore in frigo per la biga, dopo 2–4 ore fuori,`:p.long?`22–26 ore fuori frigo, dopo le 24 in frigo della biga lunga,`:biga?`14–20 ore`:`8–18 ore`} e frigo dopo il rimpasto di 0 oppure 8–${prefFridgeMax(p)} ore a 3–5 °C. Il riposo finale torna al suggerimento automatico.</p>
+    <details><summary>Confronta biga 50%, biga 100% e poolish</summary><p>Stessa farina totale: <b>1 kg</b>. Stessa idratazione finale: <b>${num(P.hyd)}%</b>. Questi sono esempi di ripartizione; scegli un’opzione per vedere le dosi delle tue pizze e gli orari.</p>
+      <div style="overflow-x:auto"><table class="ing"><caption>Dosi di esempio su 1 kg di farina totale</caption><thead><tr><th>Ingrediente</th>${cols.map(c=>`<th scope="col">${c.name}</th>`).join(``)}</tr></thead><tbody>${row(`Farina nel prefermento`,c=>c.pf)}${row(`Acqua nel prefermento`,c=>c.pw)}${row(`Farina al rimpasto`,c=>1000-c.pf)}${row(`Acqua al rimpasto`,c=>10*P.hyd-c.pw)}</tbody></table></div>
+      <p>La biga di questo percorso ha il 45% d’acqua; il poolish il 100%. Sale e olio vanno al rimpasto. A parità di maturazione, passando da biga 50% a 100% raddoppia la dose di lievito riferita alla farina totale; la dose sulla farina della biga resta uguale. I tempi dopo il rimpasto sono stime da verificare, non si dimezzano automaticamente.</p>
+      ${prefCompareHtml()}
+      <div class="opts two">${PREF_CHOICES.map((v,i)=>`<button type="button" class="btn ghost" data-pref-choice="${i}">Organizza ${METHODS[v.method].toLowerCase()} ${v.pct}%</button>`).join(``)}</div>
+      <p class="hint">Ogni proposta controlla la farina e mostra la temperatura necessaria. Cambiare metodo non garantisce più alveoli o maggiore digeribilità.</p>
+    </details>
+    <details><summary>Quando serve il frigorifero?</summary><p>Se gli orari sono comodi senza freddo, propongo di evitarlo. Se il freddo permette meno interventi notturni, propongo il passaggio dopo il rimpasto, con ingresso e uscita in calendario. Non è una funzione di conservazione senza limiti: il raffreddamento richiede tempo e l’impasto continua a crescere.</p><ul><li><b>Cena entro la sera dello stesso giorno o del giorno dopo, a orari comodi:</b> niente frigo, meno passaggi.</li><li><b>Con il frigo dopo il rimpasto</b> puoi spostare la cena di 8–${prefFridgeMax(prefermentSettings(state))} ore senza lavorare di notte: i panetti entrano in frigo dopo lo staglio e ne escono qualche ora prima di stendere.</li><li><b>Casa a 25 °C o più:</b> l’impasto finale corre, e il frigo rende i tempi più controllabili. Lo preferisco a parità di interventi notturni.</li><li><b>Poolish:</b> più ore di frigo significano meno lievito al rimpasto (lo ricalcolo io). <b>Biga:</b> di base il lievito resta quello della biga, e il frigo è limitato a 18 ore. Se scegli di aggiungere un po’ di lievito al rimpasto, lo calcolo come per il poolish e il frigo arriva a 24 ore.</li><li><b>Prefermento già maturo e cena rimandata:</b> un’attesa breve va bene (biga fino a circa un’ora, poolish mezz’ora–un’ora); oltre, mettilo in frigo e impasta nella stessa giornata. Questo caso non viene ricalcolato.</li></ul><p>Qui la biga corta e il poolish maturano fuori frigo, alla temperatura misurata indicata. La biga lunga ha un suo percorso: 24 ore in frigo appena fatta, poi 22–26 ore fuori, e si sceglie sopra. Un poolish preparato in frigo richiede una ricetta dedicata: non mettere in frigo il prefermento maturo per recuperare arbitrariamente ore. Se non hai il posto fresco richiesto, scegli un altro percorso.</p></details>
+    <p class="hint"><b>Cosa sappiamo calcolare:</b> bilancio degli ingredienti e orari a ritroso. <b>Cosa va osservato:</b> maturazione e crescita. Dose di lievito e riposi degli indiretti sono stime da provare in cucina; la ricerca degli orari non le rende più precise.</p>
+  </section>`;
+}
+function openPrefermentSuggestion(index){
+  const cfg=index==null?cfgNow():prefermentChoice(index);
+  if(!cfg) return;
+  const proposal=suggestPreferment(cfg,Date.now());
+  if(!proposal.ok){
+    modal(`<h3>Non trovo un percorso compatibile</h3><p>${esc(proposal.reason)}</p><p>Puoi cambiare la cena, la disponibilità o il metodo. Mantieni la temperatura che puoi ottenere davvero.</p><div class="actions"><button type="button" class="btn ghost" data-close>Torna alle scelte</button></div>`);
+    return;
+  }
+  const {pl,I}=proposal;
+  let t=pl.mixStart; const times={};
+  for(const [k,d] of pl.phases){ times[k]={start:t,end:t+d*H}; t+=d*H; }
+  modal(`<h3>Il percorso proposto per te</h3><p><b>${METHODS[cfg.method]} al ${num(cfg.prefPct)}% della farina</b>, per ${I.n} ${pl.teglia?`teglie`:`pizze`}. Prima pizza ${when(pl.tFirst)}.</p>
+    <p>Serve un posto stabile a <b>${cfg.prefTemp} °C</b> per il prefermento, anche se in casa hai ${state.room} °C. Conferma solo se puoi mantenerlo davvero. La farina resta ${FLOURS[cfg.flour].name.toLowerCase()}.</p>
+    <ul><li>Prepara il prefermento ${when(pl.mixStart)}; ${pl.pref.warm?`${fmtDur(pl.pref.hours)} a ${cfg.prefTemp} °C, poi ${fmtDur(pl.pref.cold)} in frigo.`:`${pl.pref.long?`${fmtDur(pl.pref.cold)} in frigo, poi `:``}maturazione ${fmtDur(pl.pref.hours)} a ${cfg.prefTemp} °C.`}</li><li>Impasto finale ${when(times.impasto.start)}.</li><li>${pl.fridgeH?`Frigo dopo il rimpasto per ${fmtDur(pl.fridgeH)} a ${state.fridge} °C: entra ${when(times.frigo.start)}, esce ${when(times.frigo.end)}.`:`Nessun frigo: gli orari rientrano nel percorso senza freddo.`}</li><li>Riposo finale stimato: ${fmtDur(pl.A)} a ${state.room} °C.</li></ul>
+    <p>${fridgeAdvice(proposal)} ${proposal.nights?`Restano ${proposal.nights} interventi o lavorazioni tra le 23 e le 7: valuta se sono praticabili.`:`Le lavorazioni previste sono fuori dalla fascia 23–7.`}</p>
+    ${prefIngredientsHtml(I,pl)}<p class="hint">Totale: ${g(I.flour)} farina, ${g(I.water)} acqua, ${gy(I.yeast)} lievito ${state.yeast}, ${g(I.salt)} sale e ${g(I.oil)} olio. ${I.final.yeast>0?`Del lievito, ${gy(I.final.yeast)} vanno al rimpasto.`:`Nessun altro lievito al rimpasto.`} Gli orari biologici restano stime da verificare sull’impasto.</p>
+    <div class="actions"><button type="button" class="btn ghost" data-close>Lascia com’era</button><button type="button" class="btn primary" id="pref-accept">Conferma questo percorso</button></div>`);
+  $(`#pref-accept`).onclick=()=>{
+    // Ricontrolla la disponibilità dopo il tempo passato a leggere la proposta.
+    const check=buildPlan(`prefermento`,params(proposal.cfg),proposal.cfg,Date.now());
+    if(!check.ok){ modal(`<h3>Ricontrolla gli orari</h3><p>${esc(check.reason)}</p><button type="button" class="btn ghost" data-close>Torna e ripeti la ricerca</button>`); return; }
+    Object.assign(state,{method:proposal.cfg.method,prefPct:proposal.cfg.prefPct,prefTemp:proposal.cfg.prefTemp,prefHours:proposal.cfg.prefHours,prefFridge:proposal.cfg.prefFridge,prefOut:0,prefAdd:!!proposal.cfg.prefAdd,prefKind:prefermentSettings(proposal.cfg).kind,plan:`prefermento`});
+    closeModal(); renderAll();
+  };
+}
+function prefermentForm(){
+  const active=state.method!==`diretto`, biga=state.method===`biga`, kind=prefermentSettings(state).kind;
+  return `<h3 class="sect">Come prepari l’impasto?</h3><div class="opts">${Object.entries(METHODS).map(([k,name])=>opt(`method`,k,k===state.method,ART.mixer(false), `<b>${name}</b><span class="od">${k===`diretto`?`Tutti gli ingredienti insieme: il percorso più semplice.`:k===`biga`?`Prefermento asciutto al 45% d’acqua. Serve un posto fresco e una farina forte.`:`Prefermento con pari peso di acqua e farina. Va usato al punto giusto di maturazione.`}</span>`)).join(``)}</div>${active?`${preparedForm()}${prefermentGuideHtml()}<div class="card"><p><b>Percorso calcolato, da provare in cucina.</b> Scegli quanto tenere l’impasto finale in frigo e quanto lasciarlo fuori prima di stendere. ${biga&&kind===`lunga`?`La biga lunga passa prima 24 ore in frigo, poi matura nel posto alla temperatura indicata.`:biga&&kind===`frigo`?`La biga in frigo resta qualche ora fuori per avviarsi, poi matura in frigo.`:`Il prefermento matura sempre nel posto alla temperatura indicata, senza frigo.`} ${biga?(state.prefAdd?`Hai scelto di aggiungere un po’ di lievito al rimpasto: la dose la calcolo io in base alle ore che seguono, frigo compreso.`:`Con la biga, di base, non si aggiunge altro lievito al rimpasto.`):`Con il poolish una piccola dose di lievito va anche al rimpasto: la calcolo io in base alle ore che seguono, frigo compreso.`}</p>${biga?`<div class="opts">${opt(`prefKind`,`corta`,kind===`corta`,``,`<b>Biga corta</b><span class="od">14–20 ore a 16–20 °C, senza frigo. Il percorso più semplice.</span>`)}${opt(`prefKind`,`lunga`,kind===`lunga`,``,`<b>Biga lunga</b><span class="od">24 ore in frigo, poi 22–26 ore a 18–20 °C. Aroma più marcato; serve una farina forte e si parte quasi due giorni prima.</span>`)}${opt(`prefKind`,`frigo`,kind===`frigo`,``,`<b>Biga in frigo</b><span class="od">Per le case calde (21–26 °C): 2–4 ore fuori, poi 16–20 ore in frigo. Non serve un posto fresco.</span>`)}</div>`:``}${biga?`<div class="opts two">${opt(`prefAdd`,`false`,!state.prefAdd,``,`<b>Solo il lievito della biga</b><span class="od">Il metodo classico, senza aggiunte. Frigo dopo il rimpasto fino a 18 ore.</span>`)}${opt(`prefAdd`,`true`,!!state.prefAdd,``,`<b>Un po’ di lievito anche al rimpasto</b><span class="od">Facoltativo, comune con la biga al 50%: tempi finali più regolari e frigo fino a 24 ore. Con la biga al 100% spesso non serve.</span>`)}</div>`:``}<div class="row">${state.prepMode===`existing`?``:`<label class="fld" for="pref-pct">Farina nel prefermento<input id="pref-pct" data-pref="prefPct" type="number" min="${biga?50:30}" max="${biga?100:50}" step="5" value="${state.prefPct}"><i>% della farina totale</i></label>`}<label class="fld" for="pref-temp">${kind===`frigo`?`Temperatura dove avvii la biga`:`Temperatura del prefermento`}<input id="pref-temp" data-pref="prefTemp" type="number" min="${biga?({corta:16,lunga:18,frigo:21})[kind]:18}" max="${biga?(kind===`frigo`?26:20):24}" step="1" value="${state.prefTemp}"><i>°C</i></label><label class="fld" for="pref-hours">${kind===`frigo`?`Ore della biga in frigo`:`Maturazione del prefermento fuori frigo`}<input id="pref-hours" data-pref="prefHours" type="number" min="${biga?({corta:14,lunga:22,frigo:16})[kind]:8}" max="${biga?({corta:20,lunga:26,frigo:20})[kind]:18}" step="0.25" value="${state.prefHours}"><i>ore</i></label><label class="fld" for="pref-fridge">Impasto finale in frigo<input id="pref-fridge" data-pref="prefFridge" type="number" min="0" max="${prefFridgeMax(prefermentSettings(state))}" step="0.25" value="${state.prefFridge}"><i>ore</i></label><label class="fld" for="pref-out">Riposo finale fuori frigo<input id="pref-out" data-pref="prefOut" type="number" min="0" max="10" step="0.25" value="${state.prefOut}"><i>ore</i></label></div><p class="hint">Frigo: 0 per escluderlo, oppure 8–${prefFridgeMax(prefermentSettings(state))} ore dopo il rimpasto. Riposo finale: 0 usa il suggerimento; un altro valore indica le ore che scegli tu.</p>${prefermentAdvice()}<p class="hint">50% significa che metà della farina totale va nel prefermento. ${biga?(kind===`frigo`?`Biga in frigo: 50–100%, 2–4 ore fuori a 21–26 °C (le calcolo io dalla temperatura), poi 16–20 ore in frigo a 3–5 °C.`:kind===`lunga`?`Biga lunga: 50–100%, 24 ore in frigo a 3–5 °C, poi 22–26 ore a 18–20 °C, con farina forte.`:`Biga: 50–100%, a 16–20 °C per 14–20 ore.`):`Poolish: 30–50%, a 18–24 °C per 8–18 ore.`} La temperatura indicata deve essere quella del posto in cui lo lasci, anche se diversa da casa. L’impasto finale richiede 16–26 °C in casa. <button type="button" class="linkbtn" data-page="3">Cambia la farina</button></p></div>`:``}<h3 class="sect">Il percorso</h3>`;
+}
+function prefIngredientsHtml(I,pl){
+  const p=I.pref, f=I.final;
+  return `<h4>Come dividere le dosi</h4><table class="ing"><thead><tr><th>Ingrediente</th><th>${pl.pref.actual?`Già preparato`:METHODS[pl.pref.method]}</th><th>Impasto finale</th></tr></thead><tbody>${[[`Farina`,g(p.flour),g(f.flour)],[`Acqua`,g(p.water),g(f.water)],[`Lievito`,gy(p.yeast),f.yeast>0?gy(f.yeast):`nessuno`],[`Sale`,`nessuno`,g(f.salt)],[`Olio`,`nessuno`,g(f.oil)]].map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join(``)}</tr>`).join(``)}</tbody></table><p class="hint">Le due colonne insieme danno il totale sopra. Il prefermento usa il ${num(pl.pref.pct)}% della farina, al ${pl.pref.hyd}% d’idratazione. ${f.yeast>0?` Il lievito al rimpasto è calcolato per le ore dopo il rimpasto, tenendo conto di quello già nel prefermento.`:``} Pesa il lievito con una bilancia da 0,01 g. ${I.remixT?`Acqua del rimpasto: circa ${I.remixT.t} °C.`:``}</p>`;
+}
+function prefermentWeighing(p){
+  if(p.yeast>=1) return ``;
+  const solution=p.yeast*100, water=solution*.99;
+  return water<=p.water?`<p>Per questa dose piccola puoi sciogliere 1 g di lievito in 99 g d’acqua. Mescola bene e usa subito <b>${num(solution,2)} g</b> di soluzione; aggiungi a parte solo <b>${num(p.water-water,2)} g</b> d’acqua. Scarta il resto della soluzione. Questa quantità sostituisce il lievito e parte dell’acqua indicati sopra.</p>`:`<p>Serve una bilancia da 0,01 g per il lievito: non arrotondare la dose a un grammo intero.</p>`;
+}
+function pgPlan(){
+  const S=STYLES[state.style], P=params(state);
+  return `${prefermentForm()}<div class="opts" id="plans">${plansHtml()}</div>
+  <details class="custom" id="custom" ${state.customOpen?`open`:``}><summary>Personalizza la ricetta</summary>
+    <p class="hint">Cambia le percentuali (sul peso della farina). Prima di applicare ogni modifica ti spiego cosa cambia nella pizza e nei numeri.</p>
+    <div class="row">
+      <label class="fld" for="c-hyd">Idratazione<input id="c-hyd" data-over="hyd" type="number" step="1" min="50" max="90" value="${P.hyd}"><i>%</i></label>
+      <label class="fld" for="c-salt">Sale<input id="c-salt" data-over="salt" type="number" step="0.1" min="1" max="3.5" value="${P.salt}"><i>%</i></label>
+      <label class="fld" for="c-oil">Olio<input id="c-oil" data-over="oil" type="number" step="0.5" min="0" max="10" value="${P.oil}"><i>%</i></label>
+      ${S.teglia?`<label class="fld" for="c-gcm2">Impasto per cm²<input id="c-gcm2" data-over="gcm2" type="number" step="0.01" min="0.35" max="0.9" value="${P.gcm2}"><i>g</i></label>`
+      :`<label class="fld" for="c-ball">Peso panetto<input id="c-ball" data-over="ball" type="number" step="5" min="120" max="400" value="${P.ball}"><i>g</i></label>`}
+    </div>
+    ${Object.keys(state.over).length?`<div style="margin-top:12px"><button type="button" class="linkbtn" id="c-reset">Torna ai valori dello stile</button></div>`:``}
+  </details>`;
+}
+const PAGE_FN=[pgStyle,pgWhen,pgKitchen,pgIngr,pgPlan];
+
+function renderSteps(){
+  $(`#steps`).innerHTML=PAGES.map((x,i)=>{
+    const cur=i===ui.page, ok=i<=ui.reached&&!cur;
+    return `<li class="${ok?`ok`:``} ${cur?`cur`:``}"><button type="button" data-page="${i}" ${i>ui.reached?`disabled`:``} ${cur?`aria-current="step"`:``}><span class="dot">${ok?`✓`:i+1}</span><span class="lbl">${x[0]}</span></button></li>`;
+  }).join(``);
+}
+function renderNav(){
+  const p=ui.page;
+  const back=p>0?`<button type="button" class="btn" id="pg-back">Indietro</button>`:`<span></span>`;
+  let next=``;
+  if(p<LAST-1) next=`<button type="button" class="btn primary" id="pg-next">Avanti</button>`;
+  else if(p===LAST-1) next=`<button type="button" class="btn primary" id="pg-next">Vedi il mio piano</button>`;
+  else next=`<button type="button" class="btn primary" ${R.none?`disabled`:``} id="go-cook">Avvia la modalità cucina</button>`;
+  $(`#pnav`).innerHTML=`<div class="pnav-in">${back}<span class="spacer"></span>${next}</div>`;
+}
+function renderLive(){
+  const el=$(`#live`);
+  if(ui.page===LAST||ui.page===0){ el.innerHTML=``; return; }
+  if(R.none&&R.reason){ el.innerHTML=esc(R.reason); return; }
+  if(R.none){ el.innerHTML=`Con l'orario scelto <b>non c'è tempo</b> per nessuna lievitazione: sposta la cena più avanti.`; return; }
+  el.innerHTML=`Con le scelte di ora: <b>${PLANS[R.pk].name}</b>, inizi <b>${when(R.pl.mixStart)}</b>, prima pizza <b>${when(R.pl.tFirst)}</b>.`;
+}
+function renderAll(){
+  R=compute();
+  renderSteps();
+  const pg=$(`#page`);
+  pg.className=`page`+(ui.page===LAST?` wide`:``);
+  if(ui.page===LAST){ pg.innerHTML=`<section id="out" aria-live="polite"></section>`; renderOut(); }
+  else {
+    const [,t,s]=PAGES[ui.page];
+    pg.innerHTML=`<div class="lead"><h2>${t}</h2>${s?`<p>${s}</p>`:``}</div>${PAGE_FN[ui.page]()}`;
+    const c=$(`#custom`); if(c) c.addEventListener(`toggle`,e=>{state.customOpen=e.target.open;});
+  }
+  renderLive(); renderNav(); rememberForm();
+}
+/* aggiorna solo le parti che dipendono dal calcolo, senza ridisegnare la pagina */
+function renderResults(){
+  R=compute();
+  if($(`#view-new`).hidden) return;
+  if(ui.page===LAST){ renderOut(); return; }
+  const pl=$(`#plans`); if(pl) pl.innerHTML=plansHtml();
+  renderLive();
+}
+function go(i){
+  ui.page=clamp(i,0,LAST); ui.reached=Math.max(ui.reached,ui.page);
+  if(ui.page===LAST) ui.reviewed=true;
+  renderAll();
+  const top=$(`.steps`); if(top) top.scrollIntoView({block:`start`,behavior:`smooth`});
+}
+
+/* ---------- il piano ---------- */
+function isDirty(){
+  if(!state.link) return false;
+  const r=mem.recipes.find(x=>x.id===state.link.id); if(!r) return false;
+  const v=r.versions[state.link.v]; const a=v.cfg, b=snap();
+  return JSON.stringify([a.style,a.flour,a.oven,a.plan,a.yeast,a.mixer,a.over,a.notes,prefConfig(a)])!==JSON.stringify([b.style,b.flour,b.oven,b.plan,b.yeast,b.mixer,b.over,b.notes,prefConfig(b)]);
+}
+function renderOut(){
+  const out=$(`#out`); if(!out) return;
+  const now=Date.now();
+  if(R.none&&R.reason){ out.innerHTML=`<div class="panel empty"><h3>Percorso non disponibile</h3><p>${esc(R.reason)}</p><button type="button" class="btn" data-page="4">Cambia metodo o impostazioni</button><button type="button" class="btn" data-page="1">Cambia l’orario</button></div>`; return; }
+  if(R.none){ out.innerHTML=`<div class="panel empty"><h3 style="justify-content:center">Così non ci stai dentro</h3><p>Con l'orario scelto non c'è abbastanza tempo per nessuna lievitazione. Scegli un orario di cena almeno 4 ore più avanti.</p><button type="button" class="btn primary" data-page="1">Cambia l'orario</button></div>`; return; }
+  const {P,pl,I,steps,W}=R, S=P.S, teglia=!!S.teglia;
+  let linked=``;
+  if(state.link){ const r=mem.recipes.find(x=>x.id===state.link.id); if(r){ linked=`<div class="linked"><span>Stai usando <b>${esc(r.name)}</b> · versione ${state.link.v+1}</span>${isDirty()?`<span class="dirty">modifiche non salvate</span>`:``}<button type="button" class="linkbtn" id="unlink">Scollega</button></div>`; } else state.link=null; }
+  const ylbl=state.yeast===`secco`?`Lievito secco`:`Lievito di birra fresco`;
+  const rows=[[`Farina`,g(I.flour),`100%`],[`Acqua${pl.pref?``:` <small>a circa ${I.waterT} °C</small>`}`,g(I.water),num(P.hyd)+`%`],[`Sale`,g(I.salt),num(P.salt)+`%`],[ylbl,gy(I.yeast),num(I.ypct,2)+`%`]];
+  if(I.oil>0) rows.push([`Olio extravergine`,g(I.oil),num(P.oil)+`%`]);
+  let lastDay=null, tl=``;
+  for(const s of steps){
+    const dl=dayLabel(s.start);
+    if(dl!==lastDay){ tl+=`<li class="day">${dl}</li>`; lastDay=dl; }
+    const note=state.notes[s.key];
+    let noteHtml=``;
+    if(state.editing===s.key) noteHtml=`<div class="note-edit"><label class="sub" for="note-${s.key}">La tua nota per questo passaggio</label><textarea id="note-${s.key}" placeholder="Es. qui stai attento: con la mia farina serve qualche minuto in più">${esc(note||``)}</textarea><div class="step-actions"><button type="button" class="btn small primary" data-note-save="${s.key}">Salva nota</button><button type="button" class="btn small ghost" data-note-cancel>Annulla</button>${note?`<button type="button" class="btn small ghost danger" data-note-del="${s.key}">Elimina</button>`:``}</div></div>`;
+    else if(note) noteHtml=`<div class="note"><b>La tua nota</b>${esc(note)}</div>`;
+    const dur=(s.end-s.start)/H;
+    tl+=`<li class="step ${s.end<now?`past`:``}"><div class="time">${hm(s.start)}</div><div><h4>${s.title}<span class="badge ${s.hands?``:`wait`}">${s.hands?`da fare`:`attesa`} · ${fmtDur(dur)}</span></h4><div class="body">${s.body}</div>${noteHtml}${state.editing===s.key?``:`<div class="step-actions"><button type="button" class="linkbtn" data-note="${s.key}">${note?`Modifica nota`:`+ Aggiungi una nota`}</button></div>`}</div></li>`;
+  }
+  const qty=teglia?`${I.n} ${I.n>1?`teglie`:`teglia`} ${state.tw}×${state.th} cm`:`${I.n} ${I.n>1?`pizze`:`pizza`} da ${g(I.piece)}`;
+  const choice=(lbl,val,p)=>`<li><span>${lbl}</span><b>${val} <button type="button" class="linkbtn" data-page="${p}">cambia</button></b></li>`;
+  const pi=INFO.plan[R.pk]||{pro:[`Prefermento e impasto finale separati`],con:[`Percorso da provare in cucina: controlla l’impasto`]};
+  const exp={pro:[...INFO.style[state.style].pro.slice(0,1),...pi.pro.slice(0,1)],con:[...INFO.style[state.style].con.slice(0,1),...pi.con.slice(0,1)]};
+  out.innerHTML=`
+  <div class="lead"><h2>Il tuo piano</h2><p>${S.name}, ${PLANS[R.pk].name.toLowerCase()}. Tutto è calcolato per avere la prima pizza in tavola ${when(pl.tFirst)}.</p></div>
+  <div class="plan-grid">
+    <div class="col">
+      ${linked}
+      <div class="hero">
+        <div class="times"><div><span class="lbl">Inizi</span><span class="big">${hm(pl.mixStart)}</span><div class="meta">${dayLabel(pl.mixStart)}</div></div><div><span class="lbl">Prima pizza</span><span class="big">${hm(pl.tFirst)}</span><div class="meta">${dayLabel(pl.tFirst)}</div></div></div>
+        <div class="art-h">${ART.style(state.style)}</div>
+        <div class="meta">${qty} · ${OVENS[state.oven].name}</div>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn primary" id="go-cook2">Avvia la modalità cucina</button>
+        <button type="button" class="btn" id="go-save">${state.link?`Salva una nuova versione`:`Salva come mia ricetta`}</button>
+        <button type="button" class="btn" id="go-cal">Aggiungi al calendario</button>
+      </div>
+      <div class="panel"><h3>Ingredienti</h3>
+        <table class="ing"><tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join(``)}</tbody></table>
+        ${pl.pref?prefIngredientsHtml(I,pl)+prefermentAdvice():``}
+        <p class="why">${pl.pref?.actual?`Lievito già presente nel preparato, conservato senza ricalcolarlo. Durata dei passaggi rimanenti: `:pl.pref?`Dose di lievito riferita ${pl.pref.warm?`alle ${fmtDur(pl.pref.hours)} della biga a ${pl.pref.temp} °C e alle ${fmtDur(pl.pref.cold)} in frigo`:`alle ${pl.pref.long?`${fmtDur(pl.pref.cold)} in frigo e alle `:``}${fmtDur(pl.pref.hours)} di maturazione del prefermento a ${pl.pref.temp} °C`}${pl.pref.addYp>0?`, più una piccola aggiunta al rimpasto calcolata per le fasi successive`:`; nessuna aggiunta nell’impasto finale`}. Durata totale del percorso: `:`Dose di lievito calcolata per `}${fmtDur(pl.total)}${pl.pref?``:` di lievitazione`}${pl.fridgeH?`, di cui ${fmtDur(pl.fridgeH)} in frigo a ${state.fridge} °C`:``}, con ${state.room} °C in casa. Il peso include un 2% in più per le perdite.</p>
+      </div>
+      <div class="panel"><h3>Cosa aspettarti</h3>${pc(exp)}</div>
+      ${W.length?`<ul class="alerts">${W.map(w=>`<li class="${w.w?`warn`:``}">${w.t}</li>`).join(``)}</ul>`:``}
+      <div class="panel"><h3>Le tue scelte</h3><ul class="choices">
+        ${choice(`Pizza`,S.name,0)}${choice(`Quantità`,qty,1)}${choice(`In casa`,state.room+` °C`,2)}${choice(`Forno`,OVENS[state.oven].name,2)}${choice(`Farina`,FLOURS[state.flour].name,3)}${choice(`Lievitazione`,PLANS[R.pk].name,4)}${choice(`Metodo`,METHODS[state.method]+(pl.pref?` · ${num(pl.pref.pct)}% della farina`:``),4)}
+      </ul></div>
+    </div>
+    <div class="col"><div class="panel"><h3>Passaggi</h3><ol class="timeline">${tl}</ol></div></div>
+  </div>`;
+}
+
+/* ---------- conferma delle modifiche, con spiegazione ---------- */
+const OVER_LBL={hyd:[`l'idratazione`,`Idratazione`,`%`],salt:[`il sale`,`Sale`,`%`],oil:[`l'olio`,`Olio`,`%`],ball:[`il peso del panetto`,`Peso panetto`,` g`],gcm2:[`l'impasto per cm²`,`Impasto per cm²`,` g`]};
+const KEY_LBL={style:`lo stile`,flour:`la farina`,plan:`la lievitazione`,oven:`il forno`,yeast:`il lievito`,mixer:`il modo di impastare`,method:`il metodo`,prefPct:`la percentuale di prefermento`,prefTemp:`la temperatura del prefermento`,prefHours:`le ore del prefermento`,prefFridge:`le ore in frigo`,prefOut:`le ore finali fuori frigo`,prefAdd:`il lievito al rimpasto della biga`,prefKind:`il tipo di biga`,prepMode:`quando prepari`,prepClock:`l’ora da cui puoi iniziare`,batch:`il prefermento già fatto`,reset:`le percentuali`};
+function cfgNow(){ return {...prefConfig(state),style:state.style,flour:state.flour,oven:state.oven,plan:state.plan,yeast:state.yeast,mixer:state.mixer,over:clone(state.over)}; }
+function applyChange(c){
+  if(c.k===`batch`){ state.batch={...state.batch,[c.o]:c.v}; }
+  else if(c.k===`over`){ if(c.v==null) delete state.over[c.o]; else state.over[c.o]=c.v; }
+  else if(c.k===`reset`) state.over={};
+  else { if(c.k===`method`){ state.plan=null; state.prefFridge=0; state.prefOut=0; state.prefPct=50; state.prefAdd=false; state.prefKind=`corta`; delete state.prefLong; state.prefTemp=c.v===`poolish`?20:18; state.prefHours=c.v===`poolish`?14:18; } if(c.k===`prefKind`){ state.prefHours=c.v===`lunga`?24:18; state.prefTemp=c.v===`lunga`?clamp(state.prefTemp,18,20):c.v===`frigo`?clamp(state.room,21,26):clamp(state.prefTemp,16,20); state.prefOut=0; delete state.prefLong; } if(c.k===`style`&&c.v!==state.style) state.over={}; state[c.k]=c.v; }
+}
+function explain(c,P0,P1,keep){
+  const a=c.k===`over`?P0[c.o]:keep[c.k], b=c.k===`over`?P1[c.o]:c.v, up=b>a, t=[];
+  if([`prepMode`,`prepClock`,`batch`].includes(c.k)){ t.push(`Il piano rispetta quando puoi iniziare e l’ora della cena. Per un prefermento già fatto usiamo le quantità registrate senza ridimensionarle: se proporzioni, maturazione o orari non rientrano nel percorso supportato, spieghiamo il motivo. Non aggiungiamo lievito per recuperare il tempo perso.`); return {t}; }
+  if(c.k===`prefAdd`){ t.push(c.v?`Aggiungi un po’ di lievito al rimpasto, calcolato per le ore che seguono, tenendo conto di quello della biga. I tempi dopo il rimpasto diventano più regolari e il frigo può arrivare a 24 ore. È un calcolo da provare in cucina.`:`Torni alla biga classica: tutto il lievito è nella biga e il riposo finale dipende dalla percentuale di biga. Il frigo dopo il rimpasto torna a un massimo di 18 ore.`); return {t}; }
+  if(c.k===`prefKind`){ t.push(({lunga:`La biga lunga passa 24 ore in frigo e poi circa 24 ore a 18–20 °C: è il percorso descritto da Giorilli e Zaghini, con un aroma più marcato. Si inizia quasi due giorni prima della cena e serve una farina forte. La dose di lievito resta vicina all’1% della farina della biga. È un percorso calcolato, da provare in cucina.`,
+    frigo:`La biga in frigo è pensata per le case calde: resta 2–4 ore fuori per avviarsi, poi 16–20 ore in frigo. Non serve un posto fresco a 16–20 °C. La dose di lievito segue le ricette di questo metodo, di solito sotto l’1%. Prima del rimpasto la biga riposa un’ora fuori dal frigo. È un percorso calcolato, da provare in cucina.`,
+    corta:`Torni alla biga corta: 14–20 ore a 16–20 °C, senza frigo. Si inizia circa un giorno prima.`})[c.v]); return {t}; }
+  if([`prefFridge`,`prefOut`].includes(c.k)){ t.push(`Cambiano gli orari dell’impasto finale. Il lievito resta legato alla maturazione del prefermento: il freddo non equivale a una pausa completa della fermentazione. Il tempo fuori frigo suggerito dipende dalla temperatura di casa; verifica sempre crescita, morbidezza e tenuta prima di stendere.`); return {t}; }
+  if([`method`,`prefPct`,`prefTemp`,`prefHours`].includes(c.k)){ t.push(`Cambiano le dosi delle due fasi e l’ora di inizio. La percentuale indica quanta farina totale entra nel prefermento. I percorsi con biga e poolish sono calcolati e ancora da provare in cucina; la maturazione va controllata prima di impastare.`); return {t}; }
+  if(c.k===`style`){ t.push(STYLES[b].desc); t.push(`Idratazione, sale, olio e peso dei panetti passano ai valori consigliati per la ${STYLES[b].name.toLowerCase()}${Object.keys(keep.over).length?`: le tue personalizzazioni vengono azzerate`:``}.`); return {t,pc:INFO.style[b]}; }
+  if(c.k===`flour`){ const F0=FLOURS[a],F1=FLOURS[b];
+    t.push(`La nuova farina regge fino a ${F1.maxH} ore di lievitazione e al ${F1.maxHyd}% di acqua (quella di prima: ${F0.maxH} ore e ${F0.maxHyd}%).`);
+    t.push(F1.level<F0.level?`Una farina più debole rende rischiose le lievitazioni lunghe: l'impasto può cedere e diventare appiccicoso. Se serve, abbasso l'idratazione.`:`Una farina più forte regge impasti più lunghi e più idratati, ma con lievitazioni brevi dà una pizza più gommosa.`);
+    return {t,pc:INFO.flour[b]}; }
+  if(c.k===`plan`){ t.push(`Cambiano l'ora di inizio e la dose di lievito: con più ore ne serve meno, con meno ore ne serve di più.`); return {t,pc:INFO.plan[b]}; }
+  if(c.k===`oven`){ const O0=OVENS[a],O1=OVENS[b];
+    t.push(`Cambiano accensione (${O1.preheat} minuti invece di ${O0.preheat}) e tempi di cottura: il nuovo forno arriva a circa ${O1.maxT} °C.`);
+    if((O0.maxT<350)!==(O1.maxT<350)&&P0.oil!==P1.oil) t.push(O1.maxT<350?`Nel forno di casa la cottura è più lunga: aggiungo un po' d'olio perché il cornicione non si secchi.`:`Con un forno così caldo l'olio non serve più e può bruciare: lo tolgo.`);
+    return {t}; }
+  if(c.k===`yeast`){ t.push(b===`secco`?`Il lievito secco è circa un terzo del fresco: la dose si divide per 3. Scioglilo nell'acqua prima di aggiungere la farina.`:`Il lievito fresco è circa tre volte il secco: la dose si moltiplica per 3. Sbriciolalo nell'acqua e mescola finché si scioglie.`); return {t}; }
+  if(c.k===`mixer`){ t.push(b?`L'impastatrice scalda l'impasto più delle mani, quindi ti chiedo acqua più fredda. Gli impasti molto idratati diventano più facili.`:`A mano l'impasto si scalda meno, quindi l'acqua può essere un po' più tiepida. Con impasti molto idratati servono le mani bagnate e qualche pausa.`); return {t}; }
+  if(c.k===`reset`){ t.push(`Idratazione, sale, olio e peso tornano ai valori consigliati per lo stile. Le tue note sui passaggi restano.`); return {t}; }
+  const o=c.o;
+  if(o===`hyd`) t.push(up?`Più acqua: cornicione più arioso e morbido, ma l'impasto diventa più appiccicoso e difficile da stendere.`:`Meno acqua: impasto più facile da lavorare, ma pizza più compatta e asciutta.`);
+  if(o===`salt`) t.push(up?`Più sale: più sapore e impasto più tenace, la lievitazione rallenta appena. Sopra il 3% la pizza sa troppo di sale.`:`Meno sale: lievitazione un po' più veloce, ma impasto meno tenace e sapore più piatto.`);
+  if(o===`oil`) t.push(up?`Più olio: pizza più morbida e friabile che colora prima. Nei forni molto caldi può bruciare.`:`Meno olio: pizza più leggera e croccante, ma nel forno di casa il cornicione si secca più facilmente.`);
+  if(o===`ball`) t.push(up?`Panetti più pesanti: pizze più grandi o più spesse. Serve più impasto in tutto.`:`Panetti più leggeri: pizze più piccole o più sottili, più facili da stendere senza bucarle.`);
+  if(o===`gcm2`) t.push(up?`Più impasto per cm²: pizza in teglia più alta e soffice, con cottura un po' più lunga.`:`Meno impasto per cm²: pizza più bassa e croccante.`);
+  if(P1.F&&o===`hyd`&&b>P1.F.maxHyd) t.push(`Attenzione: con ${P1.F.short} di solito non si supera il ${P1.F.maxHyd}%.`);
+  return {t};
+}
+function requestChange(c){
+  const same=c.k===`batch`?state.batch[c.o]===c.v:c.k===`over`?(c.v==null?state.over[c.o]==null:state.over[c.o]===c.v):c.k===`reset`?!Object.keys(state.over).length:state[c.k]===c.v;
+  if(same) return;
+  if(c.k===`plan`&&R&&!R.none&&R.pk===c.v){ state.plan=c.v; renderAll(); return; }
+  const ask=[`batch`,`prepMode`,`prepClock`,`prefPct`,`prefTemp`,`prefHours`,`prefFridge`,`prefOut`,`prefAdd`,`prefKind`].includes(c.k)||c.k===`over`||c.k===`reset`||ui.reviewed||!!state.link;
+  if(!ask){ applyChange(c); renderAll(); return; }
+  const keep=cfgNow(), before=compute(), P0=params(state);
+  applyChange(c); const after=compute(), P1=params(state);
+  Object.assign(state,keep);
+  const {t,pc:pcs}=explain(c,P0,P1,keep);
+  let title, from, to;
+  if(c.k===`batch`){ title=`Aggiornare “${({flour:`Farina`,water:`Acqua`,yeast:`Lievito`,started:`Ora di preparazione`,cold:`Ore in frigo`})[c.o]}” del prefermento?`; from=c.o===`started`?(keep.batch.started?when(keep.batch.started):`non indicato`):num(keep.batch[c.o]); to=c.o===`started`?when(c.v):num(c.v); }
+  else if(c.k===`over`){ const L=OVER_LBL[c.o]; title=`Vuoi cambiare ${L[0]}?`; from=num(P0[c.o],2)+L[2]; to=num(P1[c.o],2)+L[2]; }
+  else if(c.k===`reset`){ title=`Tornare ai valori dello stile?`; }
+  else { title=`Vuoi cambiare ${KEY_LBL[c.k]}?`; const d=DLABEL[c.k][1]; from=d(keep[c.k]); to=d(c.v); }
+  let nums=``;
+  if(after.none) nums=`<ul class="alerts"><li class="warn">Con questa modifica il percorso non è disponibile. ${esc(after.reason||`Controlla l’orario e le impostazioni.`)}</li></ul>`;
+  else if(!before.none){
+    const A=before.I,B=after.I, rows=[];
+    const add=(l,x,y)=>{ if(x!==y) rows.push(`<tr><td>${l}</td><td>${x}</td><td>${y}</td></tr>`); };
+    add(`Lievitazione`,PLANS[before.pk].name,PLANS[after.pk].name);
+    add(`Inizi`,when(before.pl.mixStart),when(after.pl.mixStart));
+    add(`Ore in frigo`,fmtDur(before.pl.fridgeH),fmtDur(after.pl.fridgeH)); add(`Riposo finale fuori frigo`,fmtDur(before.pl.A),fmtDur(after.pl.A));
+    add(`Farina`,g(A.flour),g(B.flour)); add(`Acqua`,g(A.water)+(A.waterT==null?``:` a ${A.waterT} °C`),g(B.water)+(B.waterT==null?``:` a ${B.waterT} °C`)); add(`Sale`,g(A.salt),g(B.salt));
+    add(state.yeast===`secco`&&c.k!==`yeast`?`Lievito secco`:`Lievito`,gy(A.yeast),gy(B.yeast)); add(`Olio`,g(A.oil),g(B.oil));
+    if(A.pref&&B.pref){
+      add(`Farina nel prefermento`,g(A.pref.flour),g(B.pref.flour));
+      add(`Lievito al rimpasto`,A.final.yeast>0?gy(A.final.yeast):`nessuno`,B.final.yeast>0?gy(B.final.yeast):`nessuno`);
+      add(`Acqua nel prefermento`,g(A.pref.water),g(B.pref.water));
+      add(`Farina al rimpasto`,g(A.final.flour),g(B.final.flour));
+      add(`Acqua al rimpasto`,g(A.final.water),g(B.final.water));
+    }
+    add(`Tempo in forno`,`${before.pl.bk.per} min`,`${after.pl.bk.per} min`);
+    nums=rows.length?`<div><div class="sub">Cosa cambia nei numeri</div><table class="chg"><thead><tr><th></th><th>Prima</th><th>Dopo</th></tr></thead><tbody>${rows.join(``)}</tbody></table></div>`:`<p class="hint">Dosi e orari restano uguali.</p>`;
+    const nw=after.W.filter(w=>w.w&&!before.W.some(b=>b.t===w.t));
+    if(nw.length) nums+=`<ul class="alerts">${nw.map(w=>`<li class="warn">${w.t}</li>`).join(``)}</ul>`;
+  }
+  modal(`<h3>${title}</h3>
+    ${from!=null?`<div class="fromto"><s>${esc(from)}</s><span class="arr" aria-hidden="true">→</span><span>${esc(to)}</span></div>`:``}
+    <div class="expl">${t.map(x=>`<p>${x}</p>`).join(``)}${pcs?pc(pcs):``}</div>
+    ${nums}
+    <div class="actions"><button type="button" class="btn ghost" data-close>Lascia com'era</button><button type="button" class="btn primary" id="ch-ok">Conferma la modifica</button></div>`);
+  onModalClose=renderAll; // se annulli, i campi tornano ai valori di prima
+  $(`#ch-ok`).onclick=()=>{ applyChange(c); onModalClose=null; closeModal(); renderAll(); };
+}
+
+/* ---------- eventi della procedura ---------- */
+document.addEventListener(`click`,e=>{
+  if(e.target.id===`pref-auto`){ openPrefermentSuggestion(); return; }
+  const prefChoice=e.target.closest(`[data-pref-choice]`);
+  if(prefChoice){ openPrefermentSuggestion(Number(prefChoice.dataset.prefChoice)); return; }
+  const pgb=e.target.closest(`[data-page]`);
+  if(pgb&&!pgb.disabled&&pgb.closest(`#view-new`)){ go(Number(pgb.dataset.page)); return; }
+  const b=e.target.closest(`[data-set]`);
+  if(b&&!b.disabled&&b.closest(`#page`)){
+    const k=b.dataset.set; let v=b.dataset.val;
+    if(k===`mixer`||k===`prefAdd`) v=v===`true`;
+    requestChange({k,v}); return;
+  }
+  if(e.target.id===`pg-next`){ go(ui.page+1); return; }
+  if(e.target.id===`pg-back`){ go(ui.page-1); return; }
+  const st=e.target.closest(`[data-step]`);
+  if(st){ state.n=clamp(state.n+Number(st.dataset.step),1,30); $(`#n-out`).textContent=state.n; $(`#pizzas`).innerHTML=ART.mini().repeat(Math.min(state.n,16)); renderResults(); rememberForm(); return; }
+  const dq=e.target.closest(`[data-dinner]`);
+  if(dq){ state.dinner=dinnerAt(Number(dq.dataset.dinner)); $(`#dinner`).value=toLocalInput(state.dinner); renderResults(); rememberForm(); return; }
+  if(e.target.id===`c-reset`){ requestChange({k:`reset`}); return; }
+  const nt=e.target.closest(`[data-note]`); if(nt){ state.editing=nt.dataset.note; renderResults(); const ta=$(`#note-`+state.editing); if(ta) ta.focus(); return; }
+  const ns=e.target.closest(`[data-note-save]`); if(ns){ const k=ns.dataset.noteSave; const v=$(`#note-`+k).value.trim(); if(v) state.notes[k]=v; else delete state.notes[k]; state.editing=null; renderResults(); return; }
+  const nd=e.target.closest(`[data-note-del]`); if(nd){ delete state.notes[nd.dataset.noteDel]; state.editing=null; renderResults(); return; }
+  if(e.target.closest(`[data-note-cancel]`)){ state.editing=null; renderResults(); return; }
+  if(e.target.id===`unlink`){ state.link=null; renderResults(); return; }
+  if(e.target.id===`go-cook`||e.target.id===`go-cook2`){ if(R&&!R.none) openCook(); return; }
+  if(e.target.id===`go-save`){ openSave(); return; }
+  if(e.target.id===`go-cal`){ openCal(); return; }
+});
+$(`#page`).addEventListener(`input`,e=>{
+  if(e.target.id===`room`){ state.room=Number(e.target.value); $(`#room-out`).textContent=state.room+` °C`; $(`#room-say`).textContent=tempSay(state.room); renderResults(); }
+});
+$(`#page`).addEventListener(`change`,e=>{
+  const el=e.target, id=el.id, v=Number(el.value);
+  if(id===`room`){ rememberForm(); return; }
+  if(el.dataset.batch){ const value=el.dataset.batch===`started`?new Date(el.value).getTime():v; if(!Number.isFinite(value)){ renderAll(); return; } requestChange({k:`batch`,o:el.dataset.batch,v:value}); return; }
+  if(id===`prep-clock`){ requestChange({k:`prepClock`,v:el.value}); return; }
+  if(id===`dinner`){ const d=new Date(el.value); if(!isNaN(d)) state.dinner=d; }
+  else if(id===`fridge`&&v) state.fridge=clamp(v,1,10);
+  else if(id===`tw`&&v) state.tw=clamp(v,15,60);
+  else if(id===`th`&&v) state.th=clamp(v,15,80);
+  else if(id===`tn`&&v) state.tn=clamp(Math.round(v),1,6);
+  else if(el.dataset.pref){ requestChange({k:el.dataset.pref,v}); return; }
+  else if(el.dataset.over){ requestChange({k:`over`,o:el.dataset.over,v:el.value===``?null:v}); return; }
+  renderResults(); rememberForm();
+});
+
+
+/* ---------- finestre di dialogo ---------- */
+function modal(html){ const m=$(`#modal`); m.innerHTML=`<div class="dlg" role="dialog" aria-modal="true">${html}</div>`; m.hidden=false; const f=m.querySelector(`input,textarea,button`); if(f) f.focus(); }
+function closeModal(){ const m=$(`#modal`); m.hidden=true; m.innerHTML=``; if(onModalClose){ const f=onModalClose; onModalClose=null; f(); } }
+$(`#modal`).addEventListener(`click`,e=>{ if(e.target.id===`modal`||e.target.closest(`[data-close]`)) closeModal(); });
+document.addEventListener(`keydown`,e=>{ if(e.key===`Escape`&&!$(`#modal`).hidden) closeModal(); });
+
+const DLABEL={method:[`Metodo`,k=>METHODS[k||`diretto`]||`sconosciuto`],prefPct:[`Farina nel prefermento`,k=>num(k??50)+`%`],prefTemp:[`Temperatura prefermento`,k=>num(k??18)+` °C`],prefHours:[`Ore prefermento`,k=>num(k??18)+` h`],prefFridge:[`Ore impasto finale in frigo`,k=>num(k??0)+` h`],prefOut:[`Riposo finale fuori frigo`,k=>k?num(k)+` h`:`suggerito`],prefAdd:[`Lievito al rimpasto della biga`,k=>k?`sì`:`no`],prefKind:[`Biga`,k=>({corta:`corta`,lunga:`lunga`,frigo:`in frigo`})[k||`corta`]||`corta`],prepMode:[`Disponibilità`,k=>PREP_MODES[k||`plan`]],prepClock:[`Inizio il giorno della pizza`,k=>k||`08:00`],style:[`Stile`,k=>STYLES[k].name],flour:[`Farina`,k=>FLOURS[k].name],oven:[`Forno`,k=>OVENS[k].name],plan:[`Lievitazione`,k=>k?PLANS[k].name:`automatica`],yeast:[`Lievito`,k=>k===`secco`?`secco`:`fresco`],mixer:[`Impasto`,k=>k?`con l'impastatrice`:`a mano`]};
+function diffCfg(a,b){
+  const out=[];
+  const aBatch=prefConfig(a).batch, bBatch=prefConfig(b).batch;
+  if(JSON.stringify(aBatch)!==JSON.stringify(bBatch)) out.push(`Dati del prefermento già preparato aggiornati (quantità, ora o passaggio in frigo).`);
+  const nv=(c,k)=>k===`method`?(c[k]||`diretto`):k===`prefAdd`?!!c[k]:k===`prefKind`?((c.method||`diretto`)===`biga`?prefermentSettings(c).kind:`corta`):c[k];
+  for(const k in DLABEL) if(nv(a,k)!==nv(b,k)&&(!k.startsWith(`pref`)||((a.method||`diretto`)!==`diretto`||(b.method||`diretto`)!==`diretto`))) out.push(`${DLABEL[k][0]}: ${DLABEL[k][1](a[k])} → ${DLABEL[k][1](b[k])}`);
+  const pa=params(a), pb=params(b);
+  [[`hyd`,`Idratazione`,`%`],[`salt`,`Sale`,`%`],[`oil`,`Olio`,`%`],[`ball`,`Peso panetto`,` g`],[`gcm2`,`Impasto per cm²`,` g`]].forEach(([k,l,u])=>{ if(pa[k]!==pb[k]&&pa[k]!=null&&pb[k]!=null) out.push(`${l}: ${num(pa[k],2)}${u} → ${num(pb[k],2)}${u}`); });
+  const keys=new Set([...Object.keys(a.notes||{}),...Object.keys(b.notes||{})]);
+  keys.forEach(k=>{ const x=(a.notes||{})[k], y=(b.notes||{})[k]; const n=STEP_NAMES[k]||k; if(!x&&y) out.push(`Nota aggiunta su “${n}”`); else if(x&&!y) out.push(`Nota tolta da “${n}”`); else if(x!==y) out.push(`Nota modificata su “${n}”`); });
+  return out;
+}
+let pendingBake=null;
+function openSave(){
+  const s=snap();
+  const r=state.link&&mem.recipes.find(x=>x.id===state.link.id);
+  if(r){
+    const last=r.versions[r.versions.length-1];
+    const d=diffCfg(last.cfg,s);
+    modal(`<h3>Nuova versione di “${esc(r.name)}”</h3>
+      ${d.length?`<div><div class="sub">Cosa è cambiato rispetto alla versione ${r.versions.length}</div><ul class="diff">${d.map(x=>`<li>${esc(x)}</li>`).join(``)}</ul></div>`:`<p class="hint">Nessuna differenza dalla versione ${r.versions.length}. Puoi salvarla comunque, per esempio con una nota diversa.</p>`}
+      <label class="sub" for="v-note">Perché hai fatto queste modifiche?</label>
+      <textarea id="v-note" placeholder="Es. l'ultima volta il cornicione era troppo basso, alzo l'idratazione"></textarea>
+      <div class="actions"><button type="button" class="btn ghost" data-close>Annulla</button><button type="button" class="btn" id="save-as-new">Salva come ricetta nuova</button><button type="button" class="btn primary" id="save-v">Salva versione ${r.versions.length+1}</button></div>`);
+    $(`#save-v`).onclick=()=>{ r.versions.push({date:Date.now(),note:$(`#v-note`).value.trim(),diff:d,cfg:s,bakes:[]}); state.link={id:r.id,v:r.versions.length-1}; attachPending(); persist(); closeModal(); renderResults(); renderRecCount(); };
+    $(`#save-as-new`).onclick=()=>{ state.link=null; openSave(); };
+  } else {
+    modal(`<h3>Salva come mia ricetta</h3>
+      <p class="hint">${s.prepMode===`existing`?`Salvo anche quantità reali e data del prefermento già fatto. Quando riapri la ricetta, controlla o sostituisci questi dati: non rappresentano automaticamente una nuova preparazione.`:`Salvo stile, farina, forno, percentuali, disponibilità e le tue note. Orari e lievito si adattano alla data e alla temperatura.`}</p>
+      <label class="sub" for="r-name">Nome della ricetta</label>
+      <input type="text" id="r-name" value="${esc(STYLES[s.style].name+` `+(s.method===`diretto`?PLANS[s.plan].name:METHODS[s.method]))}">
+      <label class="sub" for="v-note">Una nota iniziale (facoltativa)</label>
+      <textarea id="v-note" placeholder="Es. presa dal metodo del pizzaiolo X, adattata al mio forno"></textarea>
+      <div class="actions"><button type="button" class="btn ghost" data-close>Annulla</button><button type="button" class="btn primary" id="save-r">Salva</button></div>`);
+    $(`#save-r`).onclick=()=>{ const name=$(`#r-name`).value.trim()||`La mia pizza`; const r={id:uid(),name,created:Date.now(),versions:[{date:Date.now(),note:$(`#v-note`).value.trim(),diff:[],cfg:s,bakes:[]}]}; mem.recipes.unshift(r); state.link={id:r.id,v:0}; attachPending(); persist(); closeModal(); renderResults(); renderRecCount(); };
+  }
+}
+function attachPending(){ if(!pendingBake||!state.link) return; const r=mem.recipes.find(x=>x.id===state.link.id); r.versions[state.link.v].bakes.push(pendingBake); pendingBake=null; }
+
+/* ---------- calendario ---------- */
+function icsDate(t){ return new Date(t).toISOString().replace(/[-:]/g,``).replace(/\.\d{3}/,``); }
+function plain(html){ const d=document.createElement(`div`); d.innerHTML=html.replace(/<\/p>/g,`\n`); return d.textContent.trim(); }
+function icsEsc(s){ return s.replace(/\\/g,`\\\\`).replace(/;/g,`\\;`).replace(/,/g,`\\,`).replace(/\n/g,`\\n`); }
+function calSteps(){ return R.steps.filter(s=>s.hands); }
+function buildIcs(){
+  const L=[`BEGIN:VCALENDAR`,`VERSION:2.0`,`PRODID:-//Lievita//IT`,`CALSCALE:GREGORIAN`,`METHOD:PUBLISH`];
+  const stamp=icsDate(Date.now());
+  calSteps().forEach((s,i)=>{ const note=state.notes[s.key]; const end=Math.min(s.end,s.start+30*MIN);
+    L.push(`BEGIN:VEVENT`,`UID:${s.key}-${s.start}-${i}@lievita`,`DTSTAMP:${stamp}`,`DTSTART:${icsDate(s.start)}`,`DTEND:${icsDate(Math.max(end,s.start+5*MIN))}`,`SUMMARY:${icsEsc(`Pizza: `+s.title)}`,`DESCRIPTION:${icsEsc((note?`La tua nota: `+note+`\n\n`:``)+plain(s.body))}`,`BEGIN:VALARM`,`ACTION:DISPLAY`,`DESCRIPTION:${icsEsc(s.title)}`,`TRIGGER:-PT0M`,`END:VALARM`,`END:VEVENT`); });
+  L.push(`END:VCALENDAR`); return L.join(`\r\n`);
+}
+function gcal(s){ const end=Math.max(Math.min(s.end,s.start+30*MIN),s.start+5*MIN); const note=state.notes[s.key]; return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`Pizza: `+s.title)}&dates=${icsDate(s.start)}/${icsDate(end)}&details=${encodeURIComponent((note?`La tua nota: `+note+`\n\n`:``)+plain(s.body))}`; }
+function openCal(){
+  modal(`<h3>Aggiungi al calendario</h3>
+    <p class="hint">Così il telefono ti avvisa a ogni passaggio, anche con l'app chiusa. Il file funziona con il calendario di iPhone, Outlook e la maggior parte dei calendari.</p>
+    <div class="actions" style="justify-content:flex-start"><button type="button" class="btn primary" id="dl-ics">Scarica il file del calendario (.ics)</button></div>
+    <p class="hint">Se il file non si scarica (succede nell'anteprima dentro Claude), aggiungi i passaggi uno per uno a Google Calendar:</p>
+    <ul class="cal-list">${calSteps().map(s=>`<li><span>${when(s.start)} · ${s.title}</span><a href="${gcal(s)}" target="_blank" rel="noopener">Google Calendar</a></li>`).join(``)}</ul>
+    <div class="actions"><button type="button" class="btn ghost" data-close>Chiudi</button></div>`);
+  $(`#dl-ics`).onclick=()=>download(`pizza-${toLocalInput(state.dinner).slice(0,10)}.ics`,buildIcs(),`text/calendar`);
+}
+function download(name,text,type){ try{ const b=new Blob([text],{type}); const a=document.createElement(`a`); a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000); }catch(e){} }
+
+/* ---------- modalità cucina ---------- */
+const cook={i:0,steps:[],timerEnd:null,timerId:null,wake:null,rating:0};
+async function requestWake(){ try{ if(`wakeLock` in navigator) cook.wake=await navigator.wakeLock.request(`screen`); }catch(e){} }
+document.addEventListener(`visibilitychange`,()=>{ if(!$(`#cook`).hidden&&document.visibilityState===`visible`) requestWake(); });
+function openCook(){
+  cook.steps=R.steps; const now=Date.now();
+  const i=cook.steps.findIndex(s=>s.end>now); cook.i=i<0?0:i; cook.rating=0;
+  $(`#cook`).hidden=false; document.body.classList.add(`noscroll`); requestWake(); renderCook();
+}
+function closeCook(){ stopTimer(); $(`#cook`).hidden=true; document.body.classList.remove(`noscroll`); try{ cook.wake&&cook.wake.release(); }catch(e){} cook.wake=null; renderResults(); }
+function stopTimer(){ clearInterval(cook.timerId); cook.timerId=null; cook.timerEnd=null; }
+function fmtClock(ms){ const s=Math.max(0,Math.round(ms/1000)); return pad(Math.floor(s/60))+`:`+pad(s%60); }
+let actx=null;
+function beep(){ try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); [0,.45,.9].forEach(dt=>{ const o=actx.createOscillator(),gn=actx.createGain(); o.frequency.value=880; o.connect(gn); gn.connect(actx.destination); const t0=actx.currentTime+dt; gn.gain.setValueAtTime(.001,t0); gn.gain.exponentialRampToValueAtTime(.3,t0+.02); gn.gain.exponentialRampToValueAtTime(.001,t0+.35); o.start(t0); o.stop(t0+.4); }); }catch(e){} try{ navigator.vibrate&&navigator.vibrate([300,150,300,150,300]); }catch(e){} }
+function renderCook(){
+  const c=$(`#cook`), n=cook.steps.length;
+  if(cook.i>=n){ renderRate(); return; }
+  const s=cook.steps[cook.i], note=state.notes[s.key];
+  const now=Date.now(); const late=s.start<now&&s.end>now?`adesso`:s.start>now?`tra ${fmtDur((s.start-now)/H)}`:``;
+  c.innerHTML=`
+    <div class="ck-top"><b>Passaggio ${cook.i+1} di ${n}</b><button type="button" class="btn small" id="ck-close">Esci</button></div>
+    <div class="ck-bar"><i style="width:${(cook.i/n)*100}%"></i></div>
+    <div class="ck-main"><div class="ck-inner">
+      <div class="ck-when">${when(s.start)}${late?` · ${late}`:``} · ${s.hands?`da fare`:`attesa di ${fmtDur((s.end-s.start)/H)}`}</div>
+      <h2>${s.title}</h2>
+      ${note?`<div class="note"><b>La tua nota</b>${esc(note)}</div>`:``}
+      <div class="ck-body">${s.body}</div>
+      ${s.timer?`<div class="timer" id="timer"><span class="clock" id="clock">${fmtClock(s.timer*60e3)}</span><button type="button" class="btn primary" id="t-start">Avvia timer ${s.timer<1?``:``}${num(s.timer)} min</button><button type="button" class="btn ghost" id="t-stop" hidden>Ferma</button></div>`:``}
+    </div></div>
+    <div class="ck-nav"><button type="button" class="btn" id="ck-prev" ${cook.i===0?`disabled`:``}>Indietro</button><button type="button" class="btn primary" id="ck-next">${cook.i===n-1?`Ho finito`:`Avanti`}</button></div>`;
+  $(`#ck-close`).onclick=closeCook;
+  $(`#ck-prev`).onclick=()=>{ stopTimer(); cook.i--; renderCook(); };
+  $(`#ck-next`).onclick=()=>{ stopTimer(); cook.i++; renderCook(); };
+  if(s.timer){
+    $(`#t-start`).onclick=()=>{
+      try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); actx.resume&&actx.resume(); }catch(e){}
+      cook.timerEnd=Date.now()+s.timer*60e3; $(`#t-start`).hidden=true; $(`#t-stop`).hidden=false; $(`#timer`).classList.remove(`done`);
+      clearInterval(cook.timerId);
+      cook.timerId=setInterval(()=>{ const left=cook.timerEnd-Date.now(); const cl=$(`#clock`); if(!cl){ stopTimer(); return; } cl.textContent=fmtClock(left); if(left<=0){ stopTimer(); cl.textContent=`Tempo!`; $(`#timer`).classList.add(`done`); $(`#t-start`).hidden=false; $(`#t-start`).textContent=`Riavvia`; $(`#t-stop`).hidden=true; beep(); } },250);
+    };
+    $(`#t-stop`).onclick=()=>{ stopTimer(); $(`#clock`).textContent=fmtClock(s.timer*60e3); $(`#t-start`).hidden=false; $(`#t-stop`).hidden=true; };
+  }
+}
+function renderRate(){
+  const c=$(`#cook`);
+  const r=state.link&&mem.recipes.find(x=>x.id===state.link.id);
+  c.innerHTML=`
+    <div class="ck-top"><b>Buon appetito</b><button type="button" class="btn small" id="ck-close">Esci</button></div>
+    <div class="ck-bar"><i style="width:100%"></i></div>
+    <div class="ck-main"><div class="ck-inner">
+      <h2>Com'è venuta?</h2>
+      <p class="ck-body" style="margin:0">Il voto e la nota restano attaccati ${r?`alla versione ${state.link.v+1} di “${esc(r.name)}”`:`alla ricetta, se la salvi`}: la prossima volta saprai cosa cambiare.</p>
+      <div class="rate" role="group" aria-label="Voto da 1 a 5">${[1,2,3,4,5].map(i=>`<button type="button" data-rate="${i}" class="${i<=cook.rating?`on`:``}" aria-label="${i} su 5">★</button>`).join(``)}</div>
+      <label class="sub" for="bake-note">Cosa ha funzionato e cosa no?</label>
+      <textarea id="bake-note" style="width:100%;min-height:110px;border:1.5px solid var(--line);border-radius:8px;padding:10px;background:var(--surface)" placeholder="Es. cornicione ottimo, ma il fondo era un po' crudo: la prossima volta acciaio più in basso"></textarea>
+    </div></div>
+    <div class="ck-nav"><button type="button" class="btn" id="ck-skip">Salta</button><button type="button" class="btn primary" id="ck-rate">${r?`Salva il voto`:`Salva ricetta e voto`}</button></div>`;
+  c.querySelectorAll(`[data-rate]`).forEach(b=>b.onclick=()=>{ cook.rating=Number(b.dataset.rate); c.querySelectorAll(`[data-rate]`).forEach(x=>x.classList.toggle(`on`,Number(x.dataset.rate)<=cook.rating)); });
+  $(`#ck-close`).onclick=closeCook; $(`#ck-skip`).onclick=closeCook;
+  $(`#ck-rate`).onclick=()=>{
+    const bake={date:Date.now(),rating:cook.rating,note:$(`#bake-note`).value.trim(),room:state.room,plan:R.pk};
+    if(r){ r.versions[state.link.v].bakes.push(bake); persist(); closeCook(); }
+    else { pendingBake=bake; closeCook(); openSave(); }
+  };
+}
+
+/* ---------- le mie ricette ---------- */
+function stars(n){ return `<span class="stars" aria-label="${n} su 5">${`★`.repeat(n)}${`☆`.repeat(5-n)}</span>`; }
+function dShort(t){ const d=new Date(t); return d.getDate()+`/`+(d.getMonth()+1)+`/`+String(d.getFullYear()).slice(2); }
+function renderRecCount(){ $(`#rec-count`).textContent=mem.recipes.length?`(${mem.recipes.length})`:``; }
+let confirmDel=null;
+function renderRecipes(){
+  const v=$(`#view-rec`);
+  const list=mem.recipes.map(r=>{
+    const all=r.versions.flatMap(x=>x.bakes).filter(b=>b.rating);
+    const avg=all.length?Math.round(all.reduce((s,b)=>s+b.rating,0)/all.length):0;
+    const c0=r.versions[r.versions.length-1].cfg;
+    return `<article class="rec"><h3>${esc(r.name)}</h3>
+      <div class="meta">${STYLES[c0.style].name}${(c0.method||`diretto`)!==`diretto`?` · ${METHODS[c0.method]||`Metodo sconosciuto`} (${num(c0.prefPct)}% della farina)`:``} · ${r.versions.length} ${r.versions.length>1?`versioni`:`versione`} · ${all.length} ${all.length===1?`cottura`:`cotture`}${avg?` · ${stars(avg)}`:``}</div>
+      <ol class="versions" reversed>${r.versions.map((x,i)=>({x,i})).reverse().map(({x,i})=>`<li>
+        <div class="vhead"><span>Versione ${i+1} · ${dShort(x.date)}</span><button type="button" class="btn small ${i===r.versions.length-1?`primary`:``}" data-use="${r.id}" data-v="${i}">Usa</button></div>
+        ${x.note?`<div>${esc(x.note)}</div>`:``}
+        ${x.diff&&x.diff.length?`<ul class="diff">${x.diff.map(d=>`<li>${esc(d)}</li>`).join(``)}</ul>`:``}
+        ${x.bakes.map(b=>`<div>${b.rating?stars(b.rating):``} ${dShort(b.date)}${b.note?` · ${esc(b.note)}`:``}</div>`).join(``)}
+      </li>`).join(``)}</ol>
+      <div><button type="button" class="btn small ghost danger" data-del="${r.id}">${confirmDel===r.id?`Conferma: elimina per sempre`:`Elimina ricetta`}</button></div>
+    </article>`;
+  }).join(``);
+  v.innerHTML=`<div class="rec-head"><h2>Le mie ricette</h2><div class="actions"><button type="button" class="btn small" id="exp">Esporta</button><button type="button" class="btn small" id="imp">Importa</button></div></div>
+    ${mem.recipes.length?`<div class="rec-list">${list}</div>`:`<div class="panel empty"><h3>Nessuna ricetta salvata</h3><p>Prepara un impasto e premi “Salva come mia ricetta”. Potrai aggiungere note a ogni passaggio, salvare nuove versioni e votare ogni cottura.</p></div>`}`;
+}
+document.addEventListener(`click`,e=>{
+  const u=e.target.closest(`[data-use]`);
+  if(u){ const r=mem.recipes.find(x=>x.id===u.dataset.use), i=Number(u.dataset.v), c=clone(r.versions[i].cfg);
+    Object.assign(state,{...prefConfig(c),style:c.style,flour:c.flour,oven:c.oven,plan:c.plan,yeast:c.yeast,mixer:c.mixer,over:c.over||{},notes:c.notes||{}});
+    state.link={id:r.id,v:i}; ui.page=LAST; ui.reached=LAST; ui.reviewed=true; showTab(`new`); renderAll(); window.scrollTo(0,0); return; }
+  const d=e.target.closest(`[data-del]`);
+  if(d){ if(confirmDel===d.dataset.del){ mem.recipes=mem.recipes.filter(x=>x.id!==d.dataset.del); if(state.link&&state.link.id===d.dataset.del) state.link=null; confirmDel=null; persist(); renderRecCount(); } else confirmDel=d.dataset.del; renderRecipes(); return; }
+  if(e.target.id===`exp`){ const txt=JSON.stringify({app:`lievita`,version:1,recipes:mem.recipes},null,2);
+    modal(`<h3>Esporta le ricette</h3><p class="hint">Copia il testo e conservalo dove vuoi (note, email, Drive). Potrai reimportarlo su qualsiasi dispositivo.</p><textarea id="exp-txt" readonly style="min-height:200px;font-family:ui-monospace,monospace;font-size:.8rem">${esc(txt)}</textarea><div class="actions"><button type="button" class="btn ghost" data-close>Chiudi</button><button type="button" class="btn" id="exp-dl">Scarica file</button><button type="button" class="btn primary" id="exp-copy">Copia</button></div>`);
+    $(`#exp-copy`).onclick=async()=>{ try{ await navigator.clipboard.writeText(txt); $(`#exp-copy`).textContent=`Copiato`; }catch(err){ $(`#exp-txt`).select(); $(`#exp-copy`).textContent=`Seleziona e copia a mano`; } };
+    $(`#exp-dl`).onclick=()=>download(`lievita-ricette.json`,txt,`application/json`); return; }
+  if(e.target.id===`imp`){
+    modal(`<h3>Importa le ricette</h3><p class="hint">Incolla il testo esportato oppure scegli il file. Le ricette già presenti con lo stesso codice vengono aggiornate.</p><textarea id="imp-txt" style="min-height:160px;font-family:ui-monospace,monospace;font-size:.8rem" placeholder="Incolla qui"></textarea><input type="file" id="imp-file" accept=".json,application/json"><p class="hint" id="imp-msg" role="status"></p><div class="actions"><button type="button" class="btn ghost" data-close>Annulla</button><button type="button" class="btn primary" id="imp-go">Importa</button></div>`);
+    $(`#imp-file`).onchange=ev=>{ const f=ev.target.files[0]; if(!f) return; f.text().then(t=>{ $(`#imp-txt`).value=t; }); };
+    $(`#imp-go`).onclick=()=>{ try{ const data=JSON.parse($(`#imp-txt`).value); const rs=Array.isArray(data)?data:data.recipes; if(!Array.isArray(rs)) throw 0; let n=0; rs.forEach(r=>{ if(!r.id||!Array.isArray(r.versions)) return; mem.recipes=mem.recipes.filter(x=>x.id!==r.id); mem.recipes.push(r); n++; }); persist(); renderRecCount(); renderRecipes(); closeModal(); }catch(err){ $(`#imp-msg`).textContent=`Il testo non sembra un'esportazione di Lievita. Controlla di averlo incollato tutto.`; } };
+    return; }
+});
+/* ---------- schede ---------- */
+function showTab(t){
+  const rec=t===`rec`;
+  $(`#view-new`).hidden=rec; $(`#view-rec`).hidden=!rec;
+  $(`#tab-new`).setAttribute(`aria-selected`,!rec); $(`#tab-rec`).setAttribute(`aria-selected`,rec);
+  if(rec) renderRecipes();
+  try{ history.replaceState(null,``,rec?`#ricette`:location.pathname+location.search); }catch(e){}
+}
+$(`#tab-new`).onclick=()=>{ showTab(`new`); renderAll(); };
+$(`#tab-rec`).onclick=()=>showTab(`rec`);
+window.addEventListener(`hashchange`,()=>showTab(location.hash===`#ricette`?`rec`:`new`));
+
+/* ---------- avvio ---------- */
+load();
+if(!canStore) $(`#storage-note`).hidden=false;
+if(mem.last) Object.assign(state,mem.last);
+renderAll(); renderRecCount();
+if(location.hash===`#ricette`) showTab(`rec`);
+setInterval(()=>{ if(!$(`#view-new`).hidden&&$(`#cook`).hidden&&$(`#modal`).hidden&&!state.editing&&!document.activeElement.matches(`input,textarea`)) renderResults(); },60000);
+// Uso offline (sw.js). Solo su http(s): aperta come file locale o dentro un'anteprima isolata la registrazione non riesce e l'app funziona lo stesso.
+if(`serviceWorker` in navigator && /^https?:$/.test(location.protocol)){
+  window.addEventListener(`load`,()=>{ navigator.serviceWorker.register(`sw.js`).catch(()=>{}); });
+}
+</script>
+</body>
+</html>

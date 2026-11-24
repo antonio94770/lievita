@@ -1,0 +1,8 @@
+COMPITO 5: parametri degli stili e del processo.
+a) Per ogni stile trova valori tipici da disciplinari, pizzaioli noti e mulini: idratazione, sale % sulla farina, olio, peso del panetto, diametro:
+   napoletana classica (noi: 62%, 2,8%, 0 olio, 250 g); contemporanea (68%, 2,8%, 270 g); canotto (74%, 2,8%, 280 g); tonda romana sottile (57%, 2,3%, olio 4%, 190 g).
+   Verifica in particolare il Disciplinare AVPN (pizzanapoletana.org) per sale, acqua, tempi di puntata e appretto, temperature, peso panetto: dammi citazioni dal PDF.
+b) Temperatura finale dell'impasto (DDT) consigliata per diretti in giornata e con frigo; formula della temperatura dell'acqua e fattore attrito a mano / impastatrice planetaria / spirale.
+c) Pieghe (stretch and fold, pieghe a tre, slap and fold): da quale idratazione servono, quante serie, ogni quanti minuti.
+d) Appretto dopo il frigo: quante ore fuori dal frigo prima di stendere, a quale temperatura di casa? Il nostro modello dà 4 h a 20 °C, circa 2,8 h a 23 °C, 6 h a 17 °C.
+e) Staglio prima del frigo (panetti in frigo) o dopo (massa in frigo): pro e contro per principianti.

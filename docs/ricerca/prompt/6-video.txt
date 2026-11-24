@@ -1,0 +1,6 @@
+COMPITO 6: elenco di video YouTube in italiano da analizzare.
+Trova 15 video YouTube di pizzaioli, mulini o canali seri italiani che mostrano una ricetta completa di pizza con lievito di birra e dicono grammi di lievito, tempi e (se possibile) temperatura. Coprire: in giornata (4–10 h a temperatura ambiente), 24 h con frigo, 48 h con frigo, pizza in teglia per casa, tonda romana, forno di casa con pietra o acciaio, fornetto G3 Ferrari, Ooni.
+Escludi questi ID che abbiamo già: n4BtK6OM7cU, m9vktZP1At8, EXTiKirkihY, oGZ2apFL0u4, 2-gJKsw3BmE.
+Per ogni video: URL completo, titolo esatto, canale, categoria (tra quelle sopra) e cosa promette. Verifica che l'URL esista davvero cercandolo; scarta quelli che non riesci a confermare. Non riassumere il contenuto dei video: lo leggerò io dalla trascrizione.
+Formato finale obbligatorio: una riga per video, così:
+VIDEO | <url> | <titolo> | <canale> | <categoria>

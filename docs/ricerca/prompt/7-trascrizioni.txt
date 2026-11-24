@@ -1,0 +1,10 @@
+COMPITO 7: estrazione dai video. Nella cartella "trascrizioni" ci sono 14 file, uno per video YouTube: URL, canale, titolo e i sottotitoli automatici con i minutaggi [mm:ss]. Leggili TUTTI (solo lettura, nessuna ricerca web necessaria).
+Per ogni video estrai, solo se detto esplicitamente nel testo, e per ogni dato il minutaggio [mm:ss] dove compare:
+- stile e forno; farina (marca, W se detto); grammi di farina, acqua, sale, olio, lievito (tipo: fresco/secco/madre) e % sulla farina (CALCOLO MIO);
+- ogni fase: nome (impasto, riposo, pieghe, puntata, staglio, frigo, appretto, stesura, cottura), durata, temperatura;
+- peso del panetto o grammi per teglia e misura della teglia;
+- temperatura e tempo di cottura, posizione nel forno, preriscaldo;
+- temperatura dell'acqua o dell'impasto, pieghe (quante, ogni quanto).
+I sottotitoli automatici sbagliano parole (es. "affetto" = "appretto", "lostaglio" = "lo staglio"): correggi solo quando è ovvio e segnalalo. Se un numero manca scrivi "non detto". Non inventare.
+Poi, per ogni video con lievito di birra e tempi chiari, calcola cosa darebbe il nostro modello (heq e % lievito fresco) e il rapporto video/modello. Se la temperatura di casa non è detta, ipotizza 21 °C e scrivilo.
+Infine: elenca i consigli pratici ricorrenti (in almeno 2 video) utili a un principiante, con i minutaggi.

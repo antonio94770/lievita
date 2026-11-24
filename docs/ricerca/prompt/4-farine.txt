@@ -1,0 +1,4 @@
+COMPITO 4: farine italiane da supermercato e per pizza.
+a) Per queste farine trova sulle schede tecniche ufficiali dei mulini: W, P/L, proteine, ore di lievitazione/maturazione consigliate, idratazione consigliata: Caputo Pizzeria, Caputo Nuvola, Caputo Cuoco, Caputo Manitoba Oro, Le 5 Stagioni Napoletana, Le 5 Stagioni Manitoba, Molino Grassi farina per pizza, Barilla 00, Coop/Esselunga 00 generica, Manitoba del supermercato (Lo Conte, Spadoni, Despar), Petra 3 / Petra 5, Molino Rossetto pizza.
+b) Le 00 generiche da supermercato: che W hanno di solito? Le marche lo dichiarano?
+c) Nostri limiti: 00 debole fino a 24 h e 60% di idratazione; farina per pizza fino a 48 h e 70%; mix 70% pizza + 30% Manitoba fino a 72 h e 78%; farina forte fino a 72 h e 82%. Sono coerenti con le schede tecniche? Esiste una relazione tra W e ore di maturazione o idratazione massima pubblicata da qualche mulino o tabella nota?
