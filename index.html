@@ -16,6 +16,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+<script>
+/* tema scelto dall'utente: auto (segue il telefono), chiaro o scuro */
+(function(){ try{ var t=localStorage.getItem(`lievita.theme`); if(t===`light`||t===`dark`) document.documentElement.dataset.theme=t; }catch(e){} })();
+</script>
 <style>
 /* Layout: procedura a pagine (una domanda alla volta), poi il piano completo. */
 :root{
@@ -35,23 +39,23 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#15120F; --surface:#1F1A16; --surface-2:#262019; --ink:#F1EAE0; --muted:#B3A79A; --line:#3A322B;
-    --accent:#7CC9A0; --accent-ink:#0E1A13; --accent-soft:#1E3328;
-    --ember:#F0915F; --ember-soft:#3B2219; --warn:#F1C46C; --warn-soft:#352A10;
-    --a-cheese:#F3EAD6; --a-metal:#5E574F; --a-metal2:#4D463F; --a-glass:#0F0C0A; --a-dial:#A89E92;
-    --a-sack:#4A4036; --a-sack-line:#6E604F; --a-ink:#EADFCF; --a-dark:#100D0B;
-    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+    --bg:#121314; --surface:#1C1E20; --surface-2:#232628; --ink:#F3F0EB; --muted:#A7A29B; --line:#303336;
+    --accent:#62D29D; --accent-ink:#08170F; --accent-soft:#173226;
+    --ember:#FF9160; --ember-soft:#3A2119; --warn:#F2C66D; --warn-soft:#33290F;
+    --a-cheese:#F3EAD6; --a-metal:#4E5155; --a-metal2:#3F4245; --a-glass:#0B0C0D; --a-dial:#A3A09B;
+    --a-sack:#3A3936; --a-sack-line:#5C5953; --a-ink:#ECE6DC; --a-dark:#0C0D0E;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#15120F; --surface:#1F1A16; --surface-2:#262019; --ink:#F1EAE0; --muted:#B3A79A; --line:#3A322B;
-  --accent:#7CC9A0; --accent-ink:#0E1A13; --accent-soft:#1E3328;
-  --ember:#F0915F; --ember-soft:#3B2219; --warn:#F1C46C; --warn-soft:#352A10;
-  --a-cheese:#F3EAD6; --a-metal:#5E574F; --a-metal2:#4D463F; --a-glass:#0F0C0A; --a-dial:#A89E92;
-  --a-sack:#4A4036; --a-sack-line:#6E604F; --a-ink:#EADFCF; --a-dark:#100D0B;
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
-  color-scheme: dark;
+    --bg:#121314; --surface:#1C1E20; --surface-2:#232628; --ink:#F3F0EB; --muted:#A7A29B; --line:#303336;
+    --accent:#62D29D; --accent-ink:#08170F; --accent-soft:#173226;
+    --ember:#FF9160; --ember-soft:#3A2119; --warn:#F2C66D; --warn-soft:#33290F;
+    --a-cheese:#F3EAD6; --a-metal:#4E5155; --a-metal2:#3F4245; --a-glass:#0B0C0D; --a-dial:#A3A09B;
+    --a-sack:#3A3936; --a-sack-line:#5C5953; --a-ink:#ECE6DC; --a-dark:#0C0D0E;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+    color-scheme: dark;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -71,6 +75,20 @@ button{cursor:pointer}
 .tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
 .tabs button{border:0;background:transparent;padding:8px 16px;border-radius:999px;font-weight:700;color:var(--muted)}
 .tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.top-act{display:flex;align-items:center;gap:8px}
+.theme-btn{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);box-shadow:var(--shadow);transition:transform .15s}
+.theme-btn:active{transform:scale(.92)}
+.top-act{position:relative;z-index:30}
+.tabs button{white-space:nowrap}
+@media (max-width:520px){.top-act{width:100%}.top-act .tabs{flex:1}.top-act .tabs button{flex:1;padding:8px 10px}}
+.theme-menu{position:absolute;top:calc(100% + 8px);right:0;z-index:30;min-width:210px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow),0 12px 32px rgba(0,0,0,.12);padding:8px;display:flex;flex-direction:column;gap:2px;animation:in .15s ease}
+.theme-menu b{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:6px 10px 4px}
+.theme-menu button{display:flex;align-items:center;gap:12px;border:0;background:transparent;border-radius:10px;padding:10px;text-align:left;font-weight:700}
+.theme-menu button:hover{background:var(--surface-2)}
+.theme-menu button[aria-checked="true"]{background:var(--accent-soft);color:var(--accent)}
+.theme-menu button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.theme-menu small{display:block;font-weight:400;color:var(--muted);font-size:.8rem}
+.theme-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .count{font-variant-numeric:tabular-nums;opacity:.8}
 .storage{background:var(--warn-soft);color:var(--ink);border-radius:var(--r);padding:10px 14px;margin-bottom:16px;font-size:.9rem}
 /* barra dei passaggi */
@@ -274,9 +292,53 @@ table.chg{width:100%;border-collapse:collapse;font-size:.9rem;font-variant-numer
 .ck-body p{margin:0 0 12px}
 .timer{display:flex;flex-wrap:wrap;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
 .timer .clock{font-family:var(--font-d);font-size:2.4rem;font-variant-numeric:tabular-nums;min-width:120px}
+.timer [hidden]{display:none}
 .timer.done{border-color:var(--ember);background:var(--ember-soft)}
 .ck-nav{display:flex;gap:12px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
 .ck-nav .btn{flex:1;justify-content:center;padding:14px;font-size:1.05rem}
+.ck-seg{display:flex;gap:3px;padding:8px 16px 0}
+.ck-seg i{flex:1;height:5px;border-radius:3px;background:var(--line);transition:background .3s}
+.ck-seg i.done{background:var(--accent)}
+.ck-seg i.cur{background:var(--accent);opacity:.45}
+.ck-seg i.skip{background:var(--muted);opacity:.35}
+.ck-seg i.late{background:var(--ember);opacity:.5}
+.ck-pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:.88rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink)}
+.pill svg,.lt-tag svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.pill s{font-weight:400;color:var(--muted);font-size:.8rem}
+.pill.time{font-size:1rem}
+.pill.now{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pill.ok{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.ck-late{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 16px;display:flex;flex-direction:column;gap:12px;border-left:4px solid var(--ember)}
+.ck-late.ok{border-left-color:var(--accent)}
+.lt-row{display:flex;justify-content:space-between;gap:12px}
+.lt-stat{display:flex;flex-direction:column;gap:2px;min-width:0}
+.lt-stat.r{align-items:flex-end;text-align:right}
+.lt-lbl{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.lt-val{font-family:var(--font-d);font-size:1.7rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.lt-val.warn{color:var(--ember)}
+.lt-tag{display:inline-flex;align-items:center;gap:4px;margin-top:4px;padding:2px 10px;border-radius:999px;font-size:.8rem;font-weight:700;background:var(--ember-soft);color:var(--ember)}
+.ck-late.ok .lt-tag{background:var(--accent-soft);color:var(--accent)}
+.lt-cap{display:flex;justify-content:space-between;gap:8px;font-size:.82rem;color:var(--muted);font-weight:700;margin-bottom:6px;font-variant-numeric:tabular-nums}
+.lt-bar{height:8px;border-radius:999px;background:var(--line);overflow:hidden}
+.lt-bar i{display:block;height:100%;border-radius:inherit;background:var(--accent);transition:width .4s}
+.ck-late:not(.ok) .lt-bar i{background:var(--ember)}
+.ck-plan{margin-top:8px;padding-top:16px;border-top:1px solid var(--line)}
+.ck-plan h3{font-size:1.05rem;margin:0 0 10px}
+.ck-tl{list-style:none;margin:0;padding:0}
+.ck-tl li{position:relative;display:grid;grid-template-columns:62px minmax(0,1fr);gap:10px;padding:0 0 12px 22px;font-size:.95rem}
+.ck-tl li::before{content:"";position:absolute;left:5px;top:6px;width:10px;height:10px;border-radius:50%;border:2px solid var(--line);background:var(--bg);box-sizing:border-box}
+.ck-tl li::after{content:"";position:absolute;left:9px;top:18px;bottom:0;width:2px;background:var(--line)}
+.ck-tl li:last-child::after{display:none}
+.ck-tl .t{font-variant-numeric:tabular-nums;font-weight:700}
+.ck-tl .t s{display:block;font-weight:400;color:var(--muted);font-size:.8rem}
+.ck-tl .d{color:var(--muted);font-size:.82rem}
+.ck-tl li.done{color:var(--muted)}
+.ck-tl li.done::before{background:var(--accent);border-color:var(--accent)}
+.ck-tl li.done::after{background:var(--accent)}
+.ck-tl li.cur::before{border-color:var(--accent);background:var(--accent-soft);width:14px;height:14px;left:3px;top:4px}
+.ck-tl li.cur{font-weight:700}
+.ck-tl li.late .t{color:var(--ember)}
 .rate{display:flex;gap:6px}
 .rate button{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;width:52px;height:52px;font-size:1.5rem;color:var(--muted)}
 .rate button.on{color:var(--ember);border-color:var(--ember);background:var(--ember-soft)}
@@ -298,10 +360,13 @@ table.chg{width:100%;border-collapse:collapse;font-size:.9rem;font-variant-numer
       <svg width="46" height="46" viewBox="0 0 44 44" aria-hidden="true"><rect width="44" height="44" rx="13" fill="var(--accent)"/><circle cx="22" cy="24" r="13" fill="var(--a-crust)"/><circle cx="22" cy="24" r="9.5" fill="var(--a-sauce)"/><circle cx="18.5" cy="21.5" r="2.6" fill="var(--a-cheese)"/><circle cx="25.5" cy="23" r="2.2" fill="var(--a-cheese)"/><circle cx="21" cy="28" r="2.4" fill="var(--a-cheese)"/><ellipse cx="25" cy="28.2" rx="2.2" ry="1.1" transform="rotate(-30 25 28.2)" fill="var(--a-basil)"/><path d="M16 9c1.3-1.3 1.3-2.7 0-4M22 8c1.3-1.3 1.3-2.7 0-4M28 9c1.3-1.3 1.3-2.7 0-4" stroke="var(--accent-ink)" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
       <div><h1>Lievita</h1><p>Dimmi quando vuoi mangiare: dosi, orari e passaggi li calcolo io.</p></div>
     </div>
+    <div class="top-act">
     <nav class="tabs" role="tablist" aria-label="Sezioni">
       <button id="tab-new" role="tab" aria-selected="true" type="button">Nuovo impasto</button>
       <button id="tab-rec" role="tab" aria-selected="false" type="button">Le mie ricette <span class="count" id="rec-count"></span></button>
     </nav>
+    <button type="button" class="theme-btn" id="theme-btn"></button>
+    </div>
   </header>
   <div id="storage-note" class="storage" hidden>Questo browser non permette di salvare dati: le ricette restano solo finché la pagina è aperta. Usa “Esporta” per non perderle.</div>
   <main id="view-new">
@@ -1518,15 +1583,110 @@ function openCal(){
 function download(name,text,type){ try{ const b=new Blob([text],{type}); const a=document.createElement(`a`); a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000); }catch(e){} }
 
 /* ---------- modalità cucina ---------- */
-const cook={i:0,steps:[],timerEnd:null,timerId:null,wake:null,rating:0};
+const cook={i:0,steps:[],timerEnd:null,timerId:null,wake:null,rating:0,os:[],oe:[],arr:[],done:[],sig:``};
 async function requestWake(){ try{ if(`wakeLock` in navigator) cook.wake=await navigator.wakeLock.request(`screen`); }catch(e){} }
-document.addEventListener(`visibilitychange`,()=>{ if(!$(`#cook`).hidden&&document.visibilityState===`visible`) requestWake(); });
-function openCook(){
-  cook.steps=R.steps; const now=Date.now();
-  const i=cook.steps.findIndex(s=>s.end>now); cook.i=i<0?0:i; cook.rating=0;
-  $(`#cook`).hidden=false; document.body.classList.add(`noscroll`); requestWake(); renderCook();
+document.addEventListener(`visibilitychange`,()=>{ if(!$(`#cook`).hidden&&document.visibilityState===`visible`){ requestWake(); renderCookLive(); } });
+/* Ritardi: ogni passaggio ha uno spostamento di inizio (os) e di fine (oe) in ms rispetto al piano.
+   Un ritardo si propaga ai passaggi successivi; il frigo lungo ne assorbe una parte (fino al 25%,
+   restando almeno 8 ore), così l'ora di cena non cambia. Il piano non viene mai anticipato. */
+const COOK_KEY=`lievita.cook`, LATE_GRACE=5*MIN, ABSORB=[`frigo`,`bigafrigo`], START_ACT=[`frigo`,`appretto`,`preriscaldo`];
+function absorbCap(s){ const d=s.end-s.start; return ABSORB.includes(s.key)&&d>8*H?Math.min(.25*d,d-8*H):0; }
+function pushDelay(os,oe,j,r){
+  for(let m=j;m<cook.steps.length&&r>0;m++){
+    const s=cook.steps[m], room=Math.max(0,absorbCap(s)-(os[m]-oe[m])), a=Math.min(r,room);
+    os[m]+=r; oe[m]+=r-a; r-=a;
+  }
 }
-function closeCook(){ stopTimer(); $(`#cook`).hidden=true; document.body.classList.remove(`noscroll`); try{ cook.wake&&cook.wake.release(); }catch(e){} cook.wake=null; renderResults(); }
+/* ritardo che si accumula restando sul passaggio i adesso */
+function delayAt(i,os,oe,now){
+  const s=cook.steps[i]; if(!s||cook.done[i]) return null;
+  if(s.hands){
+    // per frigo, appretto e forno conta quando inizi (10 min di margine); per gli altri quando finisci
+    const st=s.start+os[i], a=cook.arr[i], self=a?Math.max(0,a-st):0;
+    const r=Math.max(self, now-(START_ACT.includes(s.key)?st+10*MIN:s.end+oe[i]));
+    return r>0?{j:i+1,r,self}:null;
+  }
+  const nx=cook.steps[i+1]; if(!nx) return null;
+  const r=now-(nx.start+os[i+1]); return r>0?{j:i+1,r}:null;
+}
+function cookProjection(now){
+  const os=cook.os.slice(), oe=cook.oe.slice(), d=delayAt(cook.i,os,oe,now);
+  if(d){ if(d.self){ os[cook.i]+=d.self; oe[cook.i]+=d.self; } pushDelay(os,oe,d.j,d.r); }
+  return {os,oe};
+}
+function cookSig(steps){ return steps.map(s=>s.key+`@`+s.start).join(`|`); }
+function saveCook(){ try{ localStorage.setItem(COOK_KEY,JSON.stringify({sig:cook.sig,i:cook.i,os:cook.os,oe:cook.oe,arr:cook.arr,done:cook.done})); }catch(e){} }
+function arrive(){ if(cook.i<cook.steps.length&&!cook.arr[cook.i]) cook.arr[cook.i]=Date.now(); saveCook(); }
+function commitStep(){
+  const i=cook.i, now=Date.now(); if(cook.done[i]) return;
+  const d=delayAt(i,cook.os,cook.oe,now);
+  if(d){ if(d.self){ cook.os[i]+=d.self; cook.oe[i]+=d.self; } pushDelay(cook.os,cook.oe,d.j,d.r); }
+  cook.done[i]=now;
+}
+function openCook(){
+  cook.steps=R.steps; const now=Date.now(), n=cook.steps.length; cook.sig=cookSig(cook.steps);
+  let saved=null; try{ saved=JSON.parse(localStorage.getItem(COOK_KEY)||`null`); }catch(e){}
+  if(saved&&saved.sig===cook.sig&&Array.isArray(saved.os)&&saved.os.length===n){
+    Object.assign(cook,{i:Math.min(saved.i,n),os:saved.os,oe:saved.oe,arr:saved.arr||[],done:saved.done||[]});
+  } else {
+    const i=cook.steps.findIndex(s=>s.end>now); cook.i=i<0?0:i;
+    cook.os=Array(n).fill(0); cook.oe=Array(n).fill(0); cook.arr=[]; cook.done=[];
+  }
+  cook.rating=0;
+  $(`#cook`).hidden=false; document.body.classList.add(`noscroll`); requestWake(); arrive(); renderCook();
+}
+function closeCook(){ if(cook.i>=cook.steps.length){ try{ localStorage.removeItem(COOK_KEY); }catch(e){} } stopTimer(); $(`#cook`).hidden=true; document.body.classList.remove(`noscroll`); try{ cook.wake&&cook.wake.release(); }catch(e){} cook.wake=null; renderResults(); }
+function shortTime(t){ return dayLabel(t)===`oggi`?hm(t):dayLabel(t)+` `+hm(t); }
+const ICO={
+  clock:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`,
+  hand:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12V5.5a1.5 1.5 0 0 1 3 0V11m0-1V4.5a1.5 1.5 0 0 1 3 0V11m0-5.5a1.5 1.5 0 0 1 3 0V13c0 4-2.5 7-6 7-2.6 0-4-1.3-5.6-3.6L4 13.2a1.5 1.5 0 0 1 2.4-1.8L8 13"/></svg>`,
+  wait:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9"/></svg>`,
+  check:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`
+};
+function shortDur(ms){ const m=Math.round(ms/MIN), h=Math.floor(m/60), r=m%60; return h?`${h} h${r?` ${r}′`:``}`:`${r} min`; }
+function cookWhenHtml(P,now){
+  const i=cook.i, s=cook.steps[i], st=s.start+P.os[i], en=s.end+P.oe[i];
+  const rel=cook.done[i]?[`ok`,`Fatto alle ${hm(cook.done[i])}`]:st>now?[``,`Tra ${shortDur(st-now)}`]:en>now||s.hands?[`now`,`Adesso`]:null;
+  return `<span class="pill time">${ICO.clock}${shortTime(st)}${P.os[i]>=MIN?`<s>${hm(s.start)}</s>`:``}</span>`
+    +(rel?`<span class="pill ${rel[0]}">${rel[0]===`ok`?ICO.check:``}${rel[1]}</span>`:``)
+    +`<span class="pill">${s.hands?ICO.hand+`Da fare`:ICO.wait+`Attesa ${shortDur(en-st)}`}</span>`;
+}
+function cookLateHtml(P,now){
+  const n=cook.steps.length, ci=cook.steps.findIndex(s=>s.key===`cottura`), k=ci<0?n-1:ci;
+  const dinner=cook.steps[k].start, shift=P.os[k];
+  let absorbed=0, cap=0; cook.steps.forEach((s,m)=>{ if(ABSORB.includes(s.key)){ absorbed+=Math.max(0,P.os[m]-P.oe[m]); cap+=absorbCap(s); } });
+  const d=!cook.done[cook.i]&&delayAt(cook.i,cook.os,cook.oe,now);
+  const late=d?Math.max(0,...P.os.slice(cook.i)):Math.max(0,...P.os);
+  if(late<LATE_GRACE&&absorbed<LATE_GRACE) return ``;
+  const ok=shift<LATE_GRACE, pct=cap?Math.min(100,absorbed/cap*100):0;
+  return `<div class="ck-late ${ok?`ok`:``}">
+    <div class="lt-row">
+      <div class="lt-stat"><span class="lt-lbl">${d?`In ritardo`:`Ritardo`}</span><span class="lt-val warn">+${shortDur(late)}</span></div>
+      <div class="lt-stat r"><span class="lt-lbl">Prima pizza${dayLabel(dinner+shift)===`oggi`?``:` · ${dayLabel(dinner+shift)}`}</span><span class="lt-val">${hm(dinner+shift)}</span><span class="lt-tag">${ok?ICO.check+`In orario`:`+${shortDur(shift)}`}</span></div>
+    </div>
+    ${cap?`<div class="lt-meter"><div class="lt-cap"><span>Recuperato nel frigo</span><span>${shortDur(absorbed)} / ${shortDur(cap)}</span></div><div class="lt-bar"><i style="width:${pct}%"></i></div></div>`:``}
+  </div>`;
+}
+function cookPlanHtml(P,now){
+  const items=cook.steps.map((s,m)=>{
+    const st=s.start+P.os[m], moved=P.os[m]>=MIN, cut=ABSORB.includes(s.key)?P.os[m]-P.oe[m]:0;
+    const cls=[cook.done[m]?`done`:``,m===cook.i?`cur`:``,!cook.done[m]&&m>=cook.i&&moved?`late`:``].filter(Boolean).join(` `);
+    const info=cook.done[m]?`fatto alle ${hm(cook.done[m])}`:m===cook.i?`sei qui`:m<cook.i?`saltato`:s.hands?`da fare`:`attesa · ${fmtDur((s.end+P.oe[m]-st)/H)}`;
+    return `<li class="${cls}"><span class="t">${shortTime(st)}${moved?`<s>${hm(s.start)}</s>`:``}</span><span>${s.title}<br><span class="d">${info}${cut>=MIN?` · accorciato di ${fmtDur(cut/H)}`:``}</span></span></li>`;
+  }).join(``);
+  return `<h3>Tabella di marcia</h3><ol class="ck-tl">${items}</ol>`;
+}
+function renderCookLive(){
+  if($(`#cook`).hidden||cook.i>=cook.steps.length) return;
+  const now=Date.now(), P=cookProjection(now);
+  const w=$(`#ck-when`), l=$(`#ck-late`), p=$(`#ck-plan`), g=$(`#ck-seg`);
+  if(w) w.innerHTML=cookWhenHtml(P,now); if(l) l.innerHTML=cookLateHtml(P,now); if(p) p.innerHTML=cookPlanHtml(P,now); if(g) g.innerHTML=cookSegHtml(P);
+}
+function cookSegHtml(P){
+  return cook.steps.map((s,m)=>`<i class="${cook.done[m]?`done`:m===cook.i?`cur`:m<cook.i?`skip`:P.os[m]>=LATE_GRACE?`late`:``}"></i>`).join(``);
+}
+setInterval(renderCookLive,30000);
+
 function stopTimer(){ clearInterval(cook.timerId); cook.timerId=null; cook.timerEnd=null; }
 function fmtClock(ms){ const s=Math.max(0,Math.round(ms/1000)); return pad(Math.floor(s/60))+`:`+pad(s%60); }
 let actx=null;
@@ -1535,21 +1695,23 @@ function renderCook(){
   const c=$(`#cook`), n=cook.steps.length;
   if(cook.i>=n){ renderRate(); return; }
   const s=cook.steps[cook.i], note=state.notes[s.key];
-  const now=Date.now(); const late=s.start<now&&s.end>now?`adesso`:s.start>now?`tra ${fmtDur((s.start-now)/H)}`:``;
+  const now=Date.now(), P=cookProjection(now);
   c.innerHTML=`
     <div class="ck-top"><b>Passaggio ${cook.i+1} di ${n}</b><button type="button" class="btn small" id="ck-close">Esci</button></div>
-    <div class="ck-bar"><i style="width:${(cook.i/n)*100}%"></i></div>
+    <div class="ck-seg" id="ck-seg">${cookSegHtml(P)}</div>
     <div class="ck-main"><div class="ck-inner">
-      <div class="ck-when">${when(s.start)}${late?` · ${late}`:``} · ${s.hands?`da fare`:`attesa di ${fmtDur((s.end-s.start)/H)}`}</div>
+      <div class="ck-pills" id="ck-when">${cookWhenHtml(P,now)}</div>
+      <div id="ck-late">${cookLateHtml(P,now)}</div>
       <h2>${s.title}</h2>
       ${note?`<div class="note"><b>La tua nota</b>${esc(note)}</div>`:``}
       <div class="ck-body">${s.body}</div>
       ${s.timer?`<div class="timer" id="timer"><span class="clock" id="clock">${fmtClock(s.timer*60e3)}</span><button type="button" class="btn primary" id="t-start">Avvia timer ${s.timer<1?``:``}${num(s.timer)} min</button><button type="button" class="btn ghost" id="t-stop" hidden>Ferma</button></div>`:``}
+      <div class="ck-plan" id="ck-plan">${cookPlanHtml(P,now)}</div>
     </div></div>
-    <div class="ck-nav"><button type="button" class="btn" id="ck-prev" ${cook.i===0?`disabled`:``}>Indietro</button><button type="button" class="btn primary" id="ck-next">${cook.i===n-1?`Ho finito`:`Avanti`}</button></div>`;
+    <div class="ck-nav"><button type="button" class="btn" id="ck-prev" ${cook.i===0?`disabled`:``}>Indietro</button><button type="button" class="btn primary" id="ck-next">${cook.i===n-1?`Ho finito`:`Fatto, avanti`}</button></div>`;
   $(`#ck-close`).onclick=closeCook;
-  $(`#ck-prev`).onclick=()=>{ stopTimer(); cook.i--; renderCook(); };
-  $(`#ck-next`).onclick=()=>{ stopTimer(); cook.i++; renderCook(); };
+  $(`#ck-prev`).onclick=()=>{ stopTimer(); cook.i--; saveCook(); renderCook(); };
+  $(`#ck-next`).onclick=()=>{ stopTimer(); commitStep(); cook.i++; arrive(); renderCook(); $(`.ck-main`)&&($(`.ck-main`).scrollTop=0); };
   if(s.timer){
     $(`#t-start`).onclick=()=>{
       try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); actx.resume&&actx.resume(); }catch(e){}
@@ -1638,6 +1800,34 @@ $(`#tab-rec`).onclick=()=>showTab(`rec`);
 window.addEventListener(`hashchange`,()=>showTab(location.hash===`#ricette`?`rec`:`new`));
 
 /* ---------- avvio ---------- */
+/* ---------- tema chiaro / scuro ---------- */
+const THEMES={
+  auto:{label:`Automatico`,hint:`come il telefono`,ico:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg>`},
+  light:{label:`Chiaro`,hint:``,ico:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></svg>`},
+  dark:{label:`Scuro`,hint:``,ico:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>`}
+};
+function getTheme(){ const t=document.documentElement.dataset.theme; return t===`light`||t===`dark`?t:`auto`; }
+function applyTheme(t){
+  if(t===`auto`) delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme=t;
+  try{ t===`auto`?localStorage.removeItem(`lievita.theme`):localStorage.setItem(`lievita.theme`,t); }catch(e){}
+  const dark=t===`dark`||(t===`auto`&&matchMedia(`(prefers-color-scheme: dark)`).matches);
+  const m=document.querySelector(`meta[name="theme-color"]`); if(m) m.content=dark?`#121314`:`#2F6B4F`;
+  const b=$(`#theme-btn`); b.innerHTML=THEMES[t].ico; b.setAttribute(`aria-label`,`Tema: ${THEMES[t].label}. Cambia tema`); b.title=`Tema: ${THEMES[t].label}`;
+}
+function closeThemeMenu(){ const m=$(`#theme-menu`); if(m) m.remove(); $(`#theme-btn`).setAttribute(`aria-expanded`,`false`); }
+$(`#theme-btn`).setAttribute(`aria-haspopup`,`true`);
+$(`#theme-btn`).onclick=e=>{
+  e.stopPropagation(); if($(`#theme-menu`)){ closeThemeMenu(); return; }
+  const cur=getTheme(), m=document.createElement(`div`); m.id=`theme-menu`; m.className=`theme-menu`; m.setAttribute(`role`,`menu`);
+  m.innerHTML=`<b>Aspetto</b>`+Object.entries(THEMES).map(([k,v])=>`<button type="button" role="menuitemradio" aria-checked="${k===cur}" data-theme-pick="${k}">${v.ico}<span>${v.label}${v.hint?`<small>${v.hint}</small>`:``}</span></button>`).join(``);
+  $(`.top-act`).appendChild(m); $(`#theme-btn`).setAttribute(`aria-expanded`,`true`);
+  m.querySelectorAll(`[data-theme-pick]`).forEach(x=>x.onclick=()=>{ applyTheme(x.dataset.themePick); closeThemeMenu(); });
+  (m.querySelector(`[aria-checked="true"]`)||m.querySelector(`button`)).focus();
+};
+document.addEventListener(`click`,e=>{ if($(`#theme-menu`)&&!e.target.closest(`#theme-menu`)) closeThemeMenu(); });
+document.addEventListener(`keydown`,e=>{ if(e.key===`Escape`&&$(`#theme-menu`)){ closeThemeMenu(); $(`#theme-btn`).focus(); } });
+try{ matchMedia(`(prefers-color-scheme: dark)`).addEventListener(`change`,()=>{ if(getTheme()===`auto`) applyTheme(`auto`); }); }catch(e){}
+applyTheme(getTheme());
 load();
 if(!canStore) $(`#storage-note`).hidden=false;
 if(mem.last) Object.assign(state,mem.last);

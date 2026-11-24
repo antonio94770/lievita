@@ -77,6 +77,10 @@ Tutti i percorsi sono relativi, perché Pages pubblica l'app in una sottocartell
 
 Una copia è pubblicata anche come artifact privato su claude.ai, all'indirizzo https://claude.ai/artifact/1tvoFfkSwREv6pd9HrGEH2. Lì il download del file `.ics` non funziona, mentre su GitHub Pages sì.
 
+**Ritardi in modalità cucina (24 novembre 2026).** Ogni "Fatto, avanti" registra l'ora reale. Se l'utente è in ritardo, i passaggi successivi slittano (mai in anticipo): per impasto, pieghe, staglio e stesura conta l'ora in cui finisce; per frigo, appretto e forno l'ora in cui inizia, con 10 minuti di margine. Il frigo lungo (`frigo`, `bigafrigo`) assorbe fino al 25% della sua durata, restando sopra le 8 ore, così l'ora di cena resta ferma quando si può. La "Tabella di marcia" sotto il passaggio mostra gli orari aggiornati, barrando quelli originali. Lo stato si salva in localStorage (`lievita.cook`), legato alla sequenza dei passaggi, e si cancella dopo "Ho finito".
+
+**Tema.** Il pulsante rotondo nella testata apre un menu Automatico (segue il telefono), Chiaro, Scuro. La scelta si salva in localStorage (`lievita.theme`) e uno script nel `<head>` la applica prima del disegno, per evitare il lampo di colore. Colori solo come variabili su `:root`: la palette scura è ripetuta in `@media (prefers-color-scheme: dark)` e in `:root[data-theme="dark"]`, da tenere uguali.
+
 ### Il modello di calcolo
 
 - **Velocità di fermentazione rispetto a 20 °C:**

@@ -5,7 +5,10 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-const scripts = [...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+// salta gli script brevi nel <head> (tema): il motore è <script id="engine">, l'interfaccia il successivo
+const all = [...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)];
+const ei = all.findIndex(m => /id="engine"/.test(m[1]));
+const scripts = all.slice(ei).map(m => m[2]);
 const H = 36e5;
 
 // Esegue anche le funzioni dell'interfaccia. Il DOM minimo serve a raccogliere
