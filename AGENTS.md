@@ -156,7 +156,7 @@ Le note sono legate a chiavi fisse dei passaggi (`impasto`, `puntata`, `pieghe1-
 ## Prossimi passi
 
 1. ~~Verificare la dose di lievito~~ fatto (novembre 2026, vedi `docs/lievito.md`). Confermata su 10 video di pizzaioli letti dalle trascrizioni, con rapporto mediano video/modello di circa 1,0 (vedi `docs/ricerca/README.md`, che spiega anche come usare Gemini tramite `agy` e quanto fidarsi delle sue ricerche). Restano le prove in cucina sui percorsi principali (in giornata a 18–20 °C, 24 ore contemporanea, 24 ore teglia) e, più avanti, le etichette "testata" e "calcolata".
-2. ~~Preparare l'app per GitHub Pages~~ fatto (24 novembre 2026): manifest, icone, service worker, git. Resta da creare il repository su GitHub e attivare Pages.
+2. ~~Preparare l'app per GitHub Pages~~ fatto (24 novembre 2026): manifest, icone, service worker, git. Repository pubblico https://github.com/antonio94770/lievita, app online su https://antonio94770.github.io/lievita/ (Pages pubblica il ramo `main`, cartella principale, a ogni push).
 3. Separare il motore in un file JS a parte. I test esistono già in `test/engine.test.js` (si eseguono con `node --test test/engine.test.js`) e per ora estraggono il blocco `engine` da `index.html`.
 4. Scrivere e rivedere i testi di ogni passaggio, citando le fonti nel repository (non nell'app).
 5. Fare il test "a mano" con 10–20 persone: piano e promemoria mandati su WhatsApp usando il motore.
