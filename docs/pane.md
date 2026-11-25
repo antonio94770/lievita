@@ -16,9 +16,17 @@ Dal 25 novembre 2026 Lievita prepara anche il pane in casa. È un **percorso cal
 | `pagnotta` | Pagnotta casereccia | 0 media | 68% | sale 2% | cestino | 240 → 220 °C, vapore |
 | `filoni` | Filoncini | 0 media | 65% | sale 2% | filone | 240 → 220 °C, vapore |
 | `ciabatta` | Ciabatta | forte (almeno il mix) | 78% | sale 2,2%, pieghe sempre | non si forma | 240 → 220 °C, vapore |
+| `siciliano` | Pane siciliano (mafalda) | semola rimacinata | 65% | sale 2,2%, zucchero o malto 1%, sesamo | serpentina, non si incide | 230 → 210 °C, vapore |
+| `pugliese` | Pane pugliese (tipo Altamura) | semola rimacinata | 70% | sale 2%, pane da 1,3 kg | piegato “a cavallo”, non si incide | 240 → 220 °C, vapore, 15 min finali a 170 °C con lo sportello socchiuso |
 | `semola` | Pane di semola | semola rimacinata | 72% | sale 2% | cestino | 230 → 210 °C, vapore |
 | `integrale` | Pane integrale in cassetta | integrale | 75% | sale 2% | stampo | 220 → 200 °C, vapore |
 | `cassetta` | Pan bauletto | 0 media | 60% | sale 1,8%, olio 5%, zucchero 4% | stampo | 180 °C, senza vapore |
+
+**Forni limitati.** Uno stile può avere `ovens`, l'elenco dei forni ammessi: siciliano e pugliese escludono la pentola di ghisa, dove la forma non entra. La pagina Cucina mostra solo quelli; se un forno escluso arriva da una ricetta salvata, `breadBakeInfo` usa la teglia e lo dice in un avviso.
+
+**Asciugatura della crosta.** Con `dry` gli ultimi minuti si cuociono a 170 °C con lo sportello socchiuso: 15 minuti per il pugliese, 10 per il pane di semola da 800 g in su (proposta 4 della ricerca del 25 novembre, ricavata da Forno e Pietra). Il pane pugliese, oltre 1,1 kg, raffredda 3 ore.
+
+Il pane di Altamura DOP usa lievito madre e grani locali: l'app propone una versione di casa con il lievito di birra e lo dice in un avviso.
 
 `ball` è il peso crudo di ogni pane (pagnotta 900 g, filoncino 300 g, ciabatta 450 g, stampo 750–800 g). L'utente lo cambia nella pagina Quando, e il valore finisce in `over.ball`, salvato con la ricetta.
 
@@ -44,7 +52,7 @@ L'ora scelta dall'utente è quella in cui il pane è **cotto e raffreddato**. Al
 
 Stesso modello della pizza (`heqOf`, `yeastPct`), con due differenze:
 
-1. **`yeastK` = 2** per i pani semplici e **2,5** per il pan bauletto, come per la teglia. Il pane è una massa grande che deve quasi raddoppiare due volte, più di un panetto da pizza; zucchero e grassi rallentano il lievito. Il frigo conta come per la teglia: le prime 4 ore alla temperatura media tra casa e frigo.
+1. **`yeastK` = 2** per i pani semplici, come per la teglia, e **4** per il pan bauletto (era 2,5 fino al 25 novembre 2026: le ricette arricchite raccolte stanno quasi tutte più in alto). Il pane è una massa grande che deve quasi raddoppiare due volte, più di un panetto da pizza; zucchero e grassi rallentano il lievito. Il frigo conta come per la teglia: le prime 4 ore alla temperatura media tra casa e frigo.
 2. **`ferm`** delle farine con crusca: le ore equivalenti si moltiplicano per 1,1 (tipo 1) e 1,2 (integrale), perché queste farine fermentano più in fretta (più enzimi e sali minerali). Il risultato è un po' meno lievito.
 
 Controllo di plausibilità, non una taratura (i test in `test/pane.test.js` lo verificano):
@@ -55,7 +63,7 @@ Controllo di plausibilità, non una taratura (i test in `test/pane.test.js` lo v
 | 8 ore in giornata a 20 °C | circa 0,7% | 0,5–1% |
 | 3,5 ore in giornata a 20 °C | 2,5–3% | 1,5–3% (il “pane veloce”) |
 
-I valori a destra sono intervalli indicativi raccolti dalle ricette domestiche e di panificatori più diffuse. Non sono ancora una raccolta di fonti puntuali come `docs/riferimenti-lievito.json`. Il primo passo per rendere affidabile il pane è costruirla e tarare `yeastK` su quella, come è stato fatto per la pizza.
+I valori a destra sono intervalli indicativi. Il 25 novembre 2026 sono stati confrontati con 31 ricette puntuali (video e siti, italiani e stranieri) in `docs/ricerca/riferimenti-pane.json`: per i pani semplici la mediana è 1,24 volte la dose dell'app (0,92 con il frigo), con una dispersione enorme; per i pani arricchiti 2,15 volte. Analisi e proposte in `docs/ricerca/pane-ricette-2026-11-25.md`.
 
 ## Temperatura dell'acqua
 
@@ -69,6 +77,6 @@ Sono tecniche comuni della panificazione, riscritte con parole nostre. Prima di 
 
 ## Da fare
 
-1. Raccogliere 15–20 ricette di pane diretto con dose, tempi e temperature, in un file come `docs/riferimenti-lievito.json`, e tarare `yeastK`.
+1. ~~Raccogliere ricette di pane diretto con dose, tempi e temperature~~ fatto (31 ricette, vedi sopra). Applicato: `yeastK` del pan bauletto da 2,5 a 4; tra i segreti c'è l'appretto in frigo per 1,5–2 ore.
 2. Provare in cucina almeno pagnotta 24 ore, filoncini in giornata e pan bauletto.
 3. Biga e poolish per il pane, poi il lievito madre.

@@ -35,7 +35,7 @@ function app() {
   const run = code => vm.runInContext(code, ctx);
   return { run, element };
 }
-const BREADS = [`pagnotta`, `filoni`, `ciabatta`, `semola`, `integrale`, `cassetta`];
+const BREADS = [`pagnotta`, `filoni`, `ciabatta`, `siciliano`, `pugliese`, `semola`, `integrale`, `cassetta`];
 // cena fissa a 5 giorni da adesso alle 13: lontana dalla notte e sempre raggiungibile
 function bread(a, style, extra = ``) {
   a.run(`state.style='contemporanea'; state.flour='media'; state.oven='casa_acciaio'; state.over={}; state.plan=null; state.prepMode='plan'; state.n=1;
@@ -134,6 +134,8 @@ test(`pane: zucchero e grassi del pan bauletto e dose più alta per l'impasto ar
   assert.equal(c.pl.bk.T1, 180);
   const p = bread(a, `pagnotta`, `state.flour='media'; state.room=20; state.plan='h24';`);
   assert.ok(c.I.ypct > p.I.ypct);
+  // taratura del 25/11/2026 (docs/ricerca/pane-ricette-2026-11-25.md): circa 1,1% con una notte in frigo a 20 °C
+  assert.ok(c.I.ypct >= 0.9 && c.I.ypct <= 1.3, `pan bauletto 24 h: ${c.I.ypct}`);
 });
 
 test(`pane: pentola di ghisa, un pane per volta; filoncini e stampi tornano sulla teglia`, () => {
@@ -181,6 +183,7 @@ test(`pane: le pagine, il piano, il calendario e la cucina si disegnano senza er
     const out = a.element(`#out`).innerHTML;
     assert.match(out, /Pane pronto/);
     assert.match(out, /Segreti e accorgimenti/);
+    assert.match(out, /Appretto in frigo/);
     assert.doesNotMatch(out, /Prima pizza/);
     const ics = a.run(`buildIcs()`);
     assert.match(ics, /SUMMARY:Pane: /);
@@ -219,4 +222,41 @@ test(`pane: la ricetta salvata conserva stile e peso, e la pizza resta com'era`,
   assert.equal(P.sugar, 0);
   assert.equal(P.oil, 2);
   assert.ok(!a.run(`R.pl.bread`));
+});
+
+test(`pane siciliano e pugliese: forme, niente pentola, crosta asciugata a fine cottura`, () => {
+  const a = app();
+  // passando al pugliese da un forno non ammesso si va su un forno adatto
+  a.run(`state.style='pagnotta'; state.oven='pentola'; requestChange({k:'style',v:'pugliese'});`);
+  assert.equal(a.run(`state.flour`), `semola`);
+  assert.equal(a.run(`state.oven`), `casa_pietra`);
+  // la pagina Cucina non propone la pentola
+  a.run(`ui.page=2; renderAll();`);
+  assert.doesNotMatch(a.element(`#page`).innerHTML, /data-val="pentola"/);
+  // se la pentola arriva da una ricetta salvata, si cuoce sulla teglia con un avviso
+  const pot = bread(a, `siciliano`, `state.oven='pentola'; state.room=20;`);
+  assert.equal(pot.pl.bk.oven, `casa_teglia`);
+  assert.ok(pot.W.some(w => w.w && /non si cuoce nella pentola/.test(w.t)));
+  // mafalda: serpentina con sesamo, nessuna incisione
+  const sic = bread(a, `siciliano`, `state.room=20;`);
+  const fs = sic.steps.find(s => s.key === `formatura`), inc = sic.steps.find(s => s.key === `incisione`);
+  assert.match(fs.title, /mafalda/);
+  assert.match(fs.body, /serpentina/);
+  assert.match(fs.body, /sesamo/);
+  assert.equal(inc.title, `Inforna`);
+  assert.match(inc.body, /non si incide/);
+  assert.equal(sic.pl.bk.dry, 0);
+  // pugliese: piega a cavallo, pane grande, asciugatura finale, raffreddamento lungo, un pane per infornata
+  const pug = bread(a, `pugliese`, `state.room=20; state.n=2;`);
+  const fp = pug.steps.find(s => s.key === `formatura`);
+  assert.match(fp.body, /a cavallo/);
+  assert.match(pug.steps.find(s => s.key === `cottura`).body, /sportello socchiuso/);
+  assert.equal(pug.pl.bk.dry, 15);
+  assert.ok(pug.pl.bk.per >= 70, `cottura ${pug.pl.bk.per}`);
+  assert.equal(pug.pl.bk.cool, 3);
+  assert.equal(pug.pl.bk.batches, 2);
+  assert.ok(pug.W.some(w => /Altamura DOP/.test(w.t)));
+  // il pane di semola da 900 g ha 10 minuti di asciugatura, quello piccolo no
+  assert.equal(bread(a, `semola`, `state.room=20;`).pl.bk.dry, 10);
+  assert.equal(bread(a, `semola`, `state.over.ball=500; state.room=20;`).pl.bk.dry, 0);
 });
