@@ -31,6 +31,7 @@
   --a-tray:#8E9196; --a-metal:#DDD6CB; --a-metal2:#CBC3B6; --a-glass:#3A302A; --a-glow:#F4A259; --a-dial:#7A7065;
   --a-stone:#9C9086; --a-steel:#4A4F57; --a-dark:#2B231E; --a-flame:#F08A3C; --a-brick:#C0704A;
   --a-sack:#F0E7D7; --a-sack-line:#C7B69C; --a-yeast:#E9D08A; --a-ink:#4D4237; --a-moon:#F2C14E; --a-cold:#7FB3D5;
+  --a-dough:#F5E9D2; --a-dough-2:#EEDDBC; --a-dough-line:#D2B78C; --a-board:#DFC092; --a-hand:#FFFFFF; --a-hand-line:#4D4237;
   --a-loaf:#C98543; --a-loaf-dark:#8A5A30; --a-semola:#E0A93E; --a-score:#F3D9A4; --a-dust:#FBF5EA;
   --shadow:0 1px 2px rgba(60,40,20,.06),0 6px 20px rgba(60,40,20,.07);
   --font-d:'Fraunces', Georgia, 'Times New Roman', serif;
@@ -45,6 +46,7 @@
     --ember:#FF9160; --ember-soft:#3A2119; --warn:#F2C66D; --warn-soft:#33290F;
     --a-cheese:#F3EAD6; --a-metal:#4E5155; --a-metal2:#3F4245; --a-glass:#0B0C0D; --a-dial:#A3A09B;
     --a-sack:#3A3936; --a-sack-line:#5C5953; --a-ink:#ECE6DC; --a-dark:#0C0D0E;
+    --a-dough:#E8D9BB; --a-dough-2:#DCC9A4; --a-dough-line:#A88F68; --a-board:#5B4835; --a-hand:#EFE6D6; --a-hand-line:#121314;
     --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
     color-scheme: dark;
   }
@@ -55,6 +57,7 @@
     --ember:#FF9160; --ember-soft:#3A2119; --warn:#F2C66D; --warn-soft:#33290F;
     --a-cheese:#F3EAD6; --a-metal:#4E5155; --a-metal2:#3F4245; --a-glass:#0B0C0D; --a-dial:#A3A09B;
     --a-sack:#3A3936; --a-sack-line:#5C5953; --a-ink:#ECE6DC; --a-dark:#0C0D0E;
+    --a-dough:#E8D9BB; --a-dough-2:#DCC9A4; --a-dough-line:#A88F68; --a-board:#5B4835; --a-hand:#EFE6D6; --a-hand-line:#121314;
     --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
     color-scheme: dark;
 }
@@ -372,6 +375,235 @@ table.chg{width:100%;border-collapse:collapse;font-size:.9rem;font-variant-numer
   .hero .big{font-size:1.6rem}
   .pnav .btn{padding:12px 16px}
 }
+/* come si fa: animazioni dei gesti nei passaggi */
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr));gap:10px}
+@media (max-width:420px){.how figcaption{font-size:.85rem}.how figure{padding:6px 8px 8px}}
+.how figure{margin:0;background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:8px 10px 10px;display:flex;flex-direction:column;gap:6px;animation:in .35s ease both}
+.how figure:nth-child(2){animation-delay:.08s}
+.how svg.hw{display:block;width:100%;height:auto;max-height:200px}
+.how figcaption{font-size:.92rem;line-height:1.4;display:flex;gap:8px;align-items:flex-start}
+.how figcaption i{flex:none;font-style:normal;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:.75rem;font-weight:700;margin-top:1px}
+.how-out{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;animation:in .35s ease both}
+.how-out .art-o{flex:0 0 104px}.how-out svg{display:block;width:100%;height:auto}
+.how-out p{margin:0;font-size:.95rem;line-height:1.45}.how-out b{display:block;font-family:var(--font-d);font-size:1.02rem;margin-bottom:2px}
+.how-d{margin-top:8px}
+.how-d summary{cursor:pointer;color:var(--accent);font-weight:700;font-size:.9rem;list-style:none;display:inline-flex;align-items:center;gap:6px}
+.how-d summary::-webkit-details-marker{display:none}
+.how-d summary::before{content:"▶";font-size:.7rem;transition:transform .2s}
+.how-d[open] summary::before{transform:rotate(90deg)}
+.how-d .how{margin-top:8px}
+.hw-hand{fill:var(--a-hand);stroke:var(--a-hand-line);stroke-width:1.8;stroke-linejoin:round}
+.hw-cuff{fill:var(--accent);stroke:var(--a-hand-line);stroke-width:1.8}
+.hw-line{fill:none;stroke:var(--a-ink);stroke-width:1.8;stroke-linecap:round}
+.hw-dough{fill:var(--a-dough);stroke:var(--a-dough-line);stroke-width:1.5;stroke-linejoin:round}
+.hw-flap{fill:var(--a-dough-2)}.hw-nostroke{stroke:none}
+.hw-dim{fill:var(--a-dough-line)}.hw-bub{fill:var(--a-dough-line);opacity:.55}
+.hw-seam{fill:none;stroke:var(--a-dough-line);stroke-width:1.6;stroke-linecap:round}
+.hw-board{fill:var(--a-board)}.hw-flour circle,.hw-flour{fill:var(--a-dust)}
+.hw-glass{fill:var(--a-cold);fill-opacity:.14;stroke:var(--a-cold);stroke-width:2}
+.hw-lid{fill:var(--a-cold);fill-opacity:.55}
+.hw-mark{stroke:var(--ember);stroke-width:2;stroke-dasharray:4 3}
+.hw-mark2{stroke:var(--accent);stroke-width:2;stroke-dasharray:4 3}
+.hw-clock{fill:var(--surface);stroke:var(--a-ink);stroke-width:1.8}
+.hw-metal{fill:var(--a-metal)}.hw-metal2{fill:var(--a-metal2)}.hw-steel{fill:var(--a-steel)}
+.hw-tool{fill:var(--a-dial)}.hw-blade{fill:var(--a-steel)}
+.hw-handle{fill:none;stroke:var(--a-brick);stroke-width:5;stroke-linecap:round}
+.hw-wood{fill:var(--a-brick)}
+.hw-hook{fill:none;stroke:var(--a-dial);stroke-width:5;stroke-linecap:round}
+.hw-screen{fill:var(--a-glass)}
+.hw-txt{font:700 8px var(--font-b);fill:var(--a-ink)}.dv-t{fill:#9FE3B8;font-size:9px}
+.hw-arrow{fill:none;stroke:var(--accent);stroke-width:2;stroke-dasharray:5 5;animation:hw-march 1s linear infinite}
+.hw-steam{fill:none;stroke:var(--muted);stroke-width:2.5;stroke-linecap:round;opacity:0;animation:hw-steam 2.4s ease-out infinite}
+.hw-heat{stroke:var(--a-flame)}
+.hw-fl{fill:var(--a-flame);animation:hw-fl .9s ease-in-out infinite alternate}
+.hw-tray{fill:var(--a-tray)}.hw-oil{fill:var(--a-yeast);opacity:.35}
+.hw-pan{fill:var(--a-tray);fill-opacity:.3;stroke:var(--a-tray);stroke-width:4;stroke-linejoin:round}
+.hw-basket{fill:var(--a-sack-line)}.hw-basket-l{fill:none;stroke:var(--a-loaf-dark);stroke-opacity:.35;stroke-width:2}
+.hw-cloth{fill:var(--a-sack)}
+.hw-bowl{fill:var(--a-metal2);stroke:var(--a-dial);stroke-width:1.5}
+.hw-cold{fill:var(--a-cold);fill-opacity:.22}.hw-shelf{stroke:var(--a-cold);stroke-width:2.5}
+.hw-snowl{stroke:var(--a-cold);stroke-width:2.4;stroke-linecap:round;fill:none}
+.hw-bulb{fill:var(--ember)}
+.hw-crustraw{fill:var(--a-dough);stroke:var(--a-dough-line);stroke-width:1.5}
+.hw-crust{fill:var(--a-crust)}.hw-char{fill:var(--a-char);opacity:.7}
+.hw-sauce{fill:none;stroke:var(--a-sauce);stroke-width:7;stroke-linecap:round;stroke-linejoin:round}
+.hw-sauce-f{fill:var(--a-sauce)}.hw-cheese{fill:var(--a-cheese);stroke:var(--a-dough-line);stroke-width:.8}.hw-basil{fill:var(--a-basil)}
+.hw-brick{fill:var(--a-brick)}.hw-cavity{fill:var(--a-dark)}.hw-stone{fill:var(--a-stone)}
+.hw-hot{fill:none;stroke:var(--a-flame);stroke-width:3;stroke-linecap:round;animation:hw-glow 1.6s ease-in-out infinite alternate}
+.hw-door{fill:var(--a-metal2)}
+.hw-loaf{fill:var(--a-loaf)}.hw-loafd{fill:var(--a-loaf-dark)}.hw-semola{fill:var(--a-semola)}
+.hw-shine{fill:none;stroke:#fff;stroke-opacity:.55;stroke-width:3;stroke-linecap:round}
+.hw-ear{fill:none;stroke:var(--a-score);stroke-width:4;stroke-linecap:round}
+.hw-cutraw{fill:none;stroke:var(--a-dough-line);stroke-width:2;stroke-linecap:round}
+.hw-cut{fill:none;stroke:var(--a-dough-line);stroke-width:3;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100}
+.hw-cutline{fill:none;stroke:var(--a-board);stroke-width:4;stroke-dasharray:100;stroke-dashoffset:100}
+.hw-cord{fill:none;stroke:var(--a-dough);stroke-width:13;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100}
+.hw-cord-o{fill:none;stroke:var(--a-dough-line);stroke-width:16;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100}
+.hw-sesame{fill:var(--a-dust);stroke:var(--a-dough-line);stroke-width:.5}
+.hw-bristle{fill:var(--a-yeast)}
+.hw-potin{fill:var(--a-glass)}.hw-pot{fill:var(--a-steel)}
+.hw-batter{fill:var(--a-dough);stroke:var(--a-dough-line);stroke-width:1.5}
+.hw-swirl{fill:none;stroke:var(--a-dough-line);stroke-width:2;stroke-linecap:round}
+.hw-milk{fill:var(--a-cheese)}.hw-gel{fill:var(--a-dough)}
+.hw-trail{fill:none;stroke:var(--a-dough-line);stroke-width:2.5;stroke-linecap:round}
+.hw-wire{fill:none;stroke:var(--a-steel);stroke-width:2;stroke-linecap:round}
+@keyframes hw-spin{to{transform:rotate(360deg)}}
+.hw-spin{animation:hw-spin 6s linear infinite}
+@keyframes hw-march{to{stroke-dashoffset:-20}}
+@keyframes hw-steam{0%{opacity:0;transform:translateY(0)}30%{opacity:.7}100%{opacity:0;transform:translateY(-22px)}}
+@keyframes hw-fl{from{transform:scale(1,1)}to{transform:scale(.85,1.2)}}
+@keyframes hw-glow{from{opacity:.45}to{opacity:1}}
+.hw-snow{animation:hw-glow 1.4s ease-in-out infinite alternate}
+/* impastare a mano: spingi, ripiega, gira di un quarto */
+.kn-d,.kn-f,.kn-h{animation:4.5s ease-in-out infinite}
+.kn-d{animation-name:kn-d}.kn-f{animation-name:kn-f}.kn-h{animation-name:kn-h}
+@keyframes kn-d{0%,8%{transform:translate(0,0) scale(1,1) rotate(0deg)}28%,42%{transform:translate(0,-8px) scale(.86,1.4) rotate(0deg)}58%{transform:translate(0,0) scale(1.05,.95) rotate(0deg)}66%{transform:translate(0,0) scale(1,1) rotate(0deg)}88%,100%{transform:translate(0,0) scale(1,1) rotate(90deg)}}
+@keyframes kn-f{0%,40%{opacity:0;transform:scaleY(1)}43%{opacity:1;transform:scaleY(1)}56%{opacity:1;transform:scaleY(-1)}62%,100%{opacity:0;transform:scaleY(-1)}}
+@keyframes kn-h{0%,6%{opacity:1;transform:translate(0,0)}28%{opacity:1;transform:translate(0,-26px)}34%{opacity:1;transform:translate(0,-28px)}39%{opacity:0;transform:translate(0,-28px)}70%{opacity:0;transform:translate(0,0)}90%,100%{opacity:1;transform:translate(0,0)}}
+/* impastatrice */
+.mx-k{animation:mx-k .9s linear infinite}
+@keyframes mx-k{0%,100%{transform:scaleX(1)}50%{transform:scaleX(-1)}}
+.mx-d{animation:mx-d 1.8s ease-in-out infinite}
+@keyframes mx-d{0%,100%{transform:scale(1,1) translateX(0)}50%{transform:scale(1.08,.9) translateX(3px)}}
+/* pieghe: lembo su e sopra, poi giro del contenitore */
+.pf-c,.pf-f,.pf-h{animation:4.4s ease-in-out infinite}
+.pf-c{animation-name:pf-c}.pf-f{animation-name:pf-f}.pf-h{animation-name:pf-h}
+@keyframes pf-c{0%,52%{transform:rotate(0deg)}78%,100%{transform:rotate(90deg)}}
+@keyframes pf-f{0%{opacity:0;transform:scaleY(1)}6%,10%{opacity:1;transform:scaleY(1)}38%,44%{opacity:1;transform:scaleY(-1)}52%,100%{opacity:0;transform:scaleY(-1)}}
+@keyframes pf-h{0%,10%{opacity:1;transform:translate(0,0) scale(1)}24%{opacity:1;transform:translate(0,-28px) scale(1.15)}38%{opacity:1;transform:translate(0,-56px) scale(1)}48%{opacity:0;transform:translate(0,-56px) scale(1)}80%{opacity:0;transform:translate(0,0) scale(1)}92%,100%{opacity:1;transform:translate(0,0) scale(1)}}
+/* lievitazione: cresce, resta, ricomincia */
+.ri-d{animation:ri-d 8s ease-in-out infinite}
+@keyframes ri-d{0%{opacity:1;transform:scale(1,1)}75%,90%{opacity:1;transform:scale(var(--sx,1),var(--rise,1.8))}96%{opacity:0;transform:scale(var(--sx,1),var(--rise,1.8))}97%{opacity:0;transform:scale(1,1)}100%{opacity:1;transform:scale(1,1)}}
+/* staglio: taglia e pesa */
+.dv-s,.dv-p,.dv-t{animation:5s ease-in-out infinite}
+.dv-s{animation-name:dv-s}.dv-p{animation-name:dv-p}.dv-t{animation-name:dv-t}
+@keyframes dv-s{0%,4%{transform:translateY(-30px)}18%,26%{transform:translateY(0)}38%,100%{transform:translateY(-30px)}}
+@keyframes dv-p{0%,28%{opacity:1;transform:translate(0,0)}38%{transform:translate(8px,0)}52%{transform:translate(32px,-38px)}64%,90%{opacity:1;transform:translate(58px,-30px)}96%{opacity:0;transform:translate(58px,-30px)}97%{opacity:0;transform:translate(0,0)}100%{opacity:1;transform:translate(0,0)}}
+@keyframes dv-t{0%,64%{opacity:0}70%,92%{opacity:1}97%,100%{opacity:0}}
+/* pirlatura: la mano a coppa gira, la pallina diventa tonda */
+.pl-m{animation:pl-m 1.3s linear infinite}
+@keyframes pl-m{0%,100%{transform:translate(-7px,0)}25%{transform:translate(0,-2px)}50%{transform:translate(7px,0)}75%{transform:translate(0,1.5px)}}
+.pl-b{animation:pl-b 6.5s ease-out infinite}
+@keyframes pl-b{0%{transform:scale(1.28,.68)}70%,92%{transform:scale(1,1)}100%{transform:scale(1.28,.68)}}
+.pl-r{animation:hw-spin 1.3s linear infinite}
+.pl-c{animation:pl-c 6.5s ease-out infinite}
+@keyframes pl-c{0%{transform:translateY(5px)}70%,92%{transform:translateY(0)}100%{transform:translateY(5px)}}
+/* lembi al centro */
+.fi-1,.fi-2,.fi-3,.fi-4{animation:4.8s ease-in-out infinite}
+.fi-1{animation-name:fi-1}.fi-2{animation-name:fi-2}.fi-3{animation-name:fi-3}.fi-4{animation-name:fi-4}
+@keyframes fi-1{0%,4%{opacity:1;transform:scaleY(1)}16%,86%{opacity:1;transform:scaleY(-1)}95%,100%{opacity:0;transform:scaleY(-1)}}
+@keyframes fi-2{0%,20%{opacity:1;transform:scaleY(1)}32%,86%{opacity:1;transform:scaleY(-1)}95%,100%{opacity:0;transform:scaleY(-1)}}
+@keyframes fi-3{0%,36%{opacity:1;transform:scaleY(1)}48%,86%{opacity:1;transform:scaleY(-1)}95%,100%{opacity:0;transform:scaleY(-1)}}
+@keyframes fi-4{0%,52%{opacity:1;transform:scaleY(1)}64%,86%{opacity:1;transform:scaleY(-1)}95%,100%{opacity:0;transform:scaleY(-1)}}
+/* arrotolare */
+.ro-f,.ro-r,.ro-h{animation:5s ease-in-out infinite}
+.ro-f{animation-name:ro-f}.ro-r{animation-name:ro-r}.ro-h{animation-name:ro-h}
+@keyframes ro-f{0%,6%{opacity:1;transform:scaleY(1)}72%,90%{opacity:1;transform:scaleY(.14)}96%{opacity:0;transform:scaleY(.14)}97%,100%{opacity:0;transform:scaleY(1)}}
+@keyframes ro-r{0%,6%{opacity:1;transform:translateY(0) scaleY(1)}72%,90%{opacity:1;transform:translateY(67px) scaleY(1.9)}96%{opacity:0;transform:translateY(67px) scaleY(1.9)}97%,100%{opacity:0;transform:translateY(0) scaleY(1)}}
+@keyframes ro-h{0%,6%{opacity:1;transform:translateY(0)}72%,90%{opacity:1;transform:translateY(67px)}96%{opacity:0;transform:translateY(67px)}97%,100%{opacity:0;transform:translateY(0)}}
+/* allungare il cilindro */
+.al-l,.al-h1,.al-h2{animation:4.6s ease-in-out infinite}
+.al-l{animation-name:al-l}.al-h1{animation-name:al-h1}.al-h2{animation-name:al-h2}
+@keyframes al-l{0%,6%{opacity:1;transform:scale(1,1)}78%,90%{opacity:1;transform:scale(1.95,.72)}96%{opacity:0;transform:scale(1.95,.72)}97%,100%{opacity:0;transform:scale(1,1)}}
+@keyframes al-h1{0%,6%{opacity:1;transform:translate(0,0)}20%{transform:translate(-10px,5px)}34%{transform:translate(-20px,-4px)}48%{transform:translate(-30px,5px)}62%{transform:translate(-40px,-4px)}78%,90%{opacity:1;transform:translate(-50px,0)}96%{opacity:0;transform:translate(-50px,0)}97%,100%{opacity:0;transform:translate(0,0)}}
+@keyframes al-h2{0%,6%{opacity:1;transform:translate(0,0)}20%{transform:translate(10px,5px)}34%{transform:translate(20px,-4px)}48%{transform:translate(30px,5px)}62%{transform:translate(40px,-4px)}78%,90%{opacity:1;transform:translate(50px,0)}96%{opacity:0;transform:translate(50px,0)}97%,100%{opacity:0;transform:translate(0,0)}}
+/* nello stampo */
+.ip-l{animation:ip-l 4s ease-in infinite}
+@keyframes ip-l{0%,10%{opacity:1;transform:translateY(-74px)}38%,90%{opacity:1;transform:translateY(0)}97%{opacity:0;transform:translateY(0)}100%{opacity:0;transform:translateY(-74px)}}
+/* mafalda */
+.sn-p,.sn-q,.sn-s{animation:6s ease-in-out infinite}
+.sn-p{animation-name:sn-p}.sn-q{animation-name:sn-q}.sn-s{animation-name:sn-s}
+@keyframes sn-p{0%{stroke-dashoffset:100;opacity:1}50%,92%{stroke-dashoffset:0;opacity:1}98%,100%{stroke-dashoffset:0;opacity:0}}
+@keyframes sn-q{0%,54%{stroke-dashoffset:100;opacity:1}72%,92%{stroke-dashoffset:0;opacity:1}98%,100%{stroke-dashoffset:0;opacity:0}}
+@keyframes sn-s{0%,76%{opacity:0}84%,92%{opacity:1}98%,100%{opacity:0}}
+/* piega a cavallo */
+.cv-f{animation:cv-f 4s ease-in-out infinite}
+@keyframes cv-f{0%,12%{transform:scaleY(1)}48%,88%{transform:scaleY(-1)}100%{transform:scaleY(1)}}
+/* ciabatta: taglio e pezzi che si separano */
+.cs-b,.cs-1,.cs-2,.cs-a,.cs-c,.cs-0{animation:5s ease-in-out infinite}
+.cs-b{animation-name:cs-b}.cs-1{animation-name:cs-1}.cs-2{animation-name:cs-2}.cs-a{animation-name:cs-a}.cs-c{animation-name:cs-c}.cs-0{animation-name:cs-0}
+@keyframes cs-b{0%{opacity:0;transform:translate(0,0)}4%{opacity:1;transform:translate(0,0)}24%{transform:translate(0,70px)}28%{transform:translate(46.7px,0)}48%{opacity:1;transform:translate(46.7px,70px)}54%,100%{opacity:0;transform:translate(46.7px,70px)}}
+@keyframes cs-1{0%,4%{stroke-dashoffset:100}24%,92%{stroke-dashoffset:0;opacity:1}98%,100%{opacity:0}}
+@keyframes cs-2{0%,28%{stroke-dashoffset:100}48%,92%{stroke-dashoffset:0;opacity:1}98%,100%{opacity:0}}
+@keyframes cs-0{0%,54%{opacity:1}56%,100%{opacity:0}}
+@keyframes cs-a{0%,56%{transform:translateX(0)}72%,92%{transform:translateX(-10px)}100%{transform:translateX(0)}}
+@keyframes cs-c{0%,56%{transform:translateX(0)}72%,92%{transform:translateX(10px)}100%{transform:translateX(0)}}
+/* frigo: si apre, entra (o esce) il contenitore, si chiude */
+.fr-d{transform:scaleX(1)}
+.fr-in,.fr-out{animation:5s ease-in-out infinite}
+.fr-d.fr-in,.fr-d.fr-out{animation-name:fr-d}.fr-b.fr-in,.fr-b.fr-out{animation-name:fr-b}
+.fr-out{animation-direction:reverse}
+@keyframes fr-d{0%,8%{transform:scaleX(1)}22%,62%{transform:scaleX(.1)}76%,100%{transform:scaleX(1)}}
+@keyframes fr-b{0%,22%{transform:translateX(76px)}50%,100%{transform:translateX(0)}}
+/* preriscaldo: il termometro sale */
+.th-m{animation:th-m 5s ease-out infinite}
+@keyframes th-m{0%{transform:scaleY(.08)}80%,94%{transform:scaleY(1)}100%{transform:scaleY(.08)}}
+/* stesura a mano */
+.st-d,.st-1,.st-2,.st-3,.st-h,.tp-d,.tp-dots{animation:5s ease-out infinite}
+.st-d{animation-name:st-d}.st-1{animation-name:st-1}.st-2{animation-name:st-2}.st-3{animation-name:st-3}.st-h{animation-name:st-h}.tp-d{animation-name:tp-d}.tp-dots{animation-name:st-2}
+@keyframes st-d{0%{opacity:1;transform:scale(.62)}72%,90%{opacity:1;transform:scale(1)}96%{opacity:0;transform:scale(1)}97%{opacity:0;transform:scale(.62)}100%{opacity:1;transform:scale(.62)}}
+@keyframes st-1{0%,8%{opacity:0}12%,92%{opacity:1}97%,100%{opacity:0}}
+@keyframes st-2{0%,26%{opacity:0}32%,92%{opacity:1}97%,100%{opacity:0}}
+@keyframes st-3{0%,48%{opacity:0}56%,92%{opacity:1}97%,100%{opacity:0}}
+@keyframes st-h{0%{transform:translate(0,-8px) scale(1)}10%{transform:translate(0,-6px) scale(.94)}20%{transform:translate(-14px,-12px) scale(1)}28%{transform:translate(-14px,-10px) scale(.94)}38%{transform:translate(14px,-6px) scale(1)}46%{transform:translate(14px,-4px) scale(.94)}56%{transform:translate(-22px,4px) scale(1)}64%{transform:translate(-22px,6px) scale(.94)}74%{transform:translate(24px,8px) scale(1)}82%{transform:translate(24px,10px) scale(.94)}100%{transform:translate(0,-8px) scale(1)}}
+@keyframes tp-d{0%{opacity:1;transform:scale(.45,.5)}72%,90%{opacity:1;transform:scale(1,1)}96%{opacity:0;transform:scale(1,1)}97%{opacity:0;transform:scale(.45,.5)}100%{opacity:1;transform:scale(.45,.5)}}
+/* mattarello */
+.rp-d{animation:tp-r 5s ease-out infinite}
+@keyframes tp-r{0%{opacity:1;transform:scale(.55)}72%,90%{opacity:1;transform:scale(1)}96%{opacity:0;transform:scale(1)}97%{opacity:0;transform:scale(.55)}100%{opacity:1;transform:scale(.55)}}
+.rp-p{animation:rp-p 1.25s ease-in-out infinite alternate}
+@keyframes rp-p{from{transform:translateY(-26px)}to{transform:translateY(26px)}}
+/* condimento: sugo a spirale, poi mozzarella e basilico */
+.cd-s{stroke-dasharray:100;animation:cd-s 6s ease-in-out infinite}
+@keyframes cd-s{0%,4%{stroke-dashoffset:100;opacity:1}40%,92%{stroke-dashoffset:0;opacity:1}98%,100%{stroke-dashoffset:0;opacity:0}}
+.cd-c,.cd-b{animation:6s ease-out infinite}
+.cd-c{animation-name:cd-c}.cd-b{animation-name:cd-b}
+@keyframes cd-c{0%,46%{opacity:0;transform:scale(0)}56%,92%{opacity:1;transform:scale(1)}98%,100%{opacity:0;transform:scale(1)}}
+@keyframes cd-b{0%,64%{opacity:0;transform:scale(0)}72%,92%{opacity:1;transform:scale(1)}98%,100%{opacity:0;transform:scale(1)}}
+/* infornare la pizza: dentro con la pala, cuoce, fuori */
+.bk-p,.bk-z,.bk-raw,.bk-ck,.bb-l,.bb-lid,.bb-st{animation:7s ease-in-out infinite}
+.bk-p{animation-name:bk-p}.bk-z{animation-name:bk-z}.bk-raw{animation-name:bk-raw}.bk-ck{animation-name:bk-ck}
+@keyframes bk-p{0%{transform:translateX(-112px)}26%,34%{transform:translateX(0)}50%,72%{transform:translateX(-160px)}84%{transform:translateX(0)}100%{transform:translateX(-112px)}}
+@keyframes bk-z{0%{transform:translateX(-112px)}26%,84%{transform:translateX(0)}100%{transform:translateX(-112px)}}
+@keyframes bk-raw{0%,38%{opacity:1}70%,100%{opacity:0}}
+@keyframes bk-ck{0%,38%{opacity:0}70%,100%{opacity:1}}
+/* pane in forno: cresce col vapore, poi si colora */
+.bb-l{animation-name:bb-l}
+.bb-l .bk-raw{animation-name:bb-raw}.bb-l .bk-ck{animation-name:bb-ck}
+@keyframes bb-l{0%{transform:scaleY(1)}40%,92%{transform:scaleY(1.12)}100%{transform:scaleY(1)}}
+@keyframes bb-raw{0%,30%{opacity:1}70%,92%{opacity:0}100%{opacity:1}}
+@keyframes bb-ck{0%,30%{opacity:0}70%,92%{opacity:1}100%{opacity:0}}
+.bb-lid{animation-name:bb-lid}
+@keyframes bb-lid{0%,44%{transform:translate(0,0) rotate(0deg)}56%,92%{transform:translate(14px,-11px) rotate(8deg)}100%{transform:translate(0,0) rotate(0deg)}}
+.bb-st{animation-name:bb-st}
+@keyframes bb-st{0%,46%{opacity:0}52%,80%{opacity:1}92%,100%{opacity:0}}
+/* incisione */
+.sc-1,.sc-2,.sc-1f,.sc-2f,.sc-3f,.sc-lb,.sc-lf{animation:4.6s linear infinite}
+.sc-1{animation-name:sc-1}.sc-2{animation-name:sc-2}.sc-1f{animation-name:sc-1f}.sc-2f{animation-name:sc-2f}.sc-3f{animation-name:sc-3f}.sc-lb{animation-name:sc-lb}.sc-lf{animation-name:sc-lf}
+@keyframes sc-1{0%,6%{stroke-dashoffset:100;stroke-width:3}26%{stroke-dashoffset:0;stroke-width:3}70%,92%{stroke-dashoffset:0;stroke-width:6;opacity:1}98%,100%{stroke-dashoffset:0;opacity:0}}
+@keyframes sc-2{0%,34%{stroke-dashoffset:100;stroke-width:3}54%{stroke-dashoffset:0;stroke-width:3}70%,92%{stroke-dashoffset:0;stroke-width:6;opacity:1}98%,100%{stroke-dashoffset:0;opacity:0}}
+@keyframes sc-lb{0%{opacity:0;transform:translate(76px,48px)}6%{opacity:1;transform:translate(76px,48px)}26%{transform:translate(124px,92px)}34%{transform:translate(124px,48px)}54%{opacity:1;transform:translate(76px,92px)}62%,100%{opacity:0;transform:translate(76px,92px)}}
+@keyframes sc-1f{0%,4%{stroke-dashoffset:100;stroke-width:3}16%{stroke-dashoffset:0;stroke-width:3}66%,92%{stroke-dashoffset:0;stroke-width:6;opacity:1}98%,100%{stroke-dashoffset:0;opacity:0}}
+@keyframes sc-2f{0%,22%{stroke-dashoffset:100;stroke-width:3}34%{stroke-dashoffset:0;stroke-width:3}66%,92%{stroke-dashoffset:0;stroke-width:6;opacity:1}98%,100%{stroke-dashoffset:0;opacity:0}}
+@keyframes sc-3f{0%,40%{stroke-dashoffset:100;stroke-width:3}52%{stroke-dashoffset:0;stroke-width:3}66%,92%{stroke-dashoffset:0;stroke-width:6;opacity:1}98%,100%{stroke-dashoffset:0;opacity:0}}
+@keyframes sc-lf{0%{opacity:0;transform:translate(50px,78px)}4%{opacity:1;transform:translate(50px,78px)}16%{transform:translate(72px,62px)}22%{transform:translate(90px,78px)}34%{transform:translate(112px,62px)}40%{transform:translate(130px,78px)}52%{opacity:1;transform:translate(152px,62px)}58%,100%{opacity:0;transform:translate(152px,62px)}}
+/* spennellare */
+.br-b{animation:br-b 1.6s ease-in-out infinite}
+@keyframes br-b{0%,100%{transform:translate(-18px,-19px) rotate(-18deg)}50%{transform:translate(18px,-19px) rotate(18deg)}25%,75%{transform:translate(0,-27px) rotate(0deg)}}
+.br-s{animation:br-s 6s ease-in infinite}
+@keyframes br-s{0%{opacity:0}70%,92%{opacity:.95}100%{opacity:0}}
+/* prefermento e tangzhong */
+.pm-s{animation:pm-s 1.4s ease-in-out infinite alternate}
+@keyframes pm-s{from{transform:rotate(-14deg)}to{transform:rotate(16deg)}}
+.pm-j{animation:pm-j .7s ease-in-out infinite alternate}
+@keyframes pm-j{from{transform:translate(-1.5px,0)}to{transform:translate(1.5px,-1.5px)}}
+.pm-w{animation:pm-w 2.4s linear infinite}
+@keyframes pm-w{from{transform:scaleX(1)}50%{transform:scaleX(-1)}to{transform:scaleX(1)}}
+.tz-w{animation:tz-w 1.1s ease-in-out infinite alternate}
+@keyframes tz-w{from{transform:translateX(-22px) rotate(-10deg)}to{transform:translateX(22px) rotate(10deg)}}
+.tz-c,.tz-t{animation:6s ease-in-out infinite}
+.tz-c{animation-name:tz-c}.tz-t{animation-name:tz-t}
+@keyframes tz-c{0%,20%{opacity:0}70%,92%{opacity:1}100%{opacity:0}}
+@keyframes tz-t{0%,66%{opacity:0}74%,92%{opacity:1}100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -1497,13 +1729,15 @@ const ART={
   },
   miniBun(){ return `<svg viewBox="0 0 26 26" aria-hidden="true"><path d="M2 16 Q2 6 13 5 Q24 6 24 16 Z" fill="var(--a-loaf)"/><rect x="3" y="17" width="20" height="5" rx="2.5" fill="var(--a-loaf)"/>${[[8,11],[13,9],[18,11]].map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="1.4" ry=".7" fill="var(--a-dust)"/>`).join(``)}</svg>`; },
   miniBread(){ return `<svg viewBox="0 0 26 26" aria-hidden="true"><path d="M2 22 Q2 6 13 5 Q24 6 24 22 Z" fill="var(--a-loaf)"/><path d="M8 12 Q13 8 18 12" stroke="var(--a-score)" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`; },
-  style(k){
+  style(k,o){
     if(STYLES[k]&&STYLES[k].bun) return ART.bun(k);
     if(STYLES[k]&&STYLES[k].bread) return ART.bread(k);
     if(k===`teglia`) return svg(`<rect x="20" y="10" width="160" height="92" rx="8" fill="var(--a-tray)"/><rect x="26" y="16" width="148" height="80" rx="5" fill="var(--a-crust)"/><rect x="31" y="21" width="138" height="70" rx="4" fill="var(--a-sauce)"/>${cheese([[58,40,10],[95,34,9],[132,44,11],[72,70,10],[112,72,9],[150,72,8]])}${basil([[80,52],[140,60,20],[104,56]])}<rect x="24" y="118" width="152" height="18" rx="4" fill="var(--a-crust)"/><rect x="28" y="116" width="144" height="3" rx="1.5" fill="var(--a-sauce)"/><path d="M18 138h164" stroke="var(--a-tray)" stroke-width="4" stroke-linecap="round"/>`);
     const c={classica:{w:9,p:13,ch:1},contemporanea:{w:13,p:21,ch:1},canotto:{w:17,p:31,ch:1},romana:{w:4,p:5,ch:0}}[k];
     const cx=100,cy=52,r=44,e=c.w*1.6,b=142;
-    const spots=c.ch?[20,65,110,150,200,245,290,330].map((a,i)=>{const rr=r-c.w/2,t=a*Math.PI/180;return `<circle cx="${(cx+rr*Math.cos(t)).toFixed(1)}" cy="${(cy+rr*Math.sin(t)).toFixed(1)}" r="${(1.4+(i%3)*.6).toFixed(1)}" fill="var(--a-char)" opacity=".55"/>`;}).join(``):``;
+    /* con il forno indicato, le macchie del cornicione seguono il calore: tante e scure nei forni da pizza, quasi nessuna nel forno di casa con la teglia */
+    const ch=o?({legna:[16,.8,1.3],portatile:[16,.8,1.3],fornetto:[11,.65,1.1],casa_acciaio:[8,.5,1],casa_pietra:[6,.42,.9],casa_teglia:[3,.3,.8]}[o]||[8,.55,1]):null;
+    const spots=!c.ch?``:ch?Array.from({length:ch[0]},(_,i)=>{const t=(i*360/ch[0]+(i*37)%23)*Math.PI/180, rr=r-c.w/2+((i%3)-1)*c.w*.22;return `<circle cx="${(cx+rr*Math.cos(t)).toFixed(1)}" cy="${(cy+rr*Math.sin(t)).toFixed(1)}" r="${((1.4+(i%3)*.6)*ch[2]).toFixed(1)}" fill="var(--a-char)" opacity="${ch[1]}"/>`;}).join(``):[20,65,110,150,200,245,290,330].map((a,i)=>{const rr=r-c.w/2,t=a*Math.PI/180;return `<circle cx="${(cx+rr*Math.cos(t)).toFixed(1)}" cy="${(cy+rr*Math.sin(t)).toFixed(1)}" r="${(1.4+(i%3)*.6).toFixed(1)}" fill="var(--a-char)" opacity=".55"/>`;}).join(``);
     const romanaSpots=k===`romana`?[[78,40],[120,62],[96,74],[118,36]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.6" fill="var(--a-char)" opacity=".5"/>`).join(``):``;
     return svg(`<circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--a-crust)"/>${spots}<circle cx="${cx}" cy="${cy}" r="${r-c.w}" fill="var(--a-sauce)"/>${cheese([[88,42,7],[112,47,6.5],[93,63,7],[114,63,5.5],[80,54,4.5]])}${basil([[101,53],[86,70,20],[118,38]])}${romanaSpots}
       <rect x="44" y="${b-5}" width="112" height="5" rx="2" fill="var(--a-crust)"/><rect x="${44+2*e-4}" y="${b-6.5}" width="${112-4*e+8}" height="2" fill="var(--a-sauce)"/>
@@ -1544,6 +1778,250 @@ const ART={
   },
   mini(){ return `<svg viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="12" fill="var(--a-crust)"/><circle cx="13" cy="13" r="8.5" fill="var(--a-sauce)"/><circle cx="10" cy="11" r="2.2" fill="var(--a-cheese)"/><circle cx="16" cy="14" r="2" fill="var(--a-cheese)"/></svg>`; }
 };
+/* ---------- come si fa: piccole animazioni dei gesti, una o due scene per passaggio ----------
+   Solo SVG disegnato qui e animazioni CSS (classi hw-*, kn-*, ...). Ogni parte che si muove è disegnata
+   attorno al suo perno (0,0) e spostata con un gruppo esterno: così rotazioni e scale partono dal punto giusto. */
+const hwSvg=inner=>`<svg class="hw" viewBox="0 0 200 140" aria-hidden="true" focusable="false">${inner}</svg>`;
+const hwG=(t,cls,inner,style)=>`<g transform="${t}"><g class="${cls}"${style?` style="${style}"`:``}>${inner}</g></g>`;
+const hwNest=(s,x,y,w,h)=>s.replace(`<svg `,`<svg x="${x}" y="${y}" width="${w}" height="${h}" `);
+const HWP={
+  /* mano vista dall'alto, dita verso l'alto, polso in (0,0) */
+  hand:`<rect class="hw-cuff" x="-12" y="0" width="24" height="18" rx="4"/><path class="hw-hand" d="M-13 1 L-14 -20 Q-15 -26 -11 -26 Q-8 -26 -8 -22 L-8 -33 Q-8 -37 -4.5 -37 Q-1 -37 -1 -33 L-1 -36 Q-1 -40 2.5 -40 Q6 -40 6 -36 L6 -33 Q6 -37 9.5 -37 Q13 -37 13 -33 L13 -16 Q19 -22 22.5 -19 Q25 -16 21 -11 L12 1 Z"/>`,
+  /* mano a coppa vista di lato, centro della coppa in (0,0) */
+  cup:`<rect class="hw-cuff" x="10" y="-52" width="16" height="24" rx="4" transform="rotate(38 18 -40)"/><path class="hw-hand" d="M-27 4 Q-29 -31 0 -31 Q29 -31 27 4 L20 4 Q21 -23 0 -23 Q-21 -23 -20 4 Z"/>`,
+  board:`<rect class="hw-board" x="4" y="112" width="192" height="26" rx="8"/>`,
+  boardTop:`<rect class="hw-board" x="12" y="4" width="176" height="132" rx="14"/><g class="hw-flour">${[[30,20],[164,26],[40,120],[172,118],[150,16],[24,70],[178,72]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.6"/>`).join(``)}</g>`,
+  clock:(x,y)=>`<g transform="translate(${x} ${y})"><circle r="11" class="hw-clock"/><g class="hw-spin"><path class="hw-line" d="M0 0 V-7.5"/></g><path class="hw-line" d="M0 0 H5" opacity=".5"/></g>`,
+  steam:(xs,y)=>xs.map((x,i)=>`<g transform="translate(${x} ${y})"><path class="hw-steam" style="animation-delay:${(i*.8).toFixed(1)}s" d="M0 0 q-5 -6 0 -12 q5 -6 0 -12"/></g>`).join(``),
+  flames:(xs,y,s)=>xs.map((x,i)=>`<g transform="translate(${x} ${y}) scale(${s||1})"><path class="hw-fl" style="animation-delay:-${(i*.37).toFixed(2)}s" d="M-6 0 Q-8 -9 -2 -14 Q-2 -8 1 -7 Q2 -13 0 -18 Q9 -11 6 0 Z"/></g>`).join(``)
+};
+const HOW={
+  knead(){
+    const dots=[[-9,-9],[9,-9],[9,9],[-9,9]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.8" class="hw-dim"/>`).join(``);
+    return hwSvg(`${HWP.boardTop}${hwG(`translate(100 74)`,`kn-d`,`<circle r="27" class="hw-dough"/>${dots}`)}${hwG(`translate(100 50)`,`kn-f`,`<path class="hw-dough hw-flap" d="M-22 0 A22 19 0 0 1 22 0 Z"/>`)}${hwG(`translate(100 118)`,`kn-h`,`<g transform="scale(.85)">${HWP.hand}</g>`)}`);
+  },
+  mixer(){
+    return hwSvg(`<rect x="148" y="24" width="18" height="98" rx="6" class="hw-metal2"/><rect x="72" y="10" width="96" height="26" rx="11" class="hw-metal"/><rect x="34" y="120" width="146" height="10" rx="5" class="hw-metal2"/>
+      <ellipse cx="100" cy="72" rx="46" ry="9" class="hw-metal2"/>${hwG(`translate(100 36)`,`mx-k`,`<path class="hw-hook" d="M0 0 V34 Q0 50 -12 48 Q-20 46 -16 38"/>`)}
+      ${hwG(`translate(100 84)`,`mx-d`,`<ellipse cy="-10" rx="30" ry="13" class="hw-dough"/>`)}
+      <path d="M54 72 Q100 84 146 72 Q144 116 100 118 Q56 116 54 72 Z" class="hw-metal"/>`);
+  },
+  pieghe(){
+    return hwSvg(`${HWP.boardTop}${hwG(`translate(100 66)`,`pf-c`,`<rect x="-48" y="-48" width="96" height="96" rx="16" class="hw-glass"/><circle r="34" class="hw-dough"/><g class="pf-f"><path class="hw-dough hw-flap" d="M-34 0 A34 34 0 0 0 34 0 Z"/></g>`)}${hwG(`translate(100 128)`,`pf-h`,HWP.hand)}`);
+  },
+  rise(kind){
+    const h=kind===`poolish`?28:33;
+    const top=kind===`biga`?`M-37 0 V-22 Q-31 -31 -23 -25 Q-15 -34 -6 -26 Q3 -35 12 -27 Q21 -34 28 -26 Q35 -30 37 -22 V0 Z`:kind===`poolish`?`M-37 0 V-28 Q0 -31 37 -28 V0 Z`:`M-37 0 V-22 Q-24 -34 0 -33 Q24 -34 37 -22 V0 Z`;
+    const f=kind===`biga`?1.5:kind===`poolish`?1.8:1.9;
+    const bub=[[-20,-12,2.4],[6,-17,1.8],[22,-9,2.2],[-6,-6,1.5],[14,-23,1.4],[-26,-22,1.2]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" class="hw-bub"/>`).join(``);
+    return hwSvg(`${HWP.board}<rect x="60" y="22" width="80" height="92" rx="12" class="hw-glass"/>${hwG(`translate(100 112)`,`ri-d`,`<path class="hw-dough" d="${top}"/>${bub}`,`--rise:${f}`)}<path d="M54 ${112-h} h92" class="hw-mark"/><path d="M54 ${Math.round(112-h*f)} h92" class="hw-mark2"/><rect x="55" y="16" width="90" height="9" rx="4.5" class="hw-lid"/>${HWP.clock(176,28)}`);
+  },
+  proof(c){
+    let inner;
+    const dome=(w,h)=>`M${-w} 0 Q${-w-1} ${-h} 0 ${-h} Q${w+1} ${-h} ${w} 0 Z`;
+    if(c.bun) inner=`<rect x="22" y="110" width="156" height="5" rx="2.5" class="hw-tray"/>${[56,100,144].map(x=>hwG(`translate(${x} 110)`,`ri-d`,`<path class="hw-dough" d="${dome(16,17)}"/>`,`--rise:1.3;--sx:1.18`)).join(``)}`;
+    else if(c.teglia) inner=`<rect x="44" y="40" width="112" height="74" rx="10" class="hw-glass"/>${hwG(`translate(100 112)`,`ri-d`,`<path class="hw-dough" d="${dome(30,30)}"/>`,`--rise:1.35;--sx:1.2`)}<rect x="40" y="34" width="120" height="8" rx="4" class="hw-lid"/>`;
+    else if(!c.bread) inner=`<rect x="24" y="52" width="152" height="62" rx="8" class="hw-glass"/>${[60,100,140].map(x=>hwG(`translate(${x} 112)`,`ri-d`,`<path class="hw-dough" d="${dome(13,15)}"/>`,`--rise:1.5;--sx:1.32`)).join(``)}<rect x="20" y="46" width="160" height="8" rx="4" class="hw-lid"/>`;
+    else if(c.shape===`boule`) inner=`${hwG(`translate(100 96)`,`ri-d`,`<path class="hw-dough" d="${dome(44,24)}"/>`,`--rise:1.5`)}<path class="hw-basket" d="M44 88 H156 L146 120 H54 Z"/><path class="hw-basket-l" d="M47 97 H153 M50 106 H150 M52 114 H148"/>`;
+    else if(c.shape===`filone`) inner=`<path class="hw-cloth" d="M8 114 H84 Q100 66 116 114 H192 V124 H8 Z"/>${[54,146].map(x=>hwG(`translate(${x} 113)`,`ri-d`,`<path class="hw-dough" d="M-28 0 Q-30 -19 -14 -19 H14 Q30 -19 28 0 Z"/>`,`--rise:1.35;--sx:1.06`)).join(``)}`;
+    else if(c.shape===`ciabatta`) inner=`<rect x="10" y="110" width="180" height="8" rx="3" class="hw-cloth"/>${[56,144].map(x=>hwG(`translate(${x} 111)`,`ri-d`,`<path class="hw-dough" d="M-34 0 Q-36 -12 -20 -12 H20 Q36 -12 34 0 Z"/>`,`--rise:1.3;--sx:1.05`)).join(``)}`;
+    else if(c.shape===`stampo`) inner=`${hwG(`translate(100 116)`,`ri-d`,`<path class="hw-dough" d="M-40 0 V-16 Q-38 -32 0 -32 Q38 -32 40 -16 V0 Z"/>`,`--rise:1.8`)}<path class="hw-pan" d="M50 64 H150 L142 117 H58 Z"/><path d="M44 64 h112" class="hw-mark2"/>`;
+    else inner=`<rect x="16" y="110" width="168" height="5" rx="2.5" class="hw-tray"/>${hwG(`translate(100 110)`,`ri-d`,`<path class="hw-dough" d="${dome(58,24)}"/>`,`--rise:1.4;--sx:1.08`)}`;
+    return hwSvg(`${HWP.board}${inner}${HWP.clock(178,24)}`);
+  },
+  divide(gr){
+    return hwSvg(`${HWP.board}<path class="hw-dough" d="M14 112 V103 Q14 92 26 92 H94 V112 Z"/>${hwG(`translate(94 112)`,`dv-p`,`<path class="hw-dough" d="M0 0 V-20 H18 Q28 -20 28 -10 V0 Z"/>`)}${hwG(`translate(94 96)`,`dv-s`,`<rect x="-2.5" y="-16" width="5" height="32" rx="1" class="hw-blade"/><rect x="-10" y="-29" width="20" height="14" rx="5" class="hw-tool"/>`)}
+      <rect x="146" y="82" width="40" height="5" rx="2" class="hw-metal2"/><rect x="142" y="87" width="48" height="25" rx="5" class="hw-metal"/><rect x="150" y="93" width="32" height="12" rx="2" class="hw-screen"/><text x="166" y="102" text-anchor="middle" class="hw-txt dv-t">${gr||``}</text>`);
+  },
+  pirla(s){
+    s=s||1;
+    return hwSvg(`${HWP.board}<ellipse cx="100" cy="123" rx="${Math.round(30*s)}" ry="5" class="hw-arrow"/><g transform="translate(100 112) scale(${s})"><g class="pl-m"><g class="pl-b"><ellipse cy="-15" rx="20" ry="15" class="hw-dough"/>${hwG(`translate(0 -15)`,`pl-r`,`<path class="hw-seam" d="M-11 -5 Q0 -11 11 -5"/>`)}</g>${hwG(`translate(0 -12)`,`pl-c`,HWP.cup)}</g></g>`);
+  },
+  foldIn(){
+    const lobes=[0,90,180,270].map((a,i)=>`<g transform="translate(100 70) rotate(${a}) translate(0 30)"><g class="fi-${i+1}"><path class="hw-dough hw-flap" d="M-17 0 Q-16 21 0 21 Q16 21 17 0 Z"/></g></g>`).join(``);
+    return hwSvg(`${HWP.boardTop}<circle cx="100" cy="70" r="34" class="hw-dough"/>${lobes}`);
+  },
+  roll(){
+    const hands=[72,128].map(x=>hwG(`translate(${x} 0)`,`ro-h`,`<g transform="translate(0 2) rotate(180) scale(.62)">${HWP.hand}</g>`)).join(``);
+    return hwSvg(`${HWP.boardTop}${hwG(`translate(100 108)`,`ro-f`,`<rect x="-56" y="-78" width="112" height="78" rx="8" class="hw-dough"/>`)}${hwG(`translate(100 30)`,`ro-r`,`<rect x="-58" y="-6" width="116" height="12" rx="6" class="hw-dough hw-flap"/>`)}${hands}`);
+  },
+  stretch(){
+    return hwSvg(`${HWP.boardTop}${hwG(`translate(100 70)`,`al-l`,`<rect x="-36" y="-11" width="72" height="22" rx="11" class="hw-dough"/>`)}${hwG(`translate(86 98)`,`al-h1`,`<g transform="scale(.8)">${HWP.hand}</g>`)}${hwG(`translate(114 98)`,`al-h2`,`<g transform="scale(-.8 .8)">${HWP.hand}</g>`)}`);
+  },
+  intoPan(){
+    return hwSvg(`${HWP.board}${hwG(`translate(100 112)`,`ip-l`,`<path class="hw-dough" d="M-38 0 V-12 Q-38 -24 -26 -24 H26 Q38 -24 38 -12 V0 Z"/><path class="hw-seam" d="M-30 -2 H30"/>`)}<path class="hw-pan" d="M50 68 H150 L142 113 H58 Z"/>`);
+  },
+  snake(){
+    const p=`M34 100 C34 64 64 64 64 82 C64 100 94 100 94 82 C94 64 124 64 124 82 C124 100 154 100 154 82 C154 64 172 64 172 82`;
+    const seeds=Array.from({length:30},(_,i)=>{const x=34+(i*47)%140, y=66+(i*29)%34; return `<ellipse cx="${x}" cy="${y}" rx="2" ry="1" transform="rotate(${(i*53)%180} ${x} ${y})"/>`;}).join(``);
+    return hwSvg(`${HWP.boardTop}<path d="${p}" pathLength="100" class="hw-cord-o sn-p"/><path d="${p}" pathLength="100" class="hw-cord sn-p"/><path d="M34 82 H172" pathLength="100" class="hw-cord-o sn-q"/><path d="M34 82 H172" pathLength="100" class="hw-cord sn-q"/><g class="sn-s hw-sesame">${seeds}</g>`);
+  },
+  cavallo(){
+    return hwSvg(`${HWP.boardTop}<path class="hw-dough" d="M66.5 64 A34 34 0 1 0 133.5 64 Z"/>${hwG(`translate(100 64)`,`cv-f`,`<path class="hw-dough hw-flap" d="M-33.5 0 A34 34 0 0 1 33.5 0 Z"/>`)}`);
+  },
+  cutSlab(){
+    const w=140/3, pc=(i)=>`<rect x="${(30+i*w).toFixed(1)}" y="36" width="${w.toFixed(1)}" height="70" rx="${i===1?0:10}" class="hw-dough hw-nostroke"/>`;
+    return hwSvg(`${HWP.boardTop}<rect x="30" y="36" width="140" height="70" rx="10" class="hw-dough cs-0"/>${hwG(`translate(0 0)`,`cs-a`,pc(0))}${pc(1)}${hwG(`translate(0 0)`,`cs-c`,pc(2))}<g class="hw-flour">${[[50,50],[78,80],[110,46],[140,90],[160,60],[96,96]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.8"/>`).join(``)}</g><path d="M${(30+w).toFixed(1)} 36 V106" pathLength="100" class="hw-cutline cs-1"/><path d="M${(30+2*w).toFixed(1)} 36 V106" pathLength="100" class="hw-cutline cs-2"/>${hwG(`translate(${(30+w).toFixed(1)} 36)`,`cs-b`,`<rect x="-3" y="-30" width="6" height="30" rx="1.5" class="hw-blade"/><rect x="-9" y="-40" width="18" height="12" rx="4" class="hw-tool"/>`)}`);
+  },
+  fridge(c,dir){
+    const box=c.cat===`pizza`&&!c.teglia&&!c.pref?`<rect x="-24" y="-18" width="48" height="18" rx="3" class="hw-glass"/>${[-12,0,12].map(x=>`<ellipse cx="${x}" cy="-6" rx="5.5" ry="5.5" class="hw-dough"/>`).join(``)}`:`<path class="hw-dough" d="M-16 -14 Q0 -24 16 -14 Z"/><path class="hw-bowl" d="M-22 -14 H22 Q20 0 0 0 Q-20 0 -22 -14 Z"/>`;
+    const anim=dir===`rest`?``:` fr-${dir}`;
+    return hwSvg(`<rect x="52" y="6" width="96" height="128" rx="10" class="hw-metal"/><rect x="58" y="12" width="84" height="116" rx="5" class="hw-cold"/><path d="M60 50 H140 M60 92 H140" class="hw-shelf"/>
+      ${hwG(`translate(100 92)`,`fr-b${anim}`,box)}
+      ${hwG(`translate(58 12)`,`fr-d${anim}`,`<rect width="84" height="116" rx="5" class="hw-metal2"/><rect x="72" y="36" width="5" height="34" rx="2.5" class="hw-tool"/><text x="38" y="20" text-anchor="middle" class="hw-txt">${c.fridge} °C</text>`)}
+      <g transform="translate(100 104)" class="hw-snow"><path d="M0 -9 V9 M-8 -4.5 L8 4.5 M-8 4.5 L8 -4.5" class="hw-snowl"/></g>${dir===`rest`?HWP.clock(176,28):``}`);
+  },
+  preheat(c){
+    return hwSvg(`${hwNest(ART.oven(c.oven),12,26,136,95)}${HWP.steam([64,80,96],30).replace(/hw-steam/g,`hw-steam hw-heat`)}<rect x="166" y="22" width="12" height="86" rx="6" class="hw-clock"/><circle cx="172" cy="114" r="10" class="hw-bulb"/>${hwG(`translate(172 110)`,`th-m`,`<rect x="-3" y="-82" width="6" height="82" rx="3" class="hw-bulb"/>`)}`);
+  },
+  press(c){
+    const w={classica:9,contemporanea:13,canotto:16}[c.style]||10;
+    const ring=(n,r,cls,off)=>`<g class="${cls}">${Array.from({length:n},(_,i)=>{const a=(i*360/n+off)*Math.PI/180;return `<ellipse cx="${(r*Math.cos(a)).toFixed(1)}" cy="${(r*Math.sin(a)).toFixed(1)}" rx="2.6" ry="2" class="hw-dim"/>`;}).join(``)}</g>`;
+    return hwSvg(`${HWP.boardTop}${hwG(`translate(100 68)`,`st-d`,`<circle r="48" class="hw-dough"/><circle r="${48-w}" class="hw-flap hw-nostroke"/>${ring(1,0,`st-1`,0)}${ring(6,(48-w)*.45,`st-2`,10)}${ring(9,(48-w)*.8,`st-3`,30)}`)}${hwG(`translate(100 106)`,`st-h`,`<g transform="scale(.72)">${HWP.hand}</g>`)}`);
+  },
+  pin(){
+    return hwSvg(`${HWP.boardTop}${hwG(`translate(100 70)`,`rp-d`,`<circle r="50" class="hw-dough"/>`)}${hwG(`translate(100 70)`,`rp-p`,`<rect x="-62" y="-7" width="124" height="14" rx="7" class="hw-wood"/><rect x="-82" y="-4" width="22" height="8" rx="4" class="hw-wood"/><rect x="60" y="-4" width="22" height="8" rx="4" class="hw-wood"/>`)}`);
+  },
+  top(c){
+    const w=c.style===`romana`?4:({classica:9,contemporanea:13,canotto:16}[c.style]||10), r=48-w-4;
+    const spiral=Array.from({length:60},(_,i)=>{const t=i/59*Math.PI*6, rr=2+i/59*(r-4);return `${i?`L`:`M`}${(rr*Math.cos(t)).toFixed(1)} ${(rr*Math.sin(t)).toFixed(1)}`;}).join(` `);
+    const ch=[[-12,-14,7],[13,-6,6.5],[-6,10,7],[16,14,5.5],[-22,4,4.5],[4,-26,5]].filter(p=>Math.hypot(p[0],p[1])+p[2]<r+2);
+    return hwSvg(`${HWP.boardTop}<g transform="translate(100 70)"><circle r="48" class="hw-crustraw"/><circle r="${48-w}" class="hw-flap hw-nostroke"/><path d="${spiral}" pathLength="100" class="hw-sauce cd-s"/>${ch.map(([x,y,s])=>hwG(`translate(${x} ${y})`,`cd-c`,`<circle r="${s}" class="hw-cheese"/>`)).join(``)}${[[2,-2,-30],[-16,-10,20],[14,4,60]].map(([x,y,a])=>hwG(`translate(${x} ${y}) rotate(${a})`,`cd-b`,`<ellipse rx="6" ry="3" class="hw-basil"/>`)).join(``)}</g>`);
+  },
+  trayPress(){
+    const dots=Array.from({length:12},(_,i)=>`<ellipse cx="${-42+(i%4)*28}" cy="${-22+Math.floor(i/4)*22}" rx="3" ry="2.2" class="hw-dim"/>`).join(``);
+    return hwSvg(`<rect x="22" y="14" width="156" height="112" rx="8" class="hw-tray"/><rect x="28" y="20" width="144" height="100" rx="5" class="hw-oil"/>${hwG(`translate(100 70)`,`tp-d`,`<rect x="-70" y="-48" width="140" height="96" rx="12" class="hw-dough"/><g class="tp-dots">${dots}</g>`)}${hwG(`translate(100 108)`,`st-h`,`<g transform="scale(.72)">${HWP.hand}</g>`)}`);
+  },
+  trayTop(){
+    const zz=`M40 34 L160 40 L44 54 L158 62 L42 76 L160 84 L44 98 L156 106`;
+    return hwSvg(`<rect x="22" y="14" width="156" height="112" rx="8" class="hw-tray"/><rect x="28" y="20" width="144" height="100" rx="8" class="hw-crustraw"/><path d="${zz}" pathLength="100" class="hw-sauce cd-s"/>${[[56,46,7],[96,40,6],[136,52,7],[70,80,6.5],[112,74,7],[146,96,6],[50,100,5]].map(([x,y,s])=>hwG(`translate(${x} ${y})`,`cd-c`,`<circle r="${s}" class="hw-cheese"/>`)).join(``)}`);
+  },
+  ovenSide(dome){
+    return dome?{floor:102,back:`<path class="hw-brick" d="M78 118 V72 Q78 18 138 18 Q198 18 198 72 V118 Z"/><path class="hw-cavity" d="M88 108 V74 Q88 30 138 30 Q188 30 188 74 V108 Z"/><rect x="76" y="76" width="14" height="32" class="hw-cavity"/><rect x="88" y="102" width="100" height="6" class="hw-stone"/>`,fire:HWP.flames([176,184],102,1.1)}
+      :{floor:84,back:`<rect class="hw-metal" x="74" y="12" width="124" height="110" rx="10"/><rect class="hw-cavity" x="74" y="22" width="114" height="90" rx="3"/><path class="hw-hot" d="M84 28 h96 M84 106 h96"/><rect x="84" y="84" width="100" height="4" class="hw-steel"/><path class="hw-door" d="M74 112 L30 120 V125 L74 117 Z"/>`,fire:``};
+  },
+  bakePizza(c){
+    const dome=[`legna`,`portatile`,`fornetto`].includes(c.oven), O=HOW.ovenSide(dome), y=O.floor;
+    const rim={classica:[5,4],contemporanea:[6,6],canotto:[7,8],romana:[3,2]}[c.style]||[5,5];
+    const spots=dome?[[-25,-6],[-20,-8],[24,-7],[19,-6]].map(([x,yy])=>`<circle cx="${x}" cy="${yy}" r="1.3" class="hw-char"/>`).join(``):``;
+    let raw, ck, carrier=``;
+    if(c.teglia){
+      raw=`<rect x="-34" y="-10" width="68" height="10" rx="2" class="hw-dough"/>`;
+      ck=`<rect x="-34" y="-13" width="68" height="13" rx="2" class="hw-crust"/><rect x="-32" y="-15" width="64" height="3" rx="1.5" class="hw-sauce-f"/><circle cx="-14" cy="-15" r="3.4" class="hw-cheese"/><circle cx="12" cy="-15" r="3" class="hw-cheese"/>`;
+      carrier=`<rect x="-37" y="0" width="74" height="3" rx="1" class="hw-tray"/>`;
+    } else {
+      const prof=(cls,a,b)=>`<rect x="-26" y="-3.5" width="52" height="3.5" rx="1.75" class="${cls}"/><ellipse cx="${-26+a}" cy="${-b}" rx="${a}" ry="${b}" class="${cls}"/><ellipse cx="${26-a}" cy="${-b}" rx="${a}" ry="${b}" class="${cls}"/>`;
+      raw=prof(`hw-dough`,rim[0]*.8,rim[1]*.6)+`<rect x="-17" y="-5" width="34" height="2" rx="1" class="hw-sauce-f"/>`;
+      ck=prof(`hw-crust`,rim[0],rim[1])+`<rect x="-18" y="-5" width="36" height="2.4" rx="1" class="hw-sauce-f"/><circle cx="-8" cy="-5" r="2.6" class="hw-cheese"/><circle cx="8" cy="-5" r="2.2" class="hw-cheese"/>${spots}`;
+      if(c.oven===`casa_teglia`) carrier=`<rect x="-30" y="0" width="60" height="3" rx="1" class="hw-tray"/>`;
+    }
+    const peel=c.teglia||c.oven===`casa_teglia`?``:hwG(`translate(136 ${y})`,`bk-p`,`<rect x="-30" y="0" width="58" height="3" rx="1.5" class="hw-wood"/><rect x="-150" y=".5" width="122" height="2.5" rx="1.2" class="hw-wood"/>`);
+    return hwSvg(`${O.back}${O.fire}${hwG(`translate(136 ${y})`,`bk-z`,`${carrier}<g class="bk-ck">${ck}</g><g class="bk-raw">${raw}</g>`)}${peel}`);
+  },
+  loaf(c){
+    /* profilo laterale del pane per la cottura: [crudo, cotto] */
+    const fill=c.style===`brioche`?`hw-loafd`:[`semola`,`siciliano`,`pugliese`,`bun_olio`].includes(c.style)?`hw-semola`:`hw-loaf`;
+    const dome=(w,h,cls)=>`<path class="${cls}" d="M${-w} 0 Q${-w-1} ${-h} 0 ${-h} Q${w+1} ${-h} ${w} 0 Z"/>`;
+    if(c.bun) return [[-30,0,30].map(x=>`<g transform="translate(${x} 0)">${dome(12,11,`hw-dough`)}</g>`).join(``),[-30,0,30].map(x=>`<g transform="translate(${x} 0)">${dome(13,14,fill)}<path d="M-7 -10 Q0 -13 7 -10" class="hw-shine"/></g>`).join(``)];
+    if(c.shape===`stampo`) return [`<path class="hw-dough" d="M-24 -4 V-22 Q-22 -32 0 -32 Q22 -32 24 -22 V-4 Z"/><path class="hw-pan" d="M-28 -24 H28 L25 0 H-25 Z"/>`,`<path class="${fill}" d="M-25 -4 V-24 Q-23 -38 0 -38 Q23 -38 25 -24 V-4 Z"/><path class="hw-pan" d="M-28 -24 H28 L25 0 H-25 Z"/>`];
+    if(c.shape===`filone`||c.shape===`ciabatta`) return [dome(38,c.shape===`ciabatta`?9:12,`hw-dough`),dome(39,c.shape===`ciabatta`?12:16,fill)];
+    return [dome(32,20,`hw-dough`)+`<path d="M-12 -18 Q0 -21 12 -18" class="hw-cutraw"/>`,dome(33,27,fill)+`<path d="M-14 -24 Q0 -31 14 -24" class="hw-ear"/>`];
+  },
+  bakeBread(c){
+    const pot=c.oven===`pentola`, dome=c.oven===`legna`, O=HOW.ovenSide(dome), y=dome?O.floor:pot?82:O.floor;
+    const [raw,ck]=HOW.loaf(c);
+    const carrier=dome?``:pot?``:`<rect x="-42" y="0" width="84" height="3" rx="1" class="hw-tray"/>`;
+    const potBack=pot?`<rect x="98" y="48" width="80" height="36" rx="6" class="hw-potin"/>`:``;
+    const potFront=pot?`<path class="hw-pot" d="M98 52 H178 V78 Q178 86 170 86 H106 Q98 86 98 78 Z" fill-opacity=".35"/>${hwG(`translate(138 48)`,`bb-lid`,`<path class="hw-pot" d="M-44 2 Q-40 -12 0 -13 Q40 -12 44 2 Z"/><rect x="-6" y="-18" width="12" height="6" rx="2" class="hw-pot"/>`)}`:``;
+    const water=!pot&&!dome?`<rect x="92" y="106" width="34" height="4" rx="1" class="hw-tray"/>${HWP.steam([102,116],104)}`:pot?`<g class="bb-st">${HWP.steam([122,138,154],44)}</g>`:``;
+    return hwSvg(`${O.back}${O.fire}${water}${potBack}${hwG(`translate(${pot?138:136} ${y})`,`bb-l`,`${carrier}<g class="bk-ck">${ck}</g><g class="bk-raw">${raw}</g>`)}${potFront}`);
+  },
+  score(c){
+    const filone=c.shape===`filone`;
+    const body=filone?`<ellipse cx="100" cy="70" rx="72" ry="22" class="hw-dough"/>`:`<circle cx="100" cy="70" r="44" class="hw-dough"/>`;
+    const cuts=filone?[[50,78,72,62],[90,78,112,62],[130,78,152,62]]:[[76,48,124,92],[124,48,76,92]];
+    const dust=`<g class="hw-flour">${(filone?[[70,66],[120,70],[150,74],[44,70]]:[[86,60],[110,82],[94,90],[118,56],[80,80]]).map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.8"/>`).join(``)}</g>`;
+    return hwSvg(`${HWP.boardTop}${body}${dust}${cuts.map(([a,b,x,y],i)=>`<path d="M${a} ${b} L${x} ${y}" pathLength="100" class="hw-cut sc-${i+1}${filone?`f`:``}"/>`).join(``)}<g class="sc-l${filone?`f`:`b`}"><path class="hw-blade" d="M0 0 L-5 -4 L1 -10 L6 -6 Z"/><path d="M3 -8 L22 -30" class="hw-handle"/></g>`);
+  },
+  brush(){
+    const bun=(x,cls)=>`<g transform="translate(${x} 110)"><path class="${cls}" d="M-24 0 Q-26 -27 0 -27 Q26 -27 24 0 Z"/></g>`;
+    return hwSvg(`${HWP.board}<rect x="12" y="110" width="176" height="4" rx="2" class="hw-tray"/>${bun(46,`hw-dough`)}<path class="hw-shine" d="M34 92 Q46 86 58 92" opacity=".9"/>${bun(100,`hw-dough`)}<path class="hw-shine br-s" d="M88 92 Q100 86 112 92"/>${bun(154,`hw-dough`)}${hwG(`translate(100 110)`,`br-b`,`<path class="hw-bristle" d="M-5 0 L5 0 L6 -10 L-6 -10 Z"/><rect x="-5" y="-15" width="10" height="5" class="hw-tool"/><path d="M0 -15 V-46" class="hw-handle"/>`)}`);
+  },
+  cool(c){
+    return hwSvg(`${hwNest(ART.style(c.style,c.oven),4,2,192,144)}${HWP.steam(c.bun?[70,100,130]:[78,100,122],c.bun?52:42)}${HWP.clock(180,20)}`);
+  },
+  prefMix(c){
+    const poolish=c.method===`poolish`;
+    const lumps=[[-22,-4,8],[-8,-8,9],[8,-5,8],[22,-8,7],[-14,-14,6],[4,-16,7],[16,-14,5]].map(([x,y,r],i)=>`<g transform="translate(${x} ${y})"><circle r="${r}" class="hw-dough pm-j" style="animation-delay:-${(i*.23).toFixed(2)}s"/></g>`).join(``);
+    const inside=poolish?`<ellipse cx="0" cy="-6" rx="40" ry="8" class="hw-batter"/>${hwG(`translate(0 -6)`,`pm-w`,`<path d="M-22 0 Q0 -6 22 0 Q0 6 -12 1" class="hw-swirl"/>`)}`:lumps;
+    return hwSvg(`<ellipse cx="100" cy="72" rx="48" ry="10" class="hw-metal2"/><g transform="translate(100 80)">${inside}</g>${hwG(`translate(130 18)`,`pm-s`,`<path d="M0 0 L-26 54" class="hw-handle"/><ellipse cx="-28" cy="60" rx="5" ry="8" transform="rotate(25 -28 60)" class="hw-wood"/>`)}<path d="M52 72 Q100 86 148 72 Q146 118 100 120 Q54 118 52 72 Z" class="hw-metal"/>`);
+  },
+  tz(){
+    return hwSvg(`<rect x="38" y="118" width="124" height="8" rx="4" class="hw-metal2"/>${HWP.flames([70,100,130],118,.8)}<rect x="146" y="74" width="48" height="7" rx="3.5" class="hw-steel"/><path class="hw-steel" d="M52 70 H148 V104 Q148 112 140 112 H60 Q52 112 52 104 Z"/><ellipse cx="100" cy="72" rx="46" ry="7" class="hw-milk"/><ellipse cx="100" cy="72" rx="46" ry="7" class="hw-gel tz-c"/><path d="M70 72 Q100 66 130 72" class="hw-trail tz-t"/>${hwG(`translate(100 16)`,`tz-w`,`<path d="M0 0 V22" class="hw-handle"/><path d="M-2 22 Q-13 42 0 56 Q13 42 2 22 M0 22 V56" class="hw-wire"/>`)}`);
+  }
+};
+/* cosa disegnare per ogni passaggio: [[svg, didascalia], ...] */
+function howScenes(key,c){
+  const k=key.replace(/\d+$/,``), pz=c.cat===`pizza`;
+  switch(k){
+    case `impasto`: return c.mixer?[[HOW.mixer(),`Gancio a velocità bassa finché la farina sparisce, poi più veloce: è pronto quando si stacca dalle pareti.`]]:[[HOW.knead(),`Spingi l'impasto in avanti con il palmo, ripiegalo verso di te e giralo di un quarto. Ripeti finché è liscio.`]];
+    case `prefermento`: return c.method===`poolish`?[[HOW.prefMix(c),`Mescola con un cucchiaio finché è una pastella liscia, senza grumi di farina.`]]:[[HOW.prefMix(c),`Mescola appena: la biga deve restare a grumi asciutti, non diventare una palla liscia.`]];
+    case `tangzhong`: return [[HOW.tz(),`Fuoco basso e frusta sempre in movimento. È pronto quando diventa una crema e la frusta lascia una scia.`]];
+    case `puntata`: return [[HOW.rise(`dough`),`Ciotola coperta: l'impasto cresce piano. La linea rossa è il punto di partenza.`]];
+    case `maturazione`: case `avvio`: case `acclimata`: return [[HOW.rise(c.method===`poolish`?`poolish`:`biga`),c.method===`poolish`?`Il poolish si riempie di bolle e cresce: è maturo quando la superficie inizia appena ad abbassarsi al centro.`:`La biga coperta matura lentamente: cresce poco e profuma di lievito.`]];
+    case `pieghe`: return [[HOW.pieghe(),`Mano bagnata: tira su un lembo e piegalo sopra l'impasto. Gira il contenitore e ripeti sui quattro lati.`]];
+    case `bigainfrigo`: case `frigo`: return [[HOW.fridge(c,`in`),`Coperto, su un ripiano centrale del frigo: la porta è il punto più caldo.`]];
+    case `bigafrigo`: return [[HOW.fridge(c,`rest`),`Lascia lavorare il freddo: non serve aprire il frigo per controllare.`]];
+    case `bigafuori`: return [[HOW.fridge(c,`out`),`Tira fuori il contenitore e lascialo coperto sul piano.`]];
+    case `staglio`: case `formatura`:
+      if(c.bun) return [[HOW.divide(c.piece),`Dividi con il tarocco e pesa ogni pezzo.`],[HOW.pirla(.8),`Chiudi i bordi sotto e fai girare la pallina sotto la mano a coppa finché è liscia e tesa.`]];
+      if(pz&&!c.teglia) return [[HOW.divide(c.piece),`Taglia un pezzo con il tarocco e pesalo: tutti i panetti uguali cuociono uguali.`],[HOW.pirla(),`Porta i bordi sotto, poi fai girare il panetto sotto la mano a coppa: la superficie diventa liscia e tesa.`]];
+      if(c.teglia||c.shape===`boule`) return [[HOW.foldIn(),`Porta i lembi verso il centro, uno alla volta.`],[HOW.pirla(1.35),`Gira la palla con la chiusura sotto e falla ruotare sul piano per tenderla.`]];
+      if(c.shape===`filone`) return [[HOW.roll(),`Arrotola l'impasto verso di te, stringendo con i pollici a ogni giro.`],[HOW.stretch(),`Fai rotolare il cilindro sotto le mani, allargandole piano verso l'esterno.`]];
+      if(c.shape===`stampo`) return [[HOW.roll(),`Arrotola stretto, come un salame, senza lasciare aria dentro.`],[HOW.intoPan(),`Mettilo nello stampo con la chiusura sotto.`]];
+      if(c.shape===`ciabatta`) return [[HOW.cutSlab(),`Non sgonfiarla: taglia i pezzi con il tarocco infarinato e spostali senza schiacciarli.`]];
+      if(c.shape===`mafalda`) return [[HOW.stretch(),`Allunga un cordone lungo e regolare facendolo rotolare sotto le mani.`],[HOW.snake(),`Piegalo a serpentina, appoggia l'ultimo pezzo sopra per il lungo e cospargi di sesamo.`]];
+      if(c.shape===`accavallato`) return [[HOW.pirla(1.35),`Arrotonda l'impasto in una palla tesa.`],[HOW.cavallo(),`Ripiega la metà di sopra su quella di sotto, lasciando sporgere il bordo: è la piega “a cavallo”.`]];
+      return [[HOW.pirla(1.35),`Arrotonda l'impasto in una palla tesa.`]];
+    case `appretto`: return [[HOW.proof(c),c.bun?`Panini coperti sulla teglia: devono quasi raddoppiare.`:c.shape===`stampo`?`Coperto: è pronto quando supera il bordo dello stampo.`:c.bread?`Coperto: deve gonfiarsi e, premuto con un dito, tornare su piano.`:`Panetti coperti: si gonfiano e si allargano. Premuti con un dito, tornano su piano.`]];
+    case `preriscaldo`: return [[HOW.preheat(c),`Accendi in anticipo: ${c.oven===`pentola`?`la pentola deve scaldarsi dentro il forno, coperchio compreso.`:`${pz?`pietra, acciaio o platea`:`il forno`} deve arrivare a temperatura in ogni punto, non solo l'aria.`}`]];
+    case `stesura`:
+      if(c.teglia) return [[HOW.trayPress(),`Con i polpastrelli unti premi dal centro verso gli angoli. Se torna indietro, aspetta qualche minuto e riprova.`],[HOW.trayTop(),`Condisci in modo uniforme fino ai bordi.`]];
+      if(c.style===`romana`) return [[HOW.pin(),`Infarina il piano e passa il mattarello dal centro verso il bordo, girando spesso il disco.`],[HOW.top(c),`Sugo a spirale dal centro, poi la mozzarella.`]];
+      return [[HOW.press(c),`Schiaccia con i polpastrelli dal centro verso fuori, senza toccare il bordo: lì resta l'aria del cornicione.`],[HOW.top(c),`Sugo a spirale dal centro senza arrivare al bordo, poi mozzarella e basilico.`]];
+    case `cottura`: return pz?[[HOW.bakePizza(c),c.teglia||c.oven===`casa_teglia`?`Inforna sul ripiano indicato e lascia cuocere senza aprire troppo spesso.`:`Fai scivolare la pizza dalla pala con un colpo deciso, poi riprendila quando il bordo è gonfio e colorito.`]]:[[HOW.bakeBread(c),c.oven===`pentola`?`Coperchio chiuso nella prima parte: il vapore resta dentro e il pane cresce. Poi togli il coperchio per colorire la crosta.`:c.bun?`I panini gonfiano e si colorano in modo uniforme.`:`Il vapore all'inizio fa crescere il pane; poi la crosta si colora.`]];
+    case `incisione`:
+      if(c.bun) return [[HOW.brush(),`Spennella leggero, senza far colare: dove cola la crosta diventa scura.`]];
+      if(c.shape===`boule`||c.shape===`filone`) return [[HOW.score(c),c.shape===`filone`?`Tagli decisi in diagonale, uno dopo l'altro, con la lama inclinata.`:`Un taglio deciso e veloce con la lama inclinata: lì il pane si aprirà.`]];
+      return [[HOW.bakeBread(c),`Inforna in fretta e crea subito il vapore.`]];
+    case `raffreddamento`: return [[HOW.cool(c),c.bun?`Sulla griglia per almeno 30 minuti: la mollica finisce di assestarsi.`:`Sulla griglia, mai su un piano pieno. Non tagliarlo caldo: dentro sta ancora cuocendo.`]];
+  }
+  return [];
+}
+function howCtx(){
+  const S=STYLES[state.style]||{};
+  return {style:state.style,cat:catOf(state.style),teglia:!!S.teglia,bread:!!S.bread,bun:!!S.bun,shape:S.shape,mixer:!!state.mixer,method:state.method,pref:state.method&&state.method!==`diretto`,oven:state.oven,fridge:state.fridge,piece:R&&R.I&&R.I.piece?g(R.I.piece):``};
+}
+function howHtml(key){
+  const sc=howScenes(key,howCtx());
+  if(!sc.length) return ``;
+  return `<div class="how">${sc.map(([s,cap],i)=>`<figure>${s}<figcaption>${sc.length>1?`<i>${i+1}</i>`:``}<span>${cap}</span></figcaption></figure>`).join(``)}</div>`;
+}
+/* come deve venire il prodotto finito, in base a stile e forno */
+function outlook(){
+  const S=STYLES[state.style];
+  if(S.bun) return `${S.desc} Escono lucidi e dorati; premuti con un dito tornano su piano piano.`;
+  if(S.bread) return `${S.desc} Quando è cotto la crosta è ben dorata e, se bussi sotto, suona vuoto.`;
+  if(S.teglia) return `${S.desc} Il fondo esce dorato e croccante grazie all'olio; sopra resta soffice.`;
+  const o={legna:`cornicione gonfio con le macchie scure “leopardate”`,portatile:`cornicione gonfio con le macchie scure “leopardate”`,fornetto:`bordo con qualche macchia scura e fondo asciutto`,casa_acciaio:`fondo croccante con qualche punto scuro, bordo dorato`,casa_pietra:`fondo cotto e asciutto, bordo dorato con poche macchie`,casa_teglia:`bordo dorato e uniforme, fondo più morbido. Le macchie scure col forno di casa non vengono`}[state.oven]||``;
+  return `${S.desc}${o?` Con il tuo forno: ${o}.`:``}`;
+}
+/* nel piano: le animazioni restano chiuse finché non le apri; l'apertura resta anche quando la pagina si ridisegna */
+const howOpen=new Set();
+function howDetails(key){ const s=howHtml(key); return s?`<details class="how-d" data-how="${key}" ${howOpen.has(key)?`open`:``}><summary>Guarda come si fa</summary>${howOpen.has(key)?s:``}</details>`:``; }
+document.addEventListener(`toggle`,e=>{ const d=e.target; if(!d.matches||!d.matches(`.how-d`)) return; const k=d.dataset.how; if(d.open){ howOpen.add(k); if(!d.querySelector(`.how`)) d.insertAdjacentHTML(`beforeend`,howHtml(k)); } else howOpen.delete(k); },true);
+function outlookHtml(){ return `<div class="how-out"><div class="art-o">${ART.style(state.style,state.oven)}</div><p><b>Come deve venire</b>${outlook()}</p></div>`; }
+
 
 /* ---------- procedura a pagine ---------- */
 const ui={page:0,reached:0,reviewed:false};
@@ -1928,7 +2406,7 @@ function renderOut(){
     if(state.editing===s.key) noteHtml=`<div class="note-edit"><label class="sub" for="note-${s.key}">La tua nota per questo passaggio</label><textarea id="note-${s.key}" placeholder="Es. qui stai attento: con la mia farina serve qualche minuto in più">${esc(note||``)}</textarea><div class="step-actions"><button type="button" class="btn small primary" data-note-save="${s.key}">Salva nota</button><button type="button" class="btn small ghost" data-note-cancel>Annulla</button>${note?`<button type="button" class="btn small ghost danger" data-note-del="${s.key}">Elimina</button>`:``}</div></div>`;
     else if(note) noteHtml=`<div class="note"><b>La tua nota</b>${esc(note)}</div>`;
     const dur=(s.end-s.start)/H;
-    tl+=`<li class="step ${s.end<now?`past`:``}"><div class="time">${hm(s.start)}</div><div><h4>${s.title}<span class="badge ${s.hands?``:`wait`}">${s.hands?`da fare`:`attesa`} · ${fmtDur(dur)}</span></h4><div class="body">${s.body}</div>${noteHtml}${state.editing===s.key?``:`<div class="step-actions"><button type="button" class="linkbtn" data-note="${s.key}">${note?`Modifica nota`:`+ Aggiungi una nota`}</button></div>`}</div></li>`;
+    tl+=`<li class="step ${s.end<now?`past`:``}"><div class="time">${hm(s.start)}</div><div><h4>${s.title}<span class="badge ${s.hands?``:`wait`}">${s.hands?`da fare`:`attesa`} · ${fmtDur(dur)}</span></h4><div class="body">${s.body}</div>${howDetails(s.key)}${noteHtml}${state.editing===s.key?``:`<div class="step-actions"><button type="button" class="linkbtn" data-note="${s.key}">${note?`Modifica nota`:`+ Aggiungi una nota`}</button></div>`}</div></li>`;
   }
   const qty=bread?`${I.n} ${breadUnit(S,I.n)} da ${g(I.piece)}${I.tz?`, con tangzhong`:``}`:teglia?`${I.n} ${I.n>1?`teglie`:`teglia`} ${state.tw}×${state.th} cm`:`${I.n} ${I.n>1?`pizze`:`pizza`} da ${g(I.piece)}`;
   const choice=(lbl,val,p)=>`<li><span>${lbl}</span><b>${val} <button type="button" class="linkbtn" data-page="${p}">cambia</button></b></li>`;
@@ -1941,7 +2419,7 @@ function renderOut(){
       ${linked}
       <div class="hero">
         <div class="times"><div><span class="lbl">Inizi</span><span class="big">${hm(pl.begin??pl.mixStart)}</span><div class="meta">${dayLabel(pl.begin??pl.mixStart)}</div></div><div><span class="lbl">${bread?readyLbl():`Prima pizza`}</span><span class="big">${hm(pl.tFirst)}</span><div class="meta">${dayLabel(pl.tFirst)}</div></div></div>
-        <div class="art-h">${ART.style(state.style)}</div>
+        <div class="art-h">${ART.style(state.style,state.oven)}</div>
         <div class="meta">${qty} · ${OVENS[state.oven].name}</div>
       </div>
       <div class="actions">
@@ -1954,7 +2432,7 @@ function renderOut(){
         ${pl.pref?prefIngredientsHtml(I,pl)+prefermentAdvice():``}
         <p class="why">${pl.pref?.actual?`Lievito già presente nel preparato, conservato senza ricalcolarlo. Durata dei passaggi rimanenti: `:pl.pref?`Dose di lievito riferita ${pl.pref.warm?`alle ${fmtDur(pl.pref.hours)} della biga a ${pl.pref.temp} °C e alle ${fmtDur(pl.pref.cold)} in frigo`:`alle ${pl.pref.long?`${fmtDur(pl.pref.cold)} in frigo e alle `:``}${fmtDur(pl.pref.hours)} di maturazione del prefermento a ${pl.pref.temp} °C`}${pl.pref.addYp>0?`, più una piccola aggiunta al rimpasto calcolata per le fasi successive`:`; nessuna aggiunta nell’impasto finale`}. Durata totale del percorso: `:`Dose di lievito calcolata per `}${fmtDur(pl.total)}${pl.pref?``:` di lievitazione`}${pl.fridgeH?`, di cui ${fmtDur(pl.fridgeH)} in frigo a ${state.fridge} °C`:``}, con ${state.room} °C in casa. Il peso include un 2% in più per le perdite.${bread?` Tempi in forno: ${pl.bk.batches>1?`${pl.bk.batches} infornate da `:``}${pl.bk.per} minuti, poi ${fmtDur(pl.bk.cool)} di raffreddamento.`:``}</p>
       </div>
-      <div class="panel"><h3>Cosa aspettarti</h3>${pc(exp)}</div>
+      <div class="panel"><h3>Cosa aspettarti</h3><p class="why" style="margin-top:0">${outlook()}</p>${pc(exp)}</div>
       ${W.length?`<ul class="alerts">${W.map(w=>`<li class="${w.w?`warn`:``}">${w.t}</li>`).join(``)}</ul>`:``}
       <div class="panel"><h3>Le tue scelte</h3><ul class="choices">
         ${choice(bun?`Bun`:bread?`Pane`:`Pizza`,S.name,0)}${choice(`Quantità`,qty,1)}${choice(`In casa`,state.room+` °C`,2)}${choice(`Forno`,OVENS[state.oven].name,2)}${choice(`Farina`,flourInfo(state.flour,catOf(state.style)).name,3)}${choice(`Lievitazione`,PLANS[R.pk].name,4)}${bread?``:choice(`Metodo`,METHODS[state.method]+(pl.pref?` · ${num(pl.pref.pct)}% della farina`:``),4)}
@@ -2325,9 +2803,11 @@ function renderCook(){
       <div class="ck-pills" id="ck-when">${cookWhenHtml(P,now)}</div>
       <div id="ck-late">${cookLateHtml(P,now)}</div>
       <h2>${s.title}</h2>
+      ${howHtml(s.key)}
       ${note?`<div class="note"><b>La tua nota</b>${esc(note)}</div>`:``}
       <div class="ck-body">${s.body}</div>
       ${s.timer?`<div class="timer" id="timer"><span class="clock" id="clock">${fmtClock(s.timer*60e3)}</span><button type="button" class="btn primary" id="t-start">Avvia timer ${s.timer<1?``:``}${num(s.timer)} min</button><button type="button" class="btn ghost" id="t-stop" hidden>Ferma</button></div>`:``}
+      ${s.key===`cottura`||s.key===`raffreddamento`?outlookHtml():``}
       <div class="ck-plan" id="ck-plan">${cookPlanHtml(P,now)}</div>
     </div></div>
     <div class="ck-nav"><button type="button" class="btn" id="ck-prev" ${cook.i===0?`disabled`:``}>Indietro</button><button type="button" class="btn primary" id="ck-next">${cook.i===n-1?`Ho finito`:`Fatto, avanti`}</button></div>`;
@@ -2352,6 +2832,7 @@ function renderRate(){
     <div class="ck-bar"><i style="width:100%"></i></div>
     <div class="ck-main"><div class="ck-inner">
       <h2>${isBun()?`Come sono venuti?`:isBread()?`Com'è venuto?`:`Com'è venuta?`}</h2>
+      ${outlookHtml()}
       <p class="ck-body" style="margin:0">Il voto e la nota restano attaccati ${r?`alla versione ${state.link.v+1} di “${esc(r.name)}”`:`alla ricetta, se la salvi`}: la prossima volta saprai cosa cambiare.</p>
       <div class="rate" role="group" aria-label="Voto da 1 a 5">${[1,2,3,4,5].map(i=>`<button type="button" data-rate="${i}" class="${i<=cook.rating?`on`:``}" aria-label="${i} su 5">★</button>`).join(``)}</div>
       <label class="sub" for="bake-note">Cosa ha funzionato e cosa no?</label>
