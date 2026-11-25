@@ -16,7 +16,7 @@ Lievita è una web app in italiano per chi fa la pizza in casa per la prima volt
 
 L'app calcola le dosi, la quantità di lievito e l'orario di ogni passaggio, contando all'indietro dall'ora di cena. Poi lo guida con una modalità cucina, un passaggio alla volta.
 
-Più avanti si allargherà agli altri lievitati: pane, focaccia, brioche, cornetti, panini per hamburger.
+Dal 25 novembre 2026 c'è anche il pane in casa (vedi sotto). Più avanti si allargherà agli altri lievitati: focaccia, brioche, cornetti, panini per hamburger.
 
 ## Analisi di mercato (novembre 2026)
 
@@ -73,11 +73,13 @@ L'app è `index.html`, funzionante e senza dipendenze: solo i font Google. Dal 2
 Tutti i percorsi sono relativi, perché Pages pubblica l'app in una sottocartella (`utente.github.io/lievita/`). `index.html` contiene due blocchi `<script>`:
 
 1. **`<script id="engine">`: il motore.** Dati (`STYLES`, `FLOURS`, `OVENS`, `PLANS`), funzioni di calcolo e `state`. Non tocca il DOM, quindi si può testare in Node estraendo il blocco.
-2. **Il secondo script: l'interfaccia.** Procedura a 6 pagine (pizza, quando, cucina, ingredienti, lievitazione, piano) con illustrazioni SVG disegnate nel file, pregi e difetti di stili, farine e lievitazioni (`INFO`), e una finestra che spiega e chiede conferma prima di applicare ogni modifica alla ricetta (sempre per le percentuali; per stile, farina, forno, lievito e lievitazione dopo aver visto il piano o con una ricetta salvata aperta). Poi risultati, note, salvataggio delle ricette con versioni e differenze, calendario, modalità cucina (schermo sempre acceso e timer con suono), voto finale, scheda "Le mie ricette", esportazione e importazione.
+2. **Il secondo script: l'interfaccia.** Procedura a 6 pagine (cosa: pizza o pane, quando, cucina, ingredienti, lievitazione, piano) con illustrazioni SVG disegnate nel file, pregi e difetti di stili, farine e lievitazioni (`INFO`), e una finestra che spiega e chiede conferma prima di applicare ogni modifica alla ricetta (sempre per le percentuali; per stile, farina, forno, lievito e lievitazione dopo aver visto il piano o con una ricetta salvata aperta). Poi risultati, note, salvataggio delle ricette con versioni e differenze, calendario, modalità cucina (schermo sempre acceso e timer con suono), voto finale, scheda "Le mie ricette", esportazione e importazione.
 
 Una copia è pubblicata anche come artifact privato su claude.ai, all'indirizzo https://claude.ai/artifact/1tvoFfkSwREv6pd9HrGEH2. Lì il download del file `.ics` non funziona, mentre su GitHub Pages sì.
 
 **Ritardi in modalità cucina (24 novembre 2026).** Ogni "Fatto, avanti" registra l'ora reale. Se l'utente è in ritardo, i passaggi successivi slittano (mai in anticipo): per impasto, pieghe, staglio e stesura conta l'ora in cui finisce; per frigo, appretto e forno l'ora in cui inizia, con 10 minuti di margine. Il frigo lungo (`frigo`, `bigafrigo`) assorbe fino al 25% della sua durata, restando sopra le 8 ore, così l'ora di cena resta ferma quando si può. La "Tabella di marcia" sotto il passaggio mostra gli orari aggiornati, barrando quelli originali. Lo stato si salva in localStorage (`lievita.cook`), legato alla sequenza dei passaggi, e si cancella dopo "Ho finito".
+
+**Pane (25 novembre 2026).** Nella prima pagina si sceglie Pizza o Pane. I pani sono voci di `STYLES` con `bread:true` (pagnotta, filoncini, ciabatta, semola, integrale in cassetta, pan bauletto), così ricette, versioni, note, calendario e modalità cucina restano gli stessi. `catOf(style)` dà la categoria; `FLOURS` e `OVENS` hanno `cats` (nuove farine tipo 1, integrale e semola rimacinata; nuovo forno con pentola di ghisa; fornetto e forno a gas solo per la pizza). Solo impasto diretto, in giornata o 24 ore (`BREAD_PLANS`). L'ora scelta è quella del pane **già raffreddato**: all'indietro raffreddamento, infornate, incisione, appretto. Vapore con teglia d'acqua o pentola chiusa, tempi di cottura dal peso, un pane per volta in pentola. Lievito con la curva della pizza × 2 (pan bauletto × 2,5) e farine con crusca più veloci: **calcolato, da provare in cucina**, e l'app lo dice. Nel piano c'è il pannello “Segreti e accorgimenti” (impasto, umidità, formatura, vapore, conservazione, problemi comuni); nella prima pagina la tabella “Le differenze tra i pani”. Modello, numeri e limiti in `docs/pane.md`; test in `test/pane.test.js`.
 
 **Tema.** Il pulsante rotondo nella testata apre un menu Automatico (segue il telefono), Chiaro, Scuro. La scelta si salva in localStorage (`lievita.theme`) e uno script nel `<head>` la applica prima del disegno, per evitare il lampo di colore. Colori solo come variabili su `:root`: la palette scura è ripetuta in `@media (prefers-color-scheme: dark)` e in `:root[data-theme="dark"]`, da tenere uguali.
 
@@ -164,11 +166,11 @@ Le note sono legate a chiavi fisse dei passaggi (`impasto`, `puntata`, `pieghe1-
 3. Separare il motore in un file JS a parte. I test esistono già in `test/engine.test.js` (si eseguono con `node --test test/engine.test.js`) e per ora estraggono il blocco `engine` da `index.html`.
 4. Scrivere e rivedere i testi di ogni passaggio, citando le fonti nel repository (non nell'app).
 5. Fare il test "a mano" con 10–20 persone: piano e promemoria mandati su WhatsApp usando il motore.
-6. Validare in cucina biga e poolish inclusi i nuovi percorsi con frigo dopo il rimpasto, prima di ampliare ulteriormente le durate. Aggiungere più avanti: lievito madre, altri lievitati, Supabase per account e sincronizzazione.
+6. Validare in cucina biga e poolish inclusi i nuovi percorsi con frigo dopo il rimpasto, prima di ampliare ulteriormente le durate. Per il pane: raccogliere ricette di riferimento e tarare `yeastK` come per la pizza, provare in cucina pagnotta 24 ore, filoncini in giornata e pan bauletto, poi biga e poolish anche per il pane (vedi `docs/pane.md`). Aggiungere più avanti: lievito madre, altri lievitati, Supabase per account e sincronizzazione.
 
 ## Convenzioni
 
 - **Interfaccia e testi:** solo in italiano. Tono semplice e diretto, rivolto a chi è alle prime armi.
 - **Niente librerie** finché non servono davvero.
 - **Nessun dato personale** viene inviato altrove. Tutto resta nel browser finché non si introduce un backend.
-- **Ogni modifica al motore va controllata** con `node --test test/engine.test.js`, che copre: 16, 20 e 26 °C; contemporanea e teglia; in giornata e 24 ore; spostamento notturno; confronto con le fonti di `docs/lievito.md`.
+- **Ogni modifica al motore va controllata** con `node --test test/engine.test.js`, che copre: 16, 20 e 26 °C; contemporanea e teglia; in giornata e 24 ore; spostamento notturno; confronto con le fonti di `docs/lievito.md`. Con `node --test test/pane.test.js` si controlla il pane: tutti i tipi a 16, 20 e 26 °C, in giornata e 24 ore, orari dal pane pronto all'indietro, infornate, pentola, cambio tra pizza e pane e disegno delle pagine.
