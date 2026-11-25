@@ -2,6 +2,7 @@
 
 ## Approfondimenti successivi con yt-dlp e fonti primarie
 
+- [Burger bun e tangzhong](bun-ricette-2026-11-25.md): 24 ricette di bun da YouTube e siti (Malati di Pizza come riferimento provato in cucina), dati in `riferimenti-bun.json`, confronto con `confronto-bun.js`.
 - [Indiretti: video italiani, dosi di lievito e organizzazione](indiretti-video-2026-11-12.md): cinque trascrizioni, tabella poolish a 20–22 °C, biga fredda e lievito al rimpasto. Distinzione fra pianificazione e preparato esistente; tentativo vidIQ non riuscito, documentato senza attribuire al plugin le trascrizioni locali.
 
 - [Altri video e controllo delle descrizioni](video-descrizioni-2026-11-12.md): 10 descrizioni e 9 trascrizioni, con Malati di Pizza, Davidoctor94 e Vincenzo Abbate. **Avvertenza per il precedente riferimento Davidoctor94:** il parlato indica 7 g di fresco su 750 g, la descrizione 5 g su 1 kg; inoltre la posizione vicino al termosifone rende incerta l'ipotesi di 20 °C. Il dato precedente corrisponde al parlato, ma non va trattato come conferma quantitativa forte senza questa riserva.
