@@ -24,7 +24,7 @@ Dal 25 novembre 2026 Lievita prepara anche il pane in casa. È un **percorso cal
 
 **Forni limitati.** Uno stile può avere `ovens`, l'elenco dei forni ammessi: siciliano e pugliese escludono la pentola di ghisa, dove la forma non entra. La pagina Cucina mostra solo quelli; se un forno escluso arriva da una ricetta salvata, `breadBakeInfo` usa la teglia e lo dice in un avviso.
 
-**Asciugatura della crosta.** Con `dry` gli ultimi minuti si cuociono a 170 °C con lo sportello socchiuso: 15 minuti per il pugliese, 10 per il pane di semola da 800 g in su (proposta 4 della ricerca del 25 novembre, ricavata da Forno e Pietra). Il pane pugliese, oltre 1,1 kg, raffredda 3 ore.
+**Asciugatura della crosta.** Con `dry` gli ultimi minuti si cuociono a 170 °C con lo sportello socchiuso: 15 minuti per il pugliese, 10 per il pane di semola, in entrambi i casi solo da 800 g in su (un pane piccolo si seccherebbe) (proposta 4 della ricerca del 25 novembre, ricavata da Forno e Pietra). Il pane pugliese, oltre 1,1 kg, raffredda 3 ore.
 
 Il pane di Altamura DOP usa lievito madre e grani locali: l'app propone una versione di casa con il lievito di birra e lo dice in un avviso.
 
@@ -34,7 +34,7 @@ Il pane di Altamura DOP usa lievito madre e grani locali: l'app propone una vers
 
 Solo impasto diretto, con due percorsi:
 
-- **In giornata** (3–8 ore): impasto 30 min, puntata pari al 55% del tempo dopo impasto e formatura (1–4,5 ore), formatura 15 min, appretto con il resto. Con le pieghe (idratazione ≥ 66% o ciabatta) valgono gli stessi intervalli della pizza.
+- **In giornata** (3–8 ore; se un passaggio dall'inizio alla fine della cottura cade di notte si parte alle 7:30 con almeno 3 ore, altrimenti la giornata non è proposta: il pane pronto alle 13 o per colazione va fatto con la notte in frigo): impasto 30 min, puntata pari al 55% del tempo dopo impasto e formatura (1–4,5 ore), formatura 15 min, appretto con il resto. Con le pieghe (idratazione ≥ 66% o ciabatta) valgono gli stessi intervalli della pizza.
 - **24 ore**: impasto, puntata (2 ore con pieghe, altrimenti 1,5), frigo con l'impasto in un'unica massa, formatura, appretto di `3,5 h / fT(casa)` tra 2,5 e 5 ore (il pane formato con l'impasto freddo è lento). Lo spostamento notturno è lo stesso della pizza (funzione `avoidNight`).
 
 Biga e poolish per il pane non sono ancora supportati.
@@ -44,6 +44,8 @@ Biga e poolish per il pane non sono ancora supportati.
 L'ora scelta dall'utente è quella in cui il pane è **cotto e raffreddato**. All'indietro: raffreddamento (1 ora fino a 450 g, 2 ore oltre, 1,5 ore per il pan bauletto), cottura, 10 minuti per incidere e infornare, poi l'appretto.
 
 - Tempo in forno per infornata: `14 + 0,035 × peso` minuti (pan bauletto `15 + 0,03 × peso`), ciabatta × 0,85, tra 15 e 65. Dà circa 25 minuti per un filoncino da 300 g, 46 per una pagnotta da 900 g.
+- Pentola: prima del preriscaldo a vuoto a 250 °C l'app ricorda di controllare le istruzioni della pentola (smalto, pomelli). Tra un pane e l'altro il forno torna a 250 °C, e ogni pane si incide appena prima di entrare. La carta forno deve reggere la temperatura: molte arrivano a 220–230 °C, quindi l'app lo dice in pentola, su pietra e acciaio e per la pizza sulla teglia rovente.
+- Con più infornate il passaggio di cottura elenca gli orari di ognuna (in pentola anche quando togliere il coperchio); il timer vale per una fase e si riavvia.
 - Infornate: in pentola un pane per volta, con 10 minuti per riscaldarla; altrimenti `cap` pani per volta (2, i filoncini 4; nel forno a legna almeno 6), con 5 minuti tra un'infornata e l'altra.
 - Vapore: con la teglia d'acqua per il 40% della cottura (al massimo 15 minuti); in pentola con il coperchio per il 50% (al massimo 25).
 - Preriscaldamento: teglia 30 minuti, pentola 45, acciaio 50, pietra 60, legna 120.

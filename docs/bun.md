@@ -27,16 +27,22 @@ Lo **smash burger** vuole un panino più piccolo e basso (circa 10 cm), morbido,
 
 Si attiva nella pagina Lievitazione (scelta con pregi e difetti e una spiegazione) per i bun e per il pan bauletto (`tzAllowed`). È salvato come `over.tz` e resta quando si torna ai valori dello stile. Di base è attivo per bun al latte, smash e brioche, spento per il bun all'olio e il pan bauletto.
 
-- **Dose:** l'8% della farina con 5 volte il suo peso di liquido (`TZ`), presi dal totale. Le fonti vanno dal 3% al 10% (Malati di Pizza e “Ti racconto la mia cucina” 10%, ChainBaker 9%, Weissman 6%, Adlard e smashgiulio 5%), quasi tutte con il rapporto 1:5. Se il liquido non basta, la farina del tangzhong scende a un quinto del liquido.
+- **Dose:** l'8% della farina con 5 volte il suo peso di liquido (`TZ`), presi dal totale. Le fonti vanno dal 3% al 10% (Malati di Pizza e “Ti racconto la mia cucina” 10%, ChainBaker 9%, Weissman 6%, Adlard e smashgiulio 5%), quasi tutte con il rapporto 1:5. Almeno un quarto del latte resta fuori dal tangzhong, per sciogliere il lievito e regolare la temperatura (`TZ.free`, `tzPct(hyd)`): la farina del tangzhong scende al 6% nel brioche bun (40% di latte) e al 6,75% nello smash (45%), dentro l'intervallo delle fonti. Prima del 25 novembre 2026 il brioche bun metteva tutto il latte nel tangzhong e il passaggio chiedeva “0 g di latte con il lievito sciolto”.
+- **Lievito difficile da pesare** (meno di 2 g fresco o 0,7 g secco): come per pizza e pane, 1 g sciolto nel latte libero e se ne usa una parte (`yeastSol`). 1 g si scioglie in 99 g, oppure in 49, 19 o 9 g se il latte libero è poco: così la soluzione pesa 100, 50, 20 o 10 g e la parte da usare contiene esattamente la dose. Non prende mai più del 90% del latte libero; con un solo panino può non starci, e il consiglio non compare.
 - **Non cambia** le dosi totali né il lievito. Non è un prefermento.
 - **Orari:** un passaggio `tangzhong` un'ora prima dell'impasto (10 minuti al fuoco, poi a raffreddare). Il piano inizia da lì (`pl.begin`), e il tempo minimo in giornata conta quest'ora. Il testo dice che si può preparare la sera prima e tenere in frigo.
-- **Temperatura del latte:** tangzhong, uova e patate entrano a temperatura di casa; il resto del latte compensa con una media pesata sulle masse, `(Tl − f·casa) / (1 − f)`, con `f` la quota di liquidi a temperatura di casa (al massimo 0,8) e un tetto di 35 °C.
+- **Temperatura del latte (rivista il 27 novembre 2026):** `Tl = 3 × DDT − 2 × casa − attrito` è la temperatura media che serve a tutta la parte liquida (latte libero, tangzhong, uova, patate), pesata sulle masse. Con il tangzhong il latte libero è poco (28–90 g su 500–770 g di impasto), quindi da solo dovrebbe arrivare a 45–110 °C d'inverno o sotto 0 °C d'estate: un grado in casa lo spostava di 15 °C. Ora il latte libero resta tra 4 e 35 °C e il resto lo fanno gli altri ingredienti:
+  - se servirebbe latte sopra i 35 °C, il tangzhong entra ancora tiepido (`I.tzT`, al massimo 40 °C; indicato solo da 27 °C e almeno 4 gradi sopra la casa);
+  - se servirebbe latte sotto i 4 °C, il latte è freddo di frigo; uova e tangzhong vanno freddi di frigo (`I.coldExtras`) solo se dovrebbero stare più vicini alla temperatura del frigo che a quella di casa, così a 27–28 °C a mano l'impasto non si raffredda troppo. Il tangzhong da raffreddare si stende su un piatto.
+  Il tangzhong e l'impasto lo dicono nei loro testi. Restano casi in cui l'impasto esce un po' più freddo del voluto (sotto i 18 °C di casa con burro e uova): lì la modalità cucina allunga le attese con la prova di crescita. Stima da verificare con il termometro.
 - **Perché funziona** (testo dell'app, riscritto da Marrazzo, King Arthur e ChainBaker): verso i 65 °C l'amido si gelatinizza, assorbe molta più acqua e la trattiene; la mollica è più tenera e la retrogradazione dell'amido, la vera causa del pane duro, è più lenta. King Arthur nota che i panini cominciano a seccarsi dopo circa 4 giorni: l'app parla di “qualche giorno in più” e di 4 giorni in sacchetto, non di una settimana.
 
 ## Lievitazioni
 
 Solo impasto diretto:
 
+- **In giornata, al fresco** (dal 27 novembre 2026): il tetto del 4% è provato in 3 ore a 20–21 °C (`BUN_REF_HEQ`). Se le ore equivalenti del piano sono meno di quelle, puntata e appretto si allungano fino a tornarci, al massimo 6 ore in tutto (a 16 °C circa 5,5 ore); se non ci stanno, la giornata non viene proposta e il motivo suggerisce la notte in frigo o un punto più caldo. È una stima da provare in cucina.
+- **Notte in frigo:** solo con il frigo a 5 °C o meno: latte, uova e burro restano crudi per una notte (il Ministero della Salute indica 4–5 °C per il frigo di casa).
 - **In giornata** (3–4 ore, più l'ora del tangzhong): impasto 30 minuti, puntata pari al 50% del tempo dopo impasto e formatura (1–2,5 ore), formatura 15 minuti, appretto con il resto. Le ricette raccolte stanno tra 2,5 e 5 ore. Per i bun si propone prima la giornata, il percorso della ricetta provata.
 - **24 ore:** impasto, puntata di 1 ora, frigo con l'impasto in un'unica massa, formatura, appretto di `2,5 h / fT(casa)` tra 1,5 e 3,5 ore (i panini piccoli si scaldano prima di una pagnotta).
 - Niente pieghe: gli impasti con il burro si lavorano in impastatrice o a mano fino alla prova del velo.
@@ -59,7 +65,8 @@ La taratura usa 24 ricette di bun raccolte il 25 novembre 2026 (`docs/ricerca/ri
 
 - Teglia sulla griglia centrale, forno statico a 180–200 °C (ventilato 20 °C in meno), niente vapore. Pietra e acciaio vanno tolti o lasciati in basso.
 - Tempo: `9 + 0,09 × peso` minuti, tra 10 e 26 (110 g → 19 minuti, 80 g → 16). Le ricette danno 15–25 minuti a 175–200 °C per 70–120 g.
-- 9 panini per teglia (12 sotto i 90 g, 6 sopra i 130 g), una teglia per volta con 3 minuti tra le infornate.
+- 9 panini per teglia (6 sopra i 130 g): in una teglia da circa 42 × 34 cm entrano 3 × 3 dischi da 8–9 cm a 4–5 cm di distanza. Dal 27 novembre 2026 anche lo smash ne ha 9 (prima 12, che con 6–7 cm di distanza non entravano). Una teglia per volta con 3 minuti tra le infornate: le altre aspettano in frigo e si spennellano 10 minuti prima di infornarle. Il passaggio di cottura elenca gli orari di ogni infornata.
+- Per poche uova (meno di 44 g) l'app dice di sbattere un uovo e pesarne la parte che serve.
 - L'ora scelta è quella dei panini cotti e intiepiditi: 30 minuti su una griglia. Il passaggio finale spiega come tostare il lato tagliato in padella con il burro, che per lo smash burger è essenziale.
 
 ## Da fare

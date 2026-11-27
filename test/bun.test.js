@@ -67,6 +67,8 @@ test(`bun: ogni tipo, in giornata e con una notte in frigo, a 16, 20 e 26 °C, c
   for (const style of BUNS) for (const room of [16, 20, 26]) for (const pk of [`giornata`, `h24`]) for (const tz of [true, false]) {
     const r = bun(a, style, `state.room=${room}; state.plan='${pk}'; state.over.tz=${tz};`);
     const tag = `${style} ${pk} ${room} °C tz=${tz}`;
+    // a 16 °C anche il 4% di lievito non basta in 4 ore: la giornata si allunga e, per i panini delle 13, non c'è
+    if (room === 16 && pk === `giornata` && r.pk !== pk) { assert.match(r.plans.giornata.reason, /cresce piano/, tag); continue; }
     assert.ok(!r.none, tag);
     assert.equal(r.pk, pk, tag);
     const { pl, I, steps, P } = r;
@@ -97,8 +99,10 @@ test(`bun: ogni tipo, in giornata e con una notte in frigo, a 16, 20 e 26 °C, c
       assert.ok(Math.abs(I.tz.liquid - 5 * I.tz.flour) < 1e-9, tag);
       assert.ok(I.tz.liquid <= I.water + 1e-9, tag);
       assert.ok(I.tz.flour <= I.flour * .08 + 1e-9, tag);
+      // almeno un quarto del latte resta libero, per sciogliere il lievito
+      assert.ok(I.water - I.tz.liquid >= I.water * .25 - 1e-9, tag);
     } else assert.equal(pl.begin, pl.mixStart, tag);
-    if (pk === `giornata`) assert.ok(pl.total >= 3 - 1e-9 && pl.total <= 4 + 1e-9, `${tag}: ${pl.total}`);
+    if (pk === `giornata`) assert.ok(pl.total >= 3 - 1e-9 && pl.total <= (room < 20 ? 6 : 4) + 1e-9, `${tag}: ${pl.total}`);
     else assert.ok(pl.fridgeH >= 8, tag);
     // niente vapore, cottura breve sulla teglia
     assert.equal(pl.bk.steamMin, null, tag);
@@ -143,9 +147,34 @@ test(`bun: dose di lievito, temperatura del latte, tangzhong e frigo vanno nel v
   const br = bun(a, `brioche`, `state.room=20; state.plan='h24';`).I.ypct, ol = bun(a, `bun_olio`, `state.room=20; state.plan='h24';`).I.ypct;
   assert.ok(br > ol);
   // il lievito resta sotto il 4% anche in 3 ore
-  const fast = bun(a, `brioche`, `state.room=18; state.plan='giornata'; state.prepMode='day'; state.prepClock='07:45';`);
+  const fast = bun(a, `brioche`, `state.room=20.5; state.plan='giornata'; state.prepMode='day'; state.prepClock='07:45';`);
   assert.ok(fast.I.ypct <= 4 + 1e-9);
   assert.ok(fast.W.some(w => /Tanto lievito/.test(w.t)));
+});
+
+test(`bun: al fresco il tetto del 4% non promette gli stessi tempi; la notte chiede un frigo a 5 °C o meno`, () => {
+  const a = app();
+  const d = r => r.pl.phases.filter(p => p[0] === `puntata` || p[0] === `appretto`).reduce((s, p) => s + p[1], 0);
+  const ref = bun(a, `bun`, `state.room=21; state.plan='giornata'; state.prepMode='day'; state.prepClock='07:45';`);
+  assert.equal(ref.pk, `giornata`);
+  // con cena di sera c'è tempo: a 16 °C la giornata dura di più, con lo stesso 4%
+  const ev = `state.dinner=new Date(Date.now()+5*24*H); state.dinner.setHours(20,0,0,0); R=compute();`;
+  const warm = bun(a, `bun`, `state.room=21; state.plan='giornata'; ${ev}`), cold = bun(a, `bun`, `state.room=16; state.plan='giornata'; ${ev}`);
+  assert.equal(cold.pk, `giornata`);
+  assert.ok(Math.abs(cold.I.ypct - 4) < 1e-9);
+  assert.ok(d(cold) > d(warm) + 1, `${d(cold)} ${d(warm)}`);
+  assert.ok(cold.pl.total <= 6 + 1e-9);
+  // a 14 °C non ci sta in 6 ore: niente giornata, con il motivo
+  const vc = bun(a, `bun`, `state.room=14; state.plan='giornata'; ${ev}`);
+  assert.notEqual(vc.pk, `giornata`);
+  assert.match(vc.plans.giornata.reason, /cresce piano/);
+  // latte e uova crudi per una notte: niente frigo a 10 °C
+  for (const st of BUNS) {
+    const f = bun(a, st, `state.fridge=10; state.plan='h24';`);
+    assert.equal(f.plans.h24.ok, false, st);
+    assert.match(f.plans.h24.reason, /5 °C o meno/, st);
+  }
+  assert.ok(bun(a, `bun`, `state.fridge=5; state.plan='h24';`).plans.h24.ok);
 });
 
 test(`bun: smash con patate, più piccolo e basso; infornate per teglia`, () => {
@@ -156,7 +185,7 @@ test(`bun: smash con patate, più piccolo e basso; infornate per teglia`, () => 
   assert.equal(s.I.piece, 80);
   assert.match(s.steps.find(x => x.key === `formatura`).body, /schiacciale con il palmo fino a circa 8 cm/);
   assert.match(s.steps.find(x => x.key === `raffreddamento`).body, /smash burger/);
-  // 14 panini, 12 per teglia: due infornate
+  // 14 panini, 9 per teglia (3 × 3 dischi distanziati): due infornate
   assert.equal(s.pl.bk.batches, 2);
   assert.equal(s.pl.bk.total, 2 * s.pl.bk.per + 3);
   // il classico da 110 g cuoce più a lungo dello smash da 80 g
@@ -206,7 +235,7 @@ test(`tangzhong: si sceglie con la conferma, si salva con la ricetta e resta dop
   // il pan bauletto può avere il tangzhong, il pane semplice e la pizza no
   const pb = bun(a, `cassetta`, `state.room=20; state.over.tz=true;`);
   assert.ok(pb.I.tz && pb.steps.some(s => s.key === `tangzhong`));
-  assert.match(pb.steps.find(s => s.key === `impasto`).body, /già nel tangzhong/);
+  assert.match(pb.steps.find(s => s.key === `impasto`).body, /sono nel tangzhong/);
   assert.equal(bun(a, `cassetta`, `state.room=20;`).P.tz, false);
   assert.equal(bun(a, `pagnotta`, `state.over.tz=true;`).P.tz, false);
   a.run(`state.style='classica'; state.over={tz:true}; R=compute();`);
@@ -252,4 +281,103 @@ test(`bun: pagine, piano, calendario e cucina si disegnano senza errori`, () => 
   const p3 = a.element(`#page`).innerHTML;
   assert.doesNotMatch(p3, /data-val="semola"/);
   assert.match(p3, /consigliata/);
+});
+
+test(`bun: con il tangzhong resta sempre del latte per sciogliere il lievito, anche nella brioche`, () => {
+  const a = app();
+  // brioche al 40% di latte: con l'8% di farina il tangzhong si prenderebbe tutto il latte; scende al 6%
+  let { I, steps } = bun(a, `brioche`, `state.room=20; state.plan='giornata'; state.over.tz=true; state.n=6;`);
+  assert.ok(Math.abs(I.tz.flour / I.flour - .06) < 1e-9, `${I.tz.flour / I.flour}`);
+  const milk = I.water - I.tz.liquid;
+  assert.ok(milk > 20, `latte libero ${milk}`);
+  assert.doesNotMatch(steps.find(s => s.key === `impasto`).body, /<b>0 g<\/b> di latte/);
+  // smash al 45%: 6,75%
+  ({ I } = bun(a, `smash`, `state.room=20; state.plan='giornata'; state.over.tz=true;`));
+  assert.ok(Math.abs(I.tz.flour / I.flour - .0675) < 1e-9);
+  // la tabella degli ingredienti dice la percentuale vera
+  bun(a, `brioche`, `state.room=20; state.plan='giornata'; state.over.tz=true;`);
+  a.run(`ui.page=5; renderAll();`);
+  assert.match(a.element(`#out`).innerHTML, /6% \+ 30%/);
+});
+
+test(`bun: lievito difficile da pesare, sciolto nel latte libero`, () => {
+  const a = app();
+  let seen = 0;
+  for (const style of BUNS) for (const room of [16, 20, 26]) for (const pk of [`giornata`, `h24`]) for (const y of [`fresco`, `secco`]) for (const n of [1, 2, 6]) for (const tz of [true, false]) {
+    const { I, steps } = bun(a, style, `state.room=${room}; state.plan='${pk}'; state.yeast='${y}'; state.n=${n}; state.over.tz=${tz};`);
+    const tag = `${style} ${pk} ${room} °C ${y} n=${n} tz=${tz}`;
+    const body = steps.find(s => s.key === `impasto`).body;
+    const milk0 = I.water - (I.tz ? I.tz.liquid : 0);
+    // poco lievito: c'è il consiglio, tranne quando nemmeno 1 g in 10 g di latte sta nel latte libero (un solo panino)
+    const small = (y === `secco` ? I.yeast < 0.7 : I.yeast < 2) && 10 * I.yeast <= milk0 * .9;
+    if ((y === `secco` ? I.yeast < 0.7 : I.yeast < 2) && !small) assert.ok(n <= 2, `${tag}: senza consiglio`);
+    const m = body.match(/Sciogli 1 g di lievito in (\d+) g di latte e usa <b>(\d+) g<\/b>/);
+    assert.equal(!!m, small, tag);
+    if (!m) continue;
+    seen++;
+    const milk = I.water - (I.tz ? I.tz.liquid : 0), D = +m[1] + 1, X = +m[2];
+    // 1 g in D−1 g fa D g di soluzione: X g contengono la dose
+    assert.ok(X <= milk * .9 + .5, `${tag}: ${X} g di soluzione su ${milk} g di latte`);
+    assert.ok(Math.abs(X - I.yeast * D) <= .5, tag);
+    assert.ok(X >= 2, `${tag}: soluzione pesabile`);
+  }
+  assert.ok(seen > 20, `casi con poco lievito: ${seen}`);
+});
+
+test(`bun: con poco latte libero la temperatura passa al tangzhong (tiepido) o alle uova (fredde)`, () => {
+  const a = app();
+  for (const style of BUNS) for (const room of [14, 16, 18, 20, 22, 24, 26, 28]) for (const mixer of [false, true]) {
+    const r = bun(a, style, `state.room=${room}; state.plan='giornata'; state.mixer=${mixer}; state.dinner.setHours(18,0,0,0);`);
+    const tag = `${style} ${room} °C ${mixer ? `impastatrice` : `a mano`}`;
+    assert.ok(r.I.waterT >= 4 && r.I.waterT <= 35, `${tag}: ${r.I.waterT}`);
+    if (r.I.tzT != null) assert.ok(r.I.tzT > room && r.I.tzT <= 40 && r.I.waterT === 35, `${tag}: tangzhong ${r.I.tzT}`);
+    if (r.I.coldExtras) assert.equal(r.I.waterT, 4, tag);
+  }
+  // casa fresca: latte a 35 °C e tangzhong ancora tiepido, detto nel tangzhong e nell'impasto
+  const f = bun(a, `bun`, `state.room=18; state.plan='giornata'; state.dinner.setHours(18,0,0,0);`);
+  assert.ok(f.I.tzT >= 30, `tangzhong ${f.I.tzT}`);
+  assert.match(f.steps.find(s => s.key === `tangzhong`).body, /intiepidire fino a circa/);
+  assert.match(f.steps.find(s => s.key === `impasto`).body, /tangzhong ancora tiepido/);
+  // casa molto calda con l'impastatrice: latte, uova e tangzhong freddi di frigo
+  const c = bun(a, `brioche`, `state.room=28; state.mixer=true; state.plan='giornata'; state.dinner.setHours(18,0,0,0);`);
+  assert.ok(c.I.coldExtras && c.I.waterT === 4);
+  assert.match(c.steps.find(s => s.key === `impasto`).body, /uova sbattute[^,]*fredde di frigo/);
+  assert.match(c.steps.find(s => s.key === `tangzhong`).body, /Stendilo su un piatto[^]*mettilo in frigo/);
+  // a 28 °C a mano basta il latte freddo: uova e tangzhong restano a temperatura di casa
+  const m = bun(a, `bun`, `state.room=28; state.mixer=false; state.plan='giornata'; state.dinner.setHours(18,0,0,0);`);
+  assert.ok(!m.I.coldExtras, `a mano ${m.I.waterT}`);
+  // casa normale: nessun accorgimento in più
+  const n = bun(a, `bun`, `state.room=24; state.plan='giornata'; state.dinner.setHours(18,0,0,0);`);
+  assert.ok(n.I.tzT == null && !n.I.coldExtras);
+});
+
+test(`bun: con una notte in frigo anche il tangzhong non si prepara di notte`, () => {
+  const a = app();
+  for (const h of [7, 8, 9]) {
+    const r = bun(a, `bun`, `state.room=20; state.plan='h24'; state.dinner.setHours(${h},0,0,0);`);
+    assert.equal(r.pk, `h24`);
+    const b = new Date(r.pl.begin).getHours();
+    assert.ok(b >= 7 && b < 23, `panini alle ${h}: tangzhong alle ${b}`);
+  }
+});
+
+test(`bun: la finestra di conferma parla di latte e burro e mostra uova, patate, zucchero e tangzhong`, () => {
+  const a = app();
+  bun(a, `smash`, `state.room=20; state.plan='giornata'; state.dinner.setHours(18,0,0,0);`);
+  a.run(`requestChange({k:'over',o:'egg',v:20})`);
+  const m = a.element(`#modal`).innerHTML;
+  assert.match(m, /<td>Uova<\/td>/);
+  assert.match(m, /<td>Latte<\/td>|Vuoi cambiare le uova/);
+  assert.doesNotMatch(m, /<td>Acqua<\/td>|<td>Olio<\/td>/);
+  a.run(`requestChange({k:'over',o:'potato',v:30})`);
+  assert.match(a.element(`#modal`).innerHTML, /<td>Patate lesse<\/td>/);
+  a.run(`requestChange({k:'over',o:'oil',v:12})`);
+  const o = a.element(`#modal`).innerHTML;
+  assert.match(o, /Vuoi cambiare il burro/);
+  assert.match(o, /<td>Burro<\/td>/);
+  // farina e lievitazione: pregi e difetti dei bun, non della pizza
+  const r = a.run(`(()=>{ const keep=cfgNow(), P=params(state); return [explain({k:'flour',v:'media'},P,P,keep), explain({k:'plan',v:'h24'},P,P,keep)]; })()`);
+  assert.ok(r[0].pc && r[1].pc);
+  assert.doesNotMatch(r[0].t.join(` `), /pizza|abbasso l'idratazione/);
+  assert.deepEqual(r[1].pc, a.run(`INFO.bunPlan.h24`));
 });

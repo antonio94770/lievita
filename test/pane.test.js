@@ -63,7 +63,8 @@ test(`pane: passando dalla pizza al pane cambiano farina consigliata, forno, met
 test(`pane: ogni tipo, in giornata e con una notte in frigo, a 16, 20 e 26 °C`, () => {
   const a = app();
   for (const style of BREADS) for (const room of [16, 20, 26]) for (const pk of [`giornata`, `h24`]) {
-    const r = bread(a, style, `state.room=${room}; state.plan='${pk}';`);
+    // in giornata il pane è per cena: per pranzo dovrebbe iniziare di notte, e la giornata non è proposta
+    const r = bread(a, style, `state.room=${room}; state.plan='${pk}';${pk === `giornata` ? ` state.dinner.setHours(19,0,0,0);` : ``}`);
     const tag = `${style} ${pk} ${room} °C`;
     assert.ok(!r.none, tag);
     assert.equal(r.pk, pk, tag);
@@ -103,7 +104,7 @@ test(`pane: dose di lievito vicina ai valori tipici delle ricette italiane`, () 
   const notte = y(`state.room=20; state.plan='h24';`);
   assert.ok(notte >= 0.3 && notte <= 0.7, `notte: ${notte}`);
   // 8 ore in giornata a 20 °C: circa 0,5–1%
-  const giorno = y(`state.room=20; state.plan='giornata';`);
+  const giorno = y(`state.room=20; state.plan='giornata'; state.dinner.setHours(19,0,0,0);`);
   assert.ok(giorno >= 0.5 && giorno <= 1.1, `giornata: ${giorno}`);
   // circa 3 ore e mezza a 20 °C: il "pane veloce", con l'1,5–3% delle ricette brevi
   const veloce = y(`state.room=20; state.plan='giornata'; state.prepMode='day'; state.prepClock='06:30';`);
@@ -215,7 +216,7 @@ test(`pane: la ricetta salvata conserva stile e peso, e la pizza resta com'era`,
   assert.equal(s.style, `ciabatta`);
   assert.equal(s.over.ball, 500);
   const diff = a.run(`diffCfg(${JSON.stringify(s)},{...${JSON.stringify(s)},over:{ball:600}})`);
-  assert.ok(diff.some(d => /Peso panetto: 500 g → 600 g/.test(d)));
+  assert.ok(diff.some(d => /Peso di ogni pane: 500 g → 600 g/.test(d)));
   // pizza: nessuno zucchero, olio aggiunto nel forno di casa come prima
   a.run(`requestChange({k:'style',v:'classica'}); state.oven='casa_pietra'; R=compute();`);
   const P = a.run(`R.P`);
@@ -259,4 +260,120 @@ test(`pane siciliano e pugliese: forme, niente pentola, crosta asciugata a fine 
   // il pane di semola da 900 g ha 10 minuti di asciugatura, quello piccolo no
   assert.equal(bread(a, `semola`, `state.room=20;`).pl.bk.dry, 10);
   assert.equal(bread(a, `semola`, `state.over.ball=500; state.room=20;`).pl.bk.dry, 0);
+});
+
+test(`pane: con poco lievito e il tangzhong l'acqua a parte toglie anche il liquido del tangzhong`, () => {
+  const a = app();
+  // un pan bauletto piccolo con il lievito secco: meno di 0,7 g
+  const { I, steps } = bread(a, `cassetta`, `state.room=26; state.plan='h24'; state.yeast='secco'; state.over.tz=true; state.over.ball=150;`);
+  assert.ok(I.tz && I.yeast < 0.7, `lievito ${I.yeast}`);
+  const body = steps.find(s => s.key === `impasto`).body;
+  const m = body.match(/Sciogli 1 g di lievito in (\d+) g d'acqua e usa <b>(\d+) g<\/b>.*?scende così a <b>([\d,]+) g<\/b>/);
+  assert.ok(m, `manca il consiglio sul lievito`);
+  const free = I.water - I.tz.liquid, X = +m[2];
+  assert.ok(X <= free + .5, `${X} g di soluzione su ${free} g d'acqua libera`);
+  const W = I.yeast * +m[1];                    // l'acqua che la soluzione porta con sé
+  assert.ok(Math.abs(X / (+m[1] + 1) - I.yeast) < .03, `nella soluzione c'è la dose: ${X / (+m[1] + 1)} su ${I.yeast}`);
+  assert.ok(free - W > 0, `acqua a parte: ${free - W}`);
+  assert.equal(+m[3].replace(`,`, `.`), Math.round(free - W));
+});
+
+test(`lievito difficile da pesare: la soluzione non supera mai l'acqua della ricetta`, () => {
+  const a = app();
+  for (const style of a.run(`Object.keys(STYLES)`)) for (const room of [16, 20, 26]) for (const pk of [`giornata`, `h24`]) for (const y of [`fresco`, `secco`]) {
+    const R = bread(a, style, `state.room=${room}; state.plan='${pk}'; state.yeast='${y}';`);
+    if (R.none) continue;
+    const body = (R.steps.find(s => s.key === `impasto`) || {}).body || ``;
+    const m = body.match(/Sciogli 1 g di lievito in (\d+) g d'(?:acqua|latte) e usa <b>(\d+) g<\/b>/);
+    if (!m) continue;
+    const free = R.I.water - (R.I.tz ? R.I.tz.liquid : 0);
+    assert.ok(+m[2] <= free + .5, `${style} ${pk} ${room} °C ${y}: ${m[2]} g su ${free} g`);
+  }
+});
+
+test(`pane e pizza in giornata per pranzo: mai impasto di notte`, () => {
+  const a = app();
+  // pagnotta pronta alle 13: dalle 7:30 non ci sono 3 ore, quindi la giornata non è proposta
+  const r = bread(a, `pagnotta`, `state.room=20; state.plan='giornata';`);
+  assert.equal(r.plans.giornata.ok, false);
+  assert.match(r.plans.giornata.reason, /di notte/);
+  assert.equal(r.pk, `h24`);
+  // se l'utente dice che inizia alle 6:30 quel giorno, si rispetta
+  const d = bread(a, `pagnotta`, `state.room=20; state.plan='giornata'; state.prepMode='day'; state.prepClock='06:30';`);
+  assert.equal(d.pk, `giornata`);
+  // pizza alle 11:30: si parte alle 7:30 con almeno 3 ore, non alle 3 di notte
+  a.run(`state.style='pagnotta'; requestChange({k:'style',v:'classica'}); state.plan='giornata'; state.room=20; state.dinner=new Date(Date.now()+5*24*H); state.dinner.setHours(11,30,0,0); R=compute();`);
+  const p = a.run(`R`);
+  assert.equal(p.pk, `giornata`);
+  assert.ok(new Date(p.pl.mixStart).getHours() >= 7, `pizza: ${new Date(p.pl.mixStart).getHours()}`);
+});
+
+test(`pan bauletto con il tangzhong: dosi nette e niente autolisi`, () => {
+  const a = app();
+  const r = bread(a, `cassetta`, `state.room=20; state.plan='h24'; state.over.tz=true;`);
+  const b = r.steps.find(s => s.key === `impasto`).body;
+  assert.doesNotMatch(b, /autolisi/);
+  const free = Math.round(r.I.water - r.I.tz.liquid), fl = Math.round(r.I.flour - r.I.tz.flour);
+  assert.ok(b.includes(`<b>${fl} g</b> di farina (quella che resta dopo il tangzhong), <b>${free} g</b> d'acqua`), b);
+  const s = bread(a, `cassetta`, `state.room=20; state.plan='h24'; state.over.tz=false;`);
+  assert.match(s.steps.find(x => x.key === `impasto`).body, /autolisi/);
+});
+
+test(`pane: forno a legna conta i pani per infornata, pugliese piccolo senza asciugatura, farine del pane nella conferma`, () => {
+  const a = app();
+  const l = bread(a, `pugliese`, `state.room=20; state.plan='h24'; state.oven='legna'; state.n=7;`);
+  assert.ok(l.W.some(w => /cuoce 6 pani per volta: le infornate sono 2/.test(w.t)));
+  assert.equal(bread(a, `pugliese`, `state.room=20; state.plan='h24';`).pl.bk.dry, 15);
+  const small = bread(a, `pugliese`, `state.room=20; state.plan='h24'; state.over.ball=300;`);
+  assert.equal(small.pl.bk.dry, 0);
+  assert.doesNotMatch(small.pl.bk.how, /sportello socchiuso<\/b>/);
+  // ciabatta con farina debole (idratazione al 60%): si impasta sul piano
+  const c = bread(a, `ciabatta`, `state.room=20; state.plan='h24'; state.flour='debole';`);
+  assert.ok(c.P.hyd < 70);
+  assert.doesNotMatch(c.steps.find(s => s.key === `impasto`).body, /Non provare a impastarla sul piano/);
+  // conferma del cambio di farina e lievitazione: testi e pregi del pane
+  bread(a, `pagnotta`, `state.room=20; state.plan='h24';`);
+  const r = a.run(`(()=>{ const keep=cfgNow(), P=params(state); return [explain({k:'flour',v:'tipo1'},P,P,keep), explain({k:'plan',v:'giornata'},P,P,keep)]; })()`);
+  assert.deepEqual(r[0].pc, a.run(`INFO.breadFlour.tipo1`));
+  assert.ok(r[0].pc);
+  assert.doesNotMatch(r[0].t.join(` `), /pizza/);
+  assert.deepEqual(r[1].pc, a.run(`INFO.breadPlan.giornata`));
+});
+
+test(`pane in giornata per colazione: niente formatura e forno di notte`, () => {
+  const a = app();
+  for (const h of [7, 8, 9]) {
+    const r = bread(a, `pagnotta`, `state.room=20; state.plan='giornata'; state.dinner.setHours(${h},0,0,0);`);
+    assert.equal(r.plans.giornata.ok, false, `pane alle ${h}`);
+    assert.match(r.plans.giornata.reason, /di notte/);
+  }
+  // ogni pane e bun in giornata, a qualunque ora proposta, ha i passaggi attivi tra le 7 e le 23
+  for (const style of [`pagnotta`, `cassetta`, `bun`]) for (let h = 0; h < 24; h++) {
+    const r = bread(a, style, `state.room=20; state.plan='giornata'; state.dinner.setHours(${h},0,0,0);`);
+    const pl = r.plans.giornata;
+    if (!pl.ok) continue;
+    for (const s of r.pk === `giornata` ? r.steps.filter(s => s.hands && s.key !== `raffreddamento`) : []) {
+      const sh = new Date(s.start).getHours();
+      assert.ok(sh >= 7 && sh < 23, `${style} pronto alle ${h}: ${s.key} alle ${sh}`);
+    }
+  }
+});
+
+test(`testi giusti per pizza, pane e panini; canotto con farina media e teglia con il peso delle palle`, () => {
+  const a = app();
+  bread(a, `bun`, ``);
+  a.run(`state.prepMode='day'`);
+  const w = a.run(`whenAvail()`);
+  assert.doesNotMatch(w, /del pane|della pizza/);
+  assert.match(w, /dei panini/);
+  assert.equal(a.run(`PREP_MODES.day`), `Preparo solo il giorno stesso`);
+  // canotto con la farina per pizza media: avviso forte
+  a.run(`requestChange({k:'style',v:'canotto'}); state.flour='media'; state.plan=null; R=compute();`);
+  assert.ok(a.run(`R`).W.some(w => w.w && /canotto serve il mix/.test(w.t) && /70%/.test(w.t)));
+  a.run(`state.flour='mix'; R=compute();`);
+  assert.ok(!a.run(`R`).W.some(w => /canotto serve/.test(w.t)));
+  // teglia: le palle si pesano come i panetti delle tonde
+  a.run(`requestChange({k:'style',v:'teglia'}); state.tn=2; state.plan='h24'; R=compute();`);
+  const r = a.run(`R`), st = r.steps.find(s => s.key === `staglio`);
+  assert.match(st.body, new RegExp(`2 pezzi da ${Math.round(r.I.piece)} g`));
 });

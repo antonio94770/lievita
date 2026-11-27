@@ -15,7 +15,7 @@ Le regole qui sotto sono **euristiche ragionate, non tarate in cucina**. Vanno v
 | `pieghe` | dopo l'ultima serie di pieghe | Tiene la forma? |
 | `rise` | prima del passaggio che chiude la puntata (staglio, formatura o frigo) | Quanto è cresciuto? |
 | `frigo` | prima di togliere l'impasto dal frigo | Com'è cresciuto in frigo? |
-| `proof` | prima di accendere il forno; con il forno a legna anche prima di stendere | Prova del dito |
+| `proof` | prima di stendere, spennellare o incidere, sempre; in più prima di accendere il forno. Se il fuoco si accende prima dell'appretto o nel suo primo quarto (almeno 20 minuti) — forno a legna con i bun, oppure con la pizza a 26 °C, quando appretto e accensione durano entrambi 2 ore — a quell'ora l'impasto non dice ancora niente: la prova si fa solo prima di stendere o di spennellare | Prova del dito |
 
 Ogni domanda ha una spiegazione per chi è alle prime armi ("Cos'è la maglia glutinica e perché conta", "Come leggere la prova del dito"…), il pulsante "Salta il controllo" e, dopo la risposta, "Cambia risposta".
 
@@ -47,6 +47,16 @@ Le ore di frigo si calcolano come in `heqOf`: nelle prime ore l'impasto si raffr
 **Vale l'ultima risposta.** Prima della prima risposta a un controllo si salvano gli orari (`base`). Ogni nuova risposta riparte da lì, quindi rispondere di nuovo non somma gli effetti. Quando si lascia il passaggio la copia si cancella (`ckSeal`), così i ritardi registrati dopo non vanno persi.
 
 Lo stato dei controlli (`ck`) e le note aggiunte ai passaggi successivi (`adj`, il riquadro "Adattato per te") si salvano con il resto in `lievita.cook`.
+
+**Gli orari scritti nei testi seguono gli spostamenti** (dal 27 novembre 2026). Nei testi dei passaggi gli orari sono marcati con `tAt(t)` (`<time data-at>`). In modalità cucina `liveTimes` li ricalcola con `os` e `oe`: dentro un passaggio lo spostamento va da quello dell'inizio a quello della fine, quindi il frigo che fa da cuscinetto sposta la sua fine e non il suo inizio. Il piano e il calendario mostrano gli orari originali.
+
+**L'ora della prima pizza** è la fine della sua cottura (`first` sul passaggio `cottura`, cioè l'ora della cena), non l'infornata.
+
+**Limiti dei prefermenti.** Con biga o poolish il frigo che fa da cuscinetto ha i limiti del percorso (`fmin`, `fmax` sul passaggio): biga in frigo 16–20 ore, biga lunga 20–28, frigo dopo il rimpasto da 8 ore a `prefFridgeMax` (18 o 24).
+
+## Ripresa di una preparazione in corso
+
+Il piano si calcola dall'ora attuale, quindi ricalcolato a impasto già fatto può cambiare percorso e dosi (per esempio da 24 ore a in giornata). Dal 27 novembre 2026 `lievita.cook` salva anche le impostazioni (`cfg`, compresa l'ora della cena) e l'ora del calcolo (`t0`). Finché almeno un passaggio è fatto e le impostazioni sono quelle, `compute()` usa `t0` (`planNow`, `activeCook`): dosi, percorso e orari restano quelli dell'impasto. Riaprendo l'app `resumeCook` rimette le impostazioni e riapre la modalità cucina dov'era. Cambiando un'impostazione si prepara un piano nuovo da adesso. La sessione scade 24 ore dopo l'ultimo passaggio previsto. Le ultime scelte (`mem.last`) ricordano ora l'ora della cena, se è ancora nel futuro, e la lievitazione scelta.
 
 ## Le decisioni
 
@@ -99,6 +109,7 @@ Il tempo che manca si calcola con la crescita accelerata e si confronta con quel
 - **Lento (mancano più di 15 minuti oltre il previsto):** si rimanda l'accensione del forno, al massimo di 1,5 ore per volta.
 - **Avanti:** un impasto pronto regge ancora circa il 15% del suo tempo di appretto. Oltre quel margine si accende il forno all'ora prevista e intanto si mette l'impasto in frigo (`slowFridgeH`), togliendolo 15 minuti prima di stendere. In alternativa, se si è in anticipo, si accende il forno subito.
 - **Oltre:** se si è in anticipo, si accende il forno subito; in ogni caso il frigo durante il preriscaldo e consigli per maneggiarlo con delicatezza.
+- **Dopo tre attese** non si aspetta ancora, ma l'esito resta esplicito: se l'impasto è ancora fermo l'app dice che non sta crescendo, con le cause probabili (lievito non attivo, casa più fredda) e la scelta tra aspettare in un punto tiepido o procedere sapendo che verrà basso; se è solo indietro, procede avvisando che verrà meno gonfio.
 
 ### Impasto
 

@@ -371,3 +371,60 @@ test(`lo stato dei controlli si salva e si ritrova riaprendo la modalità cucina
   a.run(`cook.i=${g}; renderCook()`);
   assert.match(a.element(`#cook`).innerHTML, /Controlla adesso/);
 });
+
+test(`prova del dito con ogni forno, anche con il forno a legna acceso prima dell'appretto dei bun`, () => {
+  const a = app();
+  for (const style of a.run(`Object.keys(STYLES)`)) for (const pk of [`giornata`, `h24`]) for (const oven of a.run(`Object.keys(OVENS)`)) {
+    const R = plan(a, style, `state.plan='${pk}'; state.oven='${oven}';`);
+    if (R.none || a.run(`state.oven`) !== oven) continue;
+    open(a);
+    const ids = Object.values(gates(a)).flatMap(g => Object.values(g).map(x => x.id));
+    assert.ok(ids.includes(`proof`), `${style} ${pk} ${oven}: manca la prova del dito`);
+  }
+  // bun con il forno a legna: il fuoco si accende prima della formatura, la prova è prima di spennellare
+  plan(a, `bun`, `state.plan='giornata'; state.oven='legna';`); open(a);
+  const pre = idx(a, `preriscaldo`), ap = lastIdx(a, `appretto`), inc = idx(a, `incisione`);
+  assert.ok(pre < ap, `il fuoco si accende prima dell'appretto`);
+  assert.ok(!(gates(a)[pre] || {}).before, `nessun controllo all'accensione`);
+  assert.equal(a.run(`cook.gates[${inc}].before.id`), `proof`);
+  at(a, startOf(a, inc));
+  const rec = answer(a, inc, `before`, `meta`);
+  assert.equal(rec.st, `wait`);
+  assert.match(rec.res.html, /Tieni il forno caldo/);
+  assert.ok(clean(screen(a, inc)));
+});
+
+test(`forno a legna acceso insieme all'appretto: nessuna prova del dito all'accensione, solo prima di stendere`, () => {
+  const a = app();
+  // pizza 24 ore a 26 °C: appretto di 2 ore, come l'accensione del forno a legna
+  plan(a, `contemporanea`, `state.plan='h24'; state.room=26; state.oven='legna';`); open(a);
+  const pre = idx(a, `preriscaldo`), ap = lastIdx(a, `appretto`), st = idx(a, `stesura`);
+  assert.ok(Math.abs(startOf(a, pre) - startOf(a, ap)) < 20 * MIN, `iniziano insieme`);
+  assert.ok(!(gates(a)[pre] || {}).before, `nessun controllo all'accensione, a impasto appena uscito dal frigo`);
+  assert.equal(a.run(`cook.gates[${st}].before.id`), `proof`);
+  // a 20 °C l'appretto dura di più e il controllo all'accensione resta
+  plan(a, `contemporanea`, `state.plan='h24'; state.room=20; state.oven='legna';`); open(a);
+  assert.equal(a.run(`cook.gates[${idx(a, `preriscaldo`)}].before.id`), `proof`);
+});
+
+test(`appretto: il forno spento come cella solo quando non va acceso subito`, () => {
+  const a = app();
+  const body = () => a.run(`R.steps.filter(s=>s.key==='appretto').pop().body`);
+  // bun con il forno a legna: il forno di casa resta spento, niente promemoria per liberarlo
+  plan(a, `bun`, `state.plan='giornata'; state.room=20; state.oven='legna';`);
+  assert.match(body(), /forno di casa spento/);
+  assert.doesNotMatch(body(), /quando il forno va acceso/);
+  // pane con il forno di casa e un appretto lungo: consiglio e promemoria
+  plan(a, `pagnotta`, `state.plan='giornata'; state.room=18; state.oven='casa_teglia';`);
+  const b = body(), pre = a.run(`R.steps.find(s=>s.key==='preriscaldo').start`), apS = a.run(`R.steps.filter(s=>s.key==='appretto').pop().start`);
+  if (pre >= apS + 30 * MIN) assert.match(b, /prima delle <b><time data-at="\d+">\d\d:\d\d<\/time><\/b>, quando il forno va acceso/);
+  // in nessun piano il promemoria chiede di togliere l'impasto dal forno prima che l'appretto cominci
+  for (const style of a.run(`Object.keys(STYLES).filter(k=>STYLES[k].bread)`)) for (const oven of a.run(`Object.keys(OVENS)`)) for (const room of [16, 20, 26]) for (const pk of [`giornata`, `h24`]) {
+    const R = plan(a, style, `state.plan='${pk}'; state.room=${room}; state.oven='${oven}';`);
+    if (R.none || a.run(`state.oven`) !== oven) continue;
+    const ap = R.steps.filter(s => s.key === `appretto`).pop(), m = ap.body.match(/prima delle <b><time data-at="\d+">(\d\d):(\d\d)<\/time><\/b>, quando il forno va acceso/);
+    if (!m) continue;
+    const pre = R.steps.find(s => s.key === `preriscaldo`).start;
+    assert.ok(pre >= ap.start + 30 * MIN, `${style} ${oven} ${room} °C ${pk}`);
+  }
+});

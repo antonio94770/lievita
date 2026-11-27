@@ -83,7 +83,8 @@ test(`cucina e piano mostrano i gesti e come deve venire il prodotto`, () => {
   const out = a.element(`#out`).innerHTML;
   assert.match(out, /Guarda come si fa/);
   assert.match(out, /macchie scure “leopardate”/);
-  a.run(`openCook(); cook.i=R.steps.findIndex(s=>s.key==='stesura'); renderCook();`);
+  // prima della stesura c'è la prova del dito: la segno come saltata per vedere il passaggio
+  a.run(`openCook(); cook.i=R.steps.findIndex(s=>s.key==='stesura'); Object.assign(ckRec(cook.i,'before',true),{st:'ok',res:{skip:true}}); renderCook();`);
   const ck = a.element(`#cook`).innerHTML;
   assert.match(ck, /class="how"/);
   assert.match(ck, /senza toccare il bordo/);
