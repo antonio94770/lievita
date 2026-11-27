@@ -159,6 +159,7 @@ Nella stessa pagina la spunta “Posso fare passaggi anche di notte” (`state.n
 - **Fornetto tipo G3 Ferrari:** avvisi se il panetto supera 240 g o l'idratazione il 65%.
 - **Forno di casa:** pietra e acciaio sul ripiano alto, a 10–15 cm dalla resistenza, con il grill a fine cottura. Per le pizze tonde napoletane si aggiunge in automatico il 2% di olio.
 - **Perdite:** al peso totale dell'impasto si aggiunge il 2%.
+- **Dosi tonde (27 novembre 2026):** le dosi si arrotondano per essere facili da pesare (`roundG`). Farina, acqua o latte, uova, patate e olio a 5 g (10 g da un chilo in su, 1 g sotto i 10 g); sale e zucchero al grammo; lievito al decimo di grammo. Le altre dosi si calcolano dalla farina già arrotondata, e `I.total` è la somma vera delle dosi. Il tangzhong è al grammo per difetto (liquido 5 volte tanto), l'acqua della biga e del poolish al grammo (per restare al 45% e al 100%). La soluzione per il poco lievito e l'acqua tenuta da parte sono a 5 g. Un prefermento già fatto è accettato con 1 punto di scarto su percentuale e idratazione.
 - **Valori personalizzati dell'utente:** idratazione, sale, olio, peso del panetto e grammi per cm² prevalgono su quelli dello stile.
 
 ### Dati salvati (localStorage, chiave `lievita.v1`)

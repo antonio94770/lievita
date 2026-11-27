@@ -1033,11 +1033,19 @@ function buildBreadPlan(pk,P,cfg,now,realNow){
   let phases, shiftNote=null, A;
   if(pk===`giornata`){
     const avail=(stesStart-now)/H-lead;
-    if(avail<3){
+    // con poco tempo, se l'utente ha un posto caldo, la prima lievitazione si fa lì (vedi warmSplit)
+    const wMin=state.warm&&!bun?warmMin(room,bk,S,P):null;
+    if(avail<3&&!(wMin!=null&&avail>=wMin)){
       if(tFirst<=realNow) return {ok:false,pk,short:true,reason:`L'orario scelto è già passato.`};
-      const earliest=Math.ceil((now+(3+lead)*H+(tFirst-stesStart))/(15*MIN))*15*MIN;
-      return {ok:false,pk,short:true,earliest,reason:`Non c'è abbastanza tempo: l'impasto deve lievitare almeno 3 ore${lead?`, più un'ora per il tangzhong`:``}, poi servono cottura e raffreddamento. ${bun?`I panini possono essere pronti`:`Il pane può essere pronto`} al più presto ${when(earliest)}.`};
+      const need=wMin??3;
+      const earliest=Math.ceil((now+(need+lead)*H+(tFirst-stesStart))/(15*MIN))*15*MIN;
+      return {ok:false,pk,short:true,earliest,reason:`Non c'è abbastanza tempo: ${wMin!=null?`anche con la prima lievitazione al caldo l'impasto ha bisogno di almeno ${fmtDur(need)} prima della cottura`:`l'impasto deve lievitare almeno 3 ore`}${lead?`, più un'ora per il tangzhong`:``}, poi servono cottura e raffreddamento. ${bun?`I panini possono essere pronti`:`Il pane può essere pronto`} al più presto ${when(earliest)}.`};
     }
+    if(avail<3){
+      const G=Math.floor(avail*4)/4, start=stesStart-G*H-lead*H, fn=firstNight(start,coolStart);
+      if(fn!==null&&start>now) return {ok:false,pk,reason:`In giornata ${nightAt(start)?`dovresti iniziare di notte, ${when(start)}`:`alcuni passaggi cadrebbero di notte (dalle ${hm(fn)})`}. Scegli la notte in frigo oppure un orario più tardi.`};
+      phases=warmSplit(G,room,bk,S,P); A=phases[3][1];
+    } else {
     // i bun sono impasti piccoli e ricchi: in giornata al massimo 4 ore, come le ricette raccolte (2,5–5 ore)
     let G=Math.min(bun?4:8,avail);
     const start=stesStart-G*H-lead*H;
@@ -1071,6 +1079,7 @@ function buildBreadPlan(pk,P,cfg,now,realNow){
       B=q(B*f); A=q(G2-.75-B);
       phases=[[`impasto`,.5,room],[`puntata`,B,room],[`formatura`,.25,room],[`appretto`,A,room]];
     }
+    }
   } else {
     // latte, uova e burro crudi per una notte: il frigo deve stare a 4–5 °C (si misura con un termometro sul ripiano centrale)
     if(bun&&!(Number.isFinite(fr)&&fr<=5)) return {ok:false,pk,reason:`I panini con latte${S.egg?`, uova`:``}${S.fat===`olio`?``:` e burro`} passano la notte in frigo crudi: serve un frigo a 5 °C o meno, misurato con un termometro sul ripiano centrale. A ${num(fr)} °C scegli la lievitazione in giornata, oppure abbassa la temperatura del frigo.`};
@@ -1089,7 +1098,8 @@ function buildBreadPlan(pk,P,cfg,now,realNow){
   const heq=heqOf(phases,room,true)*(P.F.ferm||1);
   const fridgeH=(phases.find(p=>p[0]===`frigo`)||[0,0])[1];
   // con zucchero e grassi i bun reggono più lievito: tetto al 4% (le ricette in 3 ore arrivano al 4–5%)
-  return {ok:true,pk,bread:true,bun,phases,mixStart,begin:mixStart-lead*H,tzLead:lead,stesStart,cottStart,coolStart,tFirst,stesDur,heq,yp:Math.min(bun?BUN_YCAP:3,yeastPct(heq)*(S.yeastK||2)),bk,A,pieghe:pieghe&&!bun,teglia:false,total,fridgeH,shiftNote,
+  const warm=phases.some(p=>p[0]===`puntata`&&p[2]===WARM_T&&WARM_T!==room);
+  return {ok:true,pk,bread:true,bun,phases,mixStart,begin:mixStart-lead*H,tzLead:lead,stesStart,cottStart,coolStart,tFirst,stesDur,heq,yp:Math.min(bun?BUN_YCAP:3,yeastPct(heq)*(S.yeastK||2)),bk,A,pieghe:pieghe&&!bun,teglia:false,total,fridgeH,shiftNote,warm,
           flourOk: pk===`giornata`||PLANS[pk].h<=P.F.maxH};
 }
 function buildPlan(pk,P,cfg,now){
@@ -1148,6 +1158,10 @@ function buildPlan(pk,P,cfg,now){
           flourOk: pk===`giornata`||PLANS[pk].h<=P.F.maxH};
 }
 
+/* Dosi facili da pesare: farina, acqua o latte, uova, patate e olio a 5 g (10 g da un chilo in su, 1 g sotto i 10 g).
+   Il sale e lo zucchero restano al grammo, il lievito al decimo di grammo: lì 5 g di scarto peserebbero troppo.
+   Le altre dosi si calcolano dalla farina già arrotondata, così le percentuali restano quasi quelle della ricetta. */
+function roundG(x){ if(!(x>0)) return 0; return x<10?Math.round(x):x<1000?Math.round(x/5)*5:Math.round(x/10)*10; }
 function ingredients(P,pl,cfg){
   const teglia=!!P.S.teglia;
   const n=teglia?state.tn:state.n;
@@ -1155,12 +1169,13 @@ function ingredients(P,pl,cfg){
   const total=piece*n*1.02;
   const ypct=cfg.yeast===`secco`?pl.yp/3:pl.yp;
   const sugar=P.sugar||0, egg=P.egg||0, potato=P.potato||0;
-  const flour=total/(1+(P.hyd+P.salt+P.oil+sugar+egg+potato+ypct)/100);
+  const flour=roundG(total/(1+(P.hyd+P.salt+P.oil+sugar+egg+potato+ypct)/100));
   // pane: impasto finito a 24 °C in giornata, 23 °C con il frigo (pizza 23 e 22); bun 25 e 24, come gli impasti ricchi
   const ddt=(pl.pk===`giornata`?23:22)+(pl.bun?2:pl.bread?1:0), friction=cfg.mixer?8:2;
-  const I={n,piece,total,ddt,flour,water:flour*P.hyd/100,salt:flour*P.salt/100,oil:flour*P.oil/100,sugar:flour*sugar/100,egg:flour*egg/100,potato:flour*potato/100,yeast:flour*ypct/100,ypct,waterT:null};
+  const I={n,piece,total,ddt,flour,water:roundG(flour*P.hyd/100),salt:Math.round(flour*P.salt/100),oil:roundG(flour*P.oil/100),sugar:Math.round(flour*sugar/100),egg:roundG(flour*egg/100),potato:roundG(flour*potato/100),yeast:flour*ypct/100,ypct,waterT:null};
+  I.total=I.flour+I.water+I.salt+I.oil+I.sugar+I.egg+I.potato+I.yeast;   // il peso vero dell'impasto, con le dosi arrotondate
   // Tangzhong: l'8% della farina con 5 volte il suo peso di liquido, preso dal totale (resta libero almeno un quarto del liquido).
-  if(P.tz){ const tf=flour*tzPct(P.hyd)/100; I.tz={flour:tf,liquid:tf*TZ.ratio}; }
+  if(P.tz){ const tf=Math.floor(flour*tzPct(P.hyd)/100); /* al grammo, per difetto: non supera mai la sua parte */ I.tz={flour:tf,liquid:tf*TZ.ratio}; }
   if(!pl.pref){
     const Tl=3*ddt-2*state.room-friction, room=state.room;
     const tzL=I.tz?I.tz.liquid:0, others=I.egg+I.potato, free=I.water-tzL;
@@ -1184,8 +1199,8 @@ function ingredients(P,pl,cfg){
     }
   }
   if(pl.pref){
-    let pf=pl.pref.actual?pl.pref.actual.flour:flour*pl.pref.pct/100;
-    const pw=pl.pref.actual?pl.pref.actual.water:pf*pl.pref.hyd/100;
+    let pf=pl.pref.actual?pl.pref.actual.flour:roundG(flour*pl.pref.pct/100);
+    const pw=pl.pref.actual?pl.pref.actual.water:Math.round(pf*pl.pref.hyd/100);   // al grammo: con 5 g di scarto una biga piccola non sarebbe più al 45%
     // Preparato esistente con (quasi) tutta la farina: il peso totale stimato può dare meno farina di quella già usata,
     // perché il lievito del rimpasto pesa anch'esso. Allora la farina totale è quella del preparato e le altre dosi la seguono.
     if(pl.pref.actual&&pf>I.flour){ const k=pf/I.flour; for(const x of [`flour`,`water`,`salt`,`oil`,`sugar`,`egg`,`potato`,`yeast`,`total`]) I[x]*=k; I.piece*=k; }
@@ -1354,9 +1369,10 @@ function buildPrefermentPlan(pk,P,cfg,now){
     if(flour<=0) return fail(`Il lievito registrato supera il peso dell’impasto richiesto: controlla le quantità.`);
     p.pct=b.flour/flour*100;
     actual={...b,totalFlour:flour,hyd:b.water/b.flour*100,yp:b.yeast*(cfg.yeast===`secco`?3:1)/b.flour*100};
-    if(Math.abs(actual.hyd-(biga?45:100))>.01) return fail(`Hai preparato un prefermento al ${num(actual.hyd)}% d’acqua. Registriamo queste proporzioni, ma il piano attuale supporta ${biga?`biga al 45%`:`poolish al 100%`}; non aggiungiamo né togliamo acqua al preparato.`);
+    if(Math.abs(actual.hyd-(biga?45:100))>1) return fail(`Hai preparato un prefermento al ${num(actual.hyd)}% d’acqua. Registriamo queste proporzioni, ma il piano attuale supporta ${biga?`biga al 45%`:`poolish al 100%`}; non aggiungiamo né togliamo acqua al preparato.`);
   }
-  if(p.pct<(biga?50:30)-1e-8||p.pct>(biga?100:50)+1e-8) return fail(existing?`Il prefermento già fatto copre il ${num(p.pct)}% della farina necessaria alle pizze scelte. Per ${biga?`la biga serve il 50–100%`:`il poolish serve il 30–50%`}: cambia quantità di pizze o peso dei panetti. Il preparato non viene ridimensionato.`:biga?`Biga: scegli dal 50 al 100% della farina totale.`:`Poolish: scegli dal 30 al 50% della farina totale.`);
+  const tol=existing?1:1e-8;   // un preparato pesato con le dosi arrotondate può scostarsi di poco
+  if(p.pct<(biga?50:30)-tol||p.pct>(biga?100:50)+tol) return fail(existing?`Il prefermento già fatto copre il ${num(p.pct)}% della farina necessaria alle pizze scelte. Per ${biga?`la biga serve il 50–100%`:`il poolish serve il 30–50%`}: cambia quantità di pizze o peso dei panetti. Il preparato non viene ridimensionato.`:biga?`Biga: scegli dal 50 al 100% della farina totale.`:`Poolish: scegli dal 30 al 50% della farina totale.`);
   if(p.temp<Ld.temp[0]||p.temp>Ld.temp[1]) return fail(p.warm?`La biga in frigo è pensata per le case calde: prima del frigo resta qualche ora tra 21 e 26 °C. Sotto i 21 °C scegli la biga corta.`:p.long?`Dopo il frigo la biga lunga matura in un posto stabile tra 18 e 20 °C.`:biga?`La biga richiede un posto stabile tra 16 e 20 °C. La temperatura di casa può essere diversa.`:`Il poolish richiede un posto stabile tra 18 e 24 °C.`);
   const hv=p.warm?p.cold:p.hours;
   if(!(p.warm&&existing)&&(hv<Ld.hours[0]||hv>Ld.hours[1])) return fail(p.warm?`Per la biga in frigo sono supportate 16–20 ore in frigo, dopo 2–4 ore fuori.`:p.long?`Per la biga lunga sono supportate 22–26 ore fuori frigo, dopo le 24 in frigo.`:biga?`Per la biga sono supportate 14–20 ore di maturazione.`:`Per il poolish sono supportate 8–18 ore di maturazione.`);
@@ -1755,8 +1771,12 @@ function readyCountText(r){ const [d,t]=readyCount(readyList(r),readyGet().on); 
    altrimenti 50, 20 o 10; null se non ci sta nemmeno così. W è il liquido che la soluzione porta con sé. */
 function yeastSol(yeast,liquid){
   const small=state.yeast===`secco`?yeast<0.7:yeast<2;
-  const D=small?[100,50,20,10].find(d=>d*yeast<=liquid*.9):null;   // resta sempre un po' di liquido da pesare a parte
-  return D?{L:D-1,X:Math.round(yeast*D),W:yeast*(D-1)}:null;
+  // grammi di soluzione arrotondati a 5 (sotto i 10 al grammo): la dose di lievito cambia di pochissimo.
+  // Resta sempre un po' di liquido da pesare a parte.
+  const D=small?[100,50,20,10].find(d=>roundG(d*yeast)<=liquid*.9):null;
+  if(!D) return null;
+  const X=roundG(yeast*D);
+  return {L:D-1,X,W:X*(D-1)/D};
 }
 /* Il forno spento come cella di lievitazione durante l'appretto: con il forno a legna è quello di casa e non va liberato;
    se il forno di casa si accende prima o appena dopo l'inizio dell'appretto, il consiglio non vale (null). */
@@ -1807,10 +1827,10 @@ function makeSteps(pl,P,I){
       const f=I.final;
       steps.push({key:k,title:`Prepara l’impasto finale`,start:s,end:e,hands:true,timer:10,body:`<p>Usa <b>tutto il prefermento maturo</b>. Aggiungi solo le dosi rimaste: <b>${g(f.flour)}</b> di farina, <b>${g(f.water)}</b> d’acqua, <b>${g(f.salt)}</b> di sale${f.oil?` e <b>${g(f.oil)}</b> d’olio`:``}. ${f.yeast>0?`Aggiungi anche <b>${gy(f.yeast)}</b> di ${yName}, sciolto nell’acqua: serve per la lievitazione dopo il rimpasto, che il solo ${pl.pref.method===`biga`?`lievito della biga`:`poolish`} non basta a sostenere nei tempi previsti.</p>${prefermentWeighing({yeast:f.yeast,water:f.water})}`:`<b>Non aggiungere altro lievito.</b></p>`}<p>${pl.pref.method===`biga`?`Spezza la biga in piccoli pezzi e ammorbidiscila con una parte dell’acqua rimasta.`:`Diluisci il poolish con una parte dell’acqua rimasta.`} ${f.flour>.01?`Incorpora la farina rimasta, poi il sale e il resto dell’acqua poco alla volta.`:`Incorpora il sale e il resto dell’acqua poco alla volta.`}${f.oil?` Aggiungi l’olio per ultimo.`:``} ${state.mixer?`Usa il gancio a velocità bassa, fermandoti se l’impasto si scalda.`:`Lavora in ciotola, con pause di 5–10 minuti se fatichi a incorporare il prefermento.`} Devi ottenere un impasto uniforme ed elastico.</p><p>${remixWaterHtml(I.remixT)}</p>`});
     } else if(k===`impasto`){
-      const keep=P.hyd>=70, keepG=Math.round(I.water*.1);
+      const keep=P.hyd>=70, keepG=Math.max(5,roundG(I.water*.1));
       let b=`<p>Pesa tutto prima di iniziare: <b>${g(I.flour)}</b> di farina, <b>${g(I.water)}</b> di acqua a circa <b>${I.waterT} °C</b>${I.waterT<10?` (fredda di frigo)`:``}, <b>${g(I.salt)}</b> di sale, <b>${gy(I.yeast)}</b> di ${yName}${I.oil>0?`, <b>${g(I.oil)}</b> di olio extravergine`:``}.</p>`;
       const ys=yeastSol(I.yeast,I.water);
-      if(ys){ const {L,X,W}=ys; b+=`<p>Il lievito è pochissimo e difficile da pesare. Sciogli 1 g di lievito in ${L} g d'acqua e usa <b>${X} g</b> di questa soluzione (il resto si butta). L'acqua da aggiungere a parte scende così a <b>${g(I.water-W)}</b>.</p>`; }
+      if(ys){ const {L,X,W}=ys; b+=`<p>Il lievito è pochissimo e difficile da pesare. Sciogli 1 g di lievito in ${L} g d'acqua e usa <b>${X} g</b> di questa soluzione (il resto si butta). L'acqua da aggiungere a parte scende così a <b>${g(roundG(I.water-W))}</b>.</p>`; }
       if(state.mixer) b+=`<p>Nella ciotola dell'impastatrice versa l'acqua${keep?` (tienine da parte ${keepG} g)`:``} ${yeastIn(I)}. Aggiungi la farina in due o tre volte, con il gancio a velocità bassa. Quando l'impasto prende forma aggiungi il sale${keep?`, poi l'acqua tenuta da parte un po' alla volta, aggiungendo la successiva solo quando la precedente è stata assorbita`:``}${I.oil>0?` e per ultimo l'olio`:``}. Impasta 8–12 minuti, finché si stacca dalle pareti ed è liscio.</p>`;
       else b+=`<p>In una ciotola capiente versa l'acqua${keep?` (tienine da parte ${keepG} g)`:``} ${yeastIn(I)}. Aggiungi la farina poco alla volta, mescolando con la mano. Quando non vedi più farina asciutta aggiungi il sale${keep?` e, un po' alla volta, l'acqua tenuta da parte`:``}${I.oil>0?`, poi l'olio`:``}.</p><p>Trasferisci sul piano e impasta 8–10 minuti, finché è liscio. Se si attacca alle mani non aggiungere farina: bagnati le mani, copri l'impasto, aspetta 10 minuti e riprendi. Vedrai che si lavora molto meglio.</p>`;
       if(P.hyd>=70&&!state.mixer) b+=`<p>Al ${num(P.hyd)}% di idratazione l'impasto è molto morbido, ed è normale. Lavoralo in ciotola con la mano bagnata: le pieghe dei passaggi successivi gli daranno forza.</p>`;
@@ -1913,7 +1933,7 @@ function makeBunSteps(pl,P,I){
       let b=`<p>Pesa tutto prima di iniziare: <b>${g(I.flour-(I.tz?I.tz.flour:0))}</b> di farina${I.tz?` (quella che resta dopo il tangzhong)`:``}, <b>${g(milk)}</b> di ${liq} a circa <b>${I.waterT} °C</b>${I.tz?`, ${tzTxt(I)}`:``}${I.egg>0?`, ${eggTxt} ${I.coldExtras?`fredde di frigo`:`a temperatura ambiente`}`:``}${I.potato>0?`, <b>${g(I.potato)}</b> di patate lesse schiacciate e fredde`:``}, <b>${gy(I.yeast)}</b> di ${yName}, <b>${g(I.sugar)}</b> di zucchero, <b>${g(I.salt)}</b> di sale e <b>${g(I.oil)}</b> di ${oil?`olio extravergine o di semi`:`burro morbido a pezzetti`}.</p>`;
       // poco lievito: soluzione nel latte, più concentrata se il latte libero (dopo il tangzhong) è poco
       const ys=yeastSol(I.yeast,milk);
-      if(ys){ const {L,X,W}=ys; b+=`<p>Il lievito è pochissimo e difficile da pesare. Sciogli 1 g di lievito in ${L} g di latte e usa <b>${X} g</b> di questo latte (il resto non serve). Il latte da pesare a parte scende così a <b>${g(milk-W)}</b>.</p>`; }
+      if(ys){ const {L,X,W}=ys; b+=`<p>Il lievito è pochissimo e difficile da pesare. Sciogli 1 g di lievito in ${L} g di latte e usa <b>${X} g</b> di questo latte (il resto non serve). Il latte da pesare a parte scende così a <b>${g(roundG(milk-W))}</b>.</p>`; }
       const first=`${I.tz?`il tangzhong, `:``}la farina, il ${oil?`latte`:`latte`} con il lievito sciolto${I.egg>0?`, le uova`:``}${I.potato>0?` e le patate`:``}`;
       if(state.mixer) b+=`<p>Nella ciotola dell'impastatrice metti ${first}. Impasta con il gancio a velocità bassa per 4–5 minuti, finché non vedi più farina asciutta. Aggiungi zucchero e sale e continua 3–4 minuti.</p><p>Ora ${oil?`versa l'olio a filo, poco alla volta`:`aggiungi il burro un pezzetto alla volta`}, aspettando che sia assorbito prima del successivo. Alza un po' la velocità e impasta ancora 5–8 minuti, finché l'impasto si stacca dalle pareti e pulisce il fondo della ciotola. In tutto 12–15 minuti. Se si scalda troppo (sopra i 26 °C), fermati qualche minuto.</p>`;
       else b+=`<p>In una ciotola capiente metti ${first}. Mescola con una mano finché non vedi più farina asciutta, poi aggiungi zucchero e sale e porta l'impasto sul piano.</p><p>Impasta 8–10 minuti spingendolo con il palmo e ripiegandolo: all'inizio è appiccicoso, poi diventa liscio. Ora ${oil?`aggiungi l'olio a poco a poco`:`aggiungi il burro morbido in 3 volte`}: l'impasto si sfalda e sembra rovinato, ma continua a lavorarlo 5–10 minuti e torna liscio e lucido. Non aggiungere farina: se si attacca, ungiti appena le mani.</p>`;
@@ -1953,11 +1973,11 @@ function makeBreadSteps(pl,P,I){
   for(const [k,d] of pl.phases){
     const s=t, e=t+d*H;
     if(k===`impasto`){
-      const free=I.water-(I.tz?I.tz.liquid:0), keep=P.hyd>=72, keepG=Math.round(free*.1), soft=!!S.soft, fat=soft?`olio o burro morbido`:`olio extravergine`;
+      const free=I.water-(I.tz?I.tz.liquid:0), keep=P.hyd>=72, keepG=Math.max(5,roundG(free*.1)), soft=!!S.soft, fat=soft?`olio o burro morbido`:`olio extravergine`;
       let b=`<p>Pesa tutto prima di iniziare: <b>${g(I.flour-(I.tz?I.tz.flour:0))}</b> di farina${I.tz?` (quella che resta dopo il tangzhong)`:``}, <b>${g(free)}</b> d'acqua a circa <b>${I.waterT} °C</b>${I.waterT<10?` (fredda di frigo)`:``}${soft?` (se vuoi, metà può essere latte alla stessa temperatura)`:``}, <b>${g(I.salt)}</b> di sale, <b>${gy(I.yeast)}</b> di ${yName}${I.sugar>0?`, <b>${g(I.sugar)}</b> di zucchero (o miele)`:``}${I.oil>0?`, <b>${g(I.oil)}</b> di ${fat}`:``}.</p>`;
       if(I.tz) b+=`<p>Gli altri <b>${g(I.tz.flour)}</b> di farina e <b>${g(I.tz.liquid)}</b> di liquido sono nel tangzhong: aggiungi ${tzTxt(I)} insieme all'acqua.</p>`;
       const ys=yeastSol(I.yeast,free);
-      if(ys){ const {L,X,W}=ys; b+=`<p>Il lievito è pochissimo e difficile da pesare. Sciogli 1 g di lievito in ${L} g d'acqua e usa <b>${X} g</b> di questa soluzione (il resto si butta). L'acqua da aggiungere a parte scende così a <b>${g(free-W)}</b>.</p>`; }
+      if(ys){ const {L,X,W}=ys; b+=`<p>Il lievito è pochissimo e difficile da pesare. Sciogli 1 g di lievito in ${L} g d'acqua e usa <b>${X} g</b> di questa soluzione (il resto si butta). L'acqua da aggiungere a parte scende così a <b>${g(roundG(free-W))}</b>.</p>`; }
       if(state.mixer) b+=`<p>Nella ciotola dell'impastatrice versa l'acqua${keep?` (tienine da parte ${keepG} g)`:``}${I.sugar>0?`, aggiungi lo zucchero `:` `}${yeastIn(I)}. Aggiungi la farina e impasta con il gancio a velocità bassa per 4–5 minuti. Poi aggiungi il sale${keep?` e, un po' alla volta, l'acqua tenuta da parte, versando la successiva solo quando la precedente è assorbita`:``}${I.oil>0?`; per ultimo ${soft?`l'olio o il burro a pezzetti`:`l'olio`}`:``}. Continua ${shape===`ciabatta`?`8–10`:`6–8`} minuti, finché l'impasto si stacca dalle pareti ed è liscio. Se si scalda troppo, fermati qualche minuto.</p>`;
       else {
         b+=`<p>In una ciotola capiente versa l'acqua${keep?` (tienine da parte ${keepG} g)`:``}${I.sugar>0?`, aggiungi lo zucchero `:` `}${yeastIn(I)}. Aggiungi la farina e mescola con la mano finché non vedi più farina asciutta. Aggiungi il sale${keep?` e, un po' alla volta, l'acqua tenuta da parte`:``}${I.oil>0?`, poi ${soft?`l'olio o il burro`:`l'olio`}`:``}.</p>`;
@@ -2838,8 +2858,8 @@ function prefIngredientsHtml(I,pl){
 }
 function prefermentWeighing(p){
   if(p.yeast>=1) return ``;
-  const solution=p.yeast*100, water=solution*.99;
-  return water<=p.water?`<p>Per questa dose piccola puoi sciogliere 1 g di lievito in 99 g d’acqua. Mescola bene e usa subito <b>${num(solution,2)} g</b> di soluzione; aggiungi a parte solo <b>${num(p.water-water,2)} g</b> d’acqua. Scarta il resto della soluzione. Questa quantità sostituisce il lievito e parte dell’acqua indicati sopra.</p>`:`<p>Serve una bilancia da 0,01 g per il lievito: non arrotondare la dose a un grammo intero.</p>`;
+  const solution=Math.max(1,Math.round(p.yeast*100)), water=solution*.99;
+  return water<=p.water?`<p>Per questa dose piccola puoi sciogliere 1 g di lievito in 99 g d’acqua. Mescola bene e usa subito <b>${solution} g</b> di soluzione; aggiungi a parte solo <b>${Math.max(0,Math.round(p.water-water))} g</b> d’acqua. Scarta il resto della soluzione. Questa quantità sostituisce il lievito e parte dell’acqua indicati sopra.</p>`:`<p>Serve una bilancia da 0,01 g per il lievito: non arrotondare la dose a un grammo intero.</p>`;
 }
 function pgPlan(){
   const S=STYLES[state.style], P=params(state), bread=!!S.bread, bun=!!S.bun;

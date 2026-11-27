@@ -272,10 +272,10 @@ test(`pane: con poco lievito e il tangzhong l'acqua a parte toglie anche il liqu
   assert.ok(m, `manca il consiglio sul lievito`);
   const free = I.water - I.tz.liquid, X = +m[2];
   assert.ok(X <= free + .5, `${X} g di soluzione su ${free} g d'acqua libera`);
-  const W = I.yeast * +m[1];                    // l'acqua che la soluzione porta con sé
+  const W = X * +m[1] / (+m[1] + 1);            // l'acqua che la soluzione porta con sé
   assert.ok(Math.abs(X / (+m[1] + 1) - I.yeast) < .03, `nella soluzione c'è la dose: ${X / (+m[1] + 1)} su ${I.yeast}`);
   assert.ok(free - W > 0, `acqua a parte: ${free - W}`);
-  assert.equal(+m[3].replace(`,`, `.`), Math.round(free - W));
+  assert.equal(+m[3].replace(`,`, `.`), a.run(`roundG(${free - W})`));
 });
 
 test(`lievito difficile da pesare: la soluzione non supera mai l'acqua della ricetta`, () => {

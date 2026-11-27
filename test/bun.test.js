@@ -116,12 +116,12 @@ test(`bun: la ricetta di Malati di Pizza (provata in cucina) esce dal motore`, (
   const r = bun(a, `bun`, `state.room=20.5; state.plan='giornata'; state.prepMode='day'; state.prepClock='07:45'; state.n=6; state.over.ball=168;`);
   const { I, pl, P } = r;
   assert.ok(pl.total <= 3.6, `durata ${pl.total}`);
-  assert.ok(Math.abs(I.flour - 500) < 15, `farina ${I.flour}`);
+  assert.ok(Math.abs(I.flour - 500) <= 15, `farina ${I.flour}`);
   // latte 60%, uova 14% (1 uovo + 1 tuorlo), zucchero 10%, sale 2%, burro 10%, lievito fresco 4%
   assert.equal(P.hyd, 60); assert.equal(P.egg, 14); assert.equal(P.sugar, 10); assert.equal(P.salt, 2); assert.equal(P.oil, 10);
   assert.ok(Math.abs(I.ypct - 4) < 0.05, `lievito ${I.ypct}`);
   // tangzhong: 8% della farina con 5 volte il suo peso di latte (Malati di Pizza: 10%, 1:5)
-  assert.ok(Math.abs(I.tz.flour / I.flour - .08) < 1e-9);
+  assert.ok(I.tz.flour <= I.flour * .08 && I.tz.flour > I.flour * .08 - 1);
   // forno statico a 190 °C, senza vapore
   assert.equal(pl.bk.T1, 190);
 });
@@ -287,13 +287,14 @@ test(`bun: con il tangzhong resta sempre del latte per sciogliere il lievito, an
   const a = app();
   // brioche al 40% di latte: con l'8% di farina il tangzhong si prenderebbe tutto il latte; scende al 6%
   let { I, steps } = bun(a, `brioche`, `state.room=20; state.plan='giornata'; state.over.tz=true; state.n=6;`);
-  assert.ok(Math.abs(I.tz.flour / I.flour - .06) < 1e-9, `${I.tz.flour / I.flour}`);
+  // tangzhong al grammo per difetto: entro 1 g dalla percentuale
+  assert.ok(I.tz.flour <= I.flour * .06 && I.tz.flour > I.flour * .06 - 1, `${I.tz.flour / I.flour}`);
   const milk = I.water - I.tz.liquid;
   assert.ok(milk > 20, `latte libero ${milk}`);
   assert.doesNotMatch(steps.find(s => s.key === `impasto`).body, /<b>0 g<\/b> di latte/);
   // smash al 45%: 6,75%
   ({ I } = bun(a, `smash`, `state.room=20; state.plan='giornata'; state.over.tz=true;`));
-  assert.ok(Math.abs(I.tz.flour / I.flour - .0675) < 1e-9);
+  assert.ok(I.tz.flour <= I.flour * .0675 && I.tz.flour > I.flour * .0675 - 1);
   // la tabella degli ingredienti dice la percentuale vera
   bun(a, `brioche`, `state.room=20; state.plan='giornata'; state.over.tz=true;`);
   a.run(`ui.page=5; renderAll();`);
@@ -309,7 +310,7 @@ test(`bun: lievito difficile da pesare, sciolto nel latte libero`, () => {
     const body = steps.find(s => s.key === `impasto`).body;
     const milk0 = I.water - (I.tz ? I.tz.liquid : 0);
     // poco lievito: c'è il consiglio, tranne quando nemmeno 1 g in 10 g di latte sta nel latte libero (un solo panino)
-    const small = (y === `secco` ? I.yeast < 0.7 : I.yeast < 2) && 10 * I.yeast <= milk0 * .9;
+    const small = (y === `secco` ? I.yeast < 0.7 : I.yeast < 2) && a.run(`roundG(${10 * I.yeast})`) <= milk0 * .9;
     if ((y === `secco` ? I.yeast < 0.7 : I.yeast < 2) && !small) assert.ok(n <= 2, `${tag}: senza consiglio`);
     const m = body.match(/Sciogli 1 g di lievito in (\d+) g di latte e usa <b>(\d+) g<\/b>/);
     assert.equal(!!m, small, tag);
@@ -318,7 +319,8 @@ test(`bun: lievito difficile da pesare, sciolto nel latte libero`, () => {
     const milk = I.water - (I.tz ? I.tz.liquid : 0), D = +m[1] + 1, X = +m[2];
     // 1 g in D−1 g fa D g di soluzione: X g contengono la dose
     assert.ok(X <= milk * .9 + .5, `${tag}: ${X} g di soluzione su ${milk} g di latte`);
-    assert.ok(Math.abs(X - I.yeast * D) <= .5, tag);
+    // soluzione arrotondata a 5 g (al grammo sotto i 10 g)
+    assert.ok(Math.abs(X - I.yeast * D) <= (I.yeast * D < 10 ? .5 : 2.5), tag);
     assert.ok(X >= 2, `${tag}: soluzione pesabile`);
   }
   assert.ok(seen > 20, `casi con poco lievito: ${seen}`);

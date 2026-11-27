@@ -56,8 +56,10 @@ test('prefermenti: bilancio delle dosi, tutte le farine ripartite e nessun lievi
       }
       if(method==='biga') assert.equal(i.final.yeast,0); else assert.ok(i.final.yeast>0);
       assert.ok(i.remixT.t>=2&&i.remixT.t<=35);
-      assert.ok(Math.abs(i.pref.flour/i.flour*100-pct)<1e-8);
-      assert.ok(Math.abs(i.pref.water/i.pref.flour*100-(method==='biga'?45:100))<1e-8);
+      // farina del prefermento a 5 g, acqua al grammo
+      assert.ok(Math.abs(i.pref.flour/i.flour*100-pct)<1);
+      assert.ok(Math.abs(i.pref.water-i.pref.flour*(method==='biga'?.45:1))<=.5);
+
       assert.ok(Math.abs(i.flour+i.water+i.yeast+i.salt+i.oil-i.total)<1e-8);
       assert.equal(i.waterT,null);
       assert.equal(r.pk,'prefermento');
@@ -74,7 +76,7 @@ test('prefermenti: secco un terzo del fresco, con lo stesso peso totale', () => 
   const fresh=configure(a,'poolish').I;
   const dry=a.run(`state.yeast='secco'; R=compute(); R.I;`);
   assert.ok(Math.abs(fresh.ypct/3-dry.ypct)<1e-10);
-  assert.equal(fresh.total,dry.total);
+  assert.ok(Math.abs(fresh.total-dry.total)<8);
   assert.ok(Math.abs(dry.pref.yeast+dry.final.yeast-dry.yeast)<1e-10);
   assert.ok(Math.abs(fresh.pref.yeast/3/dry.pref.yeast-1)<1e-2);
 });

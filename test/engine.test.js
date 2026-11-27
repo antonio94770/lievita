@@ -143,7 +143,9 @@ test(`ingredienti: per 24 ore a 20 °C, 4 panetti da 270 g, circa 1,6 g di lievi
   const { P, pl, cfg } = plan(`contemporanea`, 20, `h24`);
   const I = E.ingredients(P, pl, cfg);
   assert.ok(I.yeast > 1.3 && I.yeast < 1.9, `lievito ${I.yeast.toFixed(2)} g`);
-  assert.ok(Math.abs(I.flour + I.water + I.salt + I.oil + I.yeast - 4 * 270 * 1.02) < 0.01);
+  // dosi arrotondate (farina e acqua a 5 g): il totale resta entro pochi grammi da quello voluto
+  assert.ok(Math.abs(I.flour + I.water + I.salt + I.oil + I.yeast - 4 * 270 * 1.02) < 8);
+  assert.ok(I.flour % 5 === 0 && I.water % 5 === 0 && Number.isInteger(I.salt), `${I.flour} ${I.water} ${I.salt}`);
 });
 
 test(`acqua: in giornata a 20 °C non serve acqua calda (DDT 23, attrito 2 a mano e 8 con l'impastatrice)`, () => {
