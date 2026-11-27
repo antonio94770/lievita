@@ -40,12 +40,12 @@ const day = new Date(Date.now() + 3 * 24 * H); day.setHours(14, 0, 0, 0);
 const NOW = day.getTime();
 function setup(a, style, extra = ``) {
   a.run(`__t=${NOW}; state.method='diretto'; state.style='contemporanea'; state.flour='media'; state.oven='casa_acciaio'; state.over={}; state.plan=null;
-    state.prepMode='plan'; state.room=20; state.fridge=4; ui.reviewed=false; state.link=null; requestChange({k:'style',v:'${style}'}); ${extra}`);
+    state.prepMode='plan'; state.warm=false; state.room=20; state.fridge=4; ui.reviewed=false; state.link=null; requestChange({k:'style',v:'${style}'}); ${extra}`);
 }
 const opts = (a, start) => a.run(`readyOptions(state,${start},${NOW})`);
 // applica la scelta come fa il pulsante e ricalcola il piano
 function choose(a, o, start) {
-  a.run(`state.prepMode='from'; state.prepFrom=${start}; state.dinner=new Date(${o.t}); state.plan='${o.pk}';
+  a.run(`state.prepMode='from'; state.prepFrom=${start}; state.dinner=new Date(${o.t}); state.plan='${o.pk}'; state.warm=${!!o.warm};
     ${o.n ? `state.n=${o.n}; state.over.ball=${o.ball};` : ``} R=compute();`);
   return a.run(`R`);
 }
@@ -78,7 +78,7 @@ test(`pagnotta dalle 16: pronta alle 22, prima con due pani piccoli sulla teglia
   const a = app();
   setup(a, `pagnotta`, `state.n=1; state.oven='casa_teglia'; state.flour='forte'; state.over={hyd:77.5,salt:2.5,ball:730};`);
   const start = NOW + 2 * H, list = opts(a, start);
-  const g = list.find(o => o.pk === `giornata` && !o.n), small = list.find(o => o.n);
+  const g = list.find(o => o.pk === `giornata` && !o.n && !o.warm), small = list.find(o => o.n);
   assert.equal(new Date(g.t).getHours(), 22);
   assert.ok(small, JSON.stringify(list));
   assert.equal(small.n, 2); assert.equal(small.ball, 360);

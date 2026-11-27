@@ -778,7 +778,7 @@ const STEP_NAMES = {tangzhong:`Prepara il tangzhong`,prefermento:`Prepara il pre
 
 const state = {
   method:`diretto`, prefPct:50, prefTemp:18, prefHours:18, prefFridge:0, prefOut:0, prefAdd:false, prefKind:`corta`,
-  prepMode:`plan`, prepClock:`08:00`, prepFrom:0, nightOk:false, batch:{flour:0,water:0,yeast:0,started:0,cold:0},
+  prepMode:`plan`, prepClock:`08:00`, prepFrom:0, nightOk:false, warm:false, batch:{flour:0,water:0,yeast:0,started:0,cold:0},
   style:`contemporanea`, flour:`media`, oven:`casa_acciaio`, plan:null, yeast:`fresco`, mixer:false,
   over:{}, notes:{},
   n:4, tw:30, th:40, tn:1, room:20, fridge:4,
@@ -902,33 +902,40 @@ function readyKeys(cfg){
   const S=STYLES[cfg.style];
   return S.bread?BREAD_PLANS:(cfg.method||`diretto`)===`diretto`?[`giornata`,`h24`,`h48`,`h72`]:[`prefermento`];
 }
-function earliestReady(pk,cfg,start,realNow,size){
-  const keep={dinner:state.dinner,n:state.n,over:state.over};
+function earliestReady(pk,cfg,start,realNow,opt={}){
+  const keep={dinner:state.dinner,n:state.n,over:state.over,warm:state.warm};
   try{
-    if(size){ state.n=size.n; state.over={...state.over,ball:size.ball}; }
+    if(opt.size){ state.n=opt.size.n; state.over={...state.over,ball:opt.size.ball}; }
+    if(opt.warm!=null) state.warm=opt.warm;
     const P=params(state), c={...cfg,n:state.n,over:state.over,prepMode:`from`,prepFrom:start}, step=15*MIN;
-    const minH=pk===`giornata`||pk===`prefermento`?3:PLANS[pk].h-1;
+    const minH=pk===`giornata`?(state.warm?1.75:3):pk===`prefermento`?3:PLANS[pk].h-1;
     const lo=Math.ceil((start+minH*H)/step)*step, hi=lo+(pk===`prefermento`?60:36)*H;
     for(let t=lo;t<=hi;t+=step){
       const d=new Date(t), h=d.getHours()+d.getMinutes()/60;
       if(!state.nightOk&&(h<7||h>23)) continue;
       state.dinner=d;
       const pl=buildPlan(pk,P,c,realNow);
-      if(pl.ok&&pl.flourOk!==false) return t;
+      // out: quando il pane esce dal forno (poi si raffredda fino a t)
+      if(pl.ok&&pl.flourOk!==false) return {t,out:pl.coolStart??null,warm:!!pl.warm};
     }
     return null;
   } finally { Object.assign(state,keep); }
 }
 /* le scelte da proporre: una per lievitazione, più, per il pane grande, la stessa giornata con pani più piccoli
-   (cuociono e si raffreddano prima) quando fa guadagnare almeno mezz'ora */
+   (cuociono e si raffreddano prima) quando fa guadagnare almeno mezz'ora, e per il pane la giornata con la
+   prima lievitazione al caldo, se fa guadagnare almeno mezz'ora */
 function readyOptions(cfg,start,realNow){
   const S=STYLES[cfg.style], out=[];
-  for(const pk of readyKeys(cfg)){ const t=earliestReady(pk,cfg,start,realNow); if(t!=null) out.push({pk,t}); }
-  const P=params(state);
+  for(const pk of readyKeys(cfg)){ const r=earliestReady(pk,cfg,start,realNow,S.bread?{warm:false}:{}); if(r) out.push({pk,...r}); }
+  const P=params(state), g0=out.find(o=>o.pk===`giornata`);
   if(S.bread&&!S.bun&&![`stampo`,`accavallato`].includes(S.shape)&&P.ball>SMALL_BREAD){
     const tot=P.ball*state.n, n=Math.ceil(tot/SMALL_BREAD), ball=Math.max(150,Math.floor(tot/n/10)*10);
-    const g0=out.find(o=>o.pk===`giornata`), t=earliestReady(`giornata`,cfg,start,realNow,{n,ball});
-    if(t!=null&&(!g0||t<=g0.t-30*MIN)) out.push({pk:`giornata`,t,n,ball});
+    const r=earliestReady(`giornata`,cfg,start,realNow,{size:{n,ball},warm:false});
+    if(r&&(!g0||r.t<=g0.t-30*MIN)) out.push({pk:`giornata`,...r,n,ball});
+  }
+  if(S.bread&&!S.bun){
+    const r=earliestReady(`giornata`,cfg,start,realNow,{warm:true});
+    if(r&&r.warm&&(!g0||r.t<=g0.t-30*MIN)) out.push({pk:`giornata`,...r});
   }
   return out.sort((a,b)=>a.t-b.t);
 }
@@ -1019,6 +1026,24 @@ function breadBakeInfo(ok,S,piece,n){
 const CHILL_H=1.5;                                // ore di frigo del pane formato, prima di cuocerlo (le ricette: 1–2)
 const BUN_YCAP=4;                               // tetto del lievito fresco nei bun, in % sulla farina
 const BUN_REF_HEQ=3*fT(20.5);                     // la prova di riferimento del tetto: 3 ore a 20–21 °C
+/* Prima lievitazione al caldo, solo per il pane (non i bun), in giornata e solo quando le 3 ore a temperatura
+   di casa non ci stanno (state.warm: l'utente ha un posto caldo). Nel forno spento con la luce accesa si sta
+   sui 26–28 °C: la puntata va lì, l'appretto a temperatura di casa mentre il forno si scalda.
+   Il minimo non è più fisso: è il tempo in cui il lievito resta entro il 3% sulla farina, con almeno
+   un'ora di puntata e un appretto che copra il preriscaldo (il forno serve libero). Calcolato, da provare in cucina. */
+const WARM_T=27;
+function warmSplit(G,room,bk,S,P){
+  if(room>=WARM_T-1) return null;                 // casa già calda: il posto caldo non aiuta
+  const pre=bk.oven===`legna`?0:bk.preheat/60;     // con il forno a legna il posto caldo è il forno di casa
+  const A=Math.max(.5,Math.ceil((pre-.25)*4)/4), B=G-.75-A;
+  if(B<1-1e-9) return null;
+  const ph=[[`impasto`,.5,room],[`puntata`,B,WARM_T],[`formatura`,.25,room],[`appretto`,A,room]];
+  return yeastPct(heqOf(ph,room,true)*(P.F.ferm||1))*(S.yeastK||2)<=3+1e-9?ph:null;
+}
+function warmMin(room,bk,S,P){
+  for(let G=1.75;G<3;G+=.25) if(warmSplit(G,room,bk,S,P)) return G;
+  return null;
+}
 function buildBreadPlan(pk,P,cfg,now,realNow){
   if(!BREAD_PLANS.includes(pk)) return {ok:false,pk,reason:`Per il pane sono disponibili la lievitazione in giornata e quella con una notte in frigo.`};
   const S=P.S, room=state.room, fr=state.fridge, bun=!!S.bun;
@@ -1098,7 +1123,7 @@ function buildBreadPlan(pk,P,cfg,now,realNow){
   const heq=heqOf(phases,room,true)*(P.F.ferm||1);
   const fridgeH=(phases.find(p=>p[0]===`frigo`)||[0,0])[1];
   // con zucchero e grassi i bun reggono più lievito: tetto al 4% (le ricette in 3 ore arrivano al 4–5%)
-  const warm=phases.some(p=>p[0]===`puntata`&&p[2]===WARM_T&&WARM_T!==room);
+  const warm=phases.some(p=>p[0]===`puntata`&&p[2]===WARM_T)&&room<WARM_T;
   return {ok:true,pk,bread:true,bun,phases,mixStart,begin:mixStart-lead*H,tzLead:lead,stesStart,cottStart,coolStart,tFirst,stesDur,heq,yp:Math.min(bun?BUN_YCAP:3,yeastPct(heq)*(S.yeastK||2)),bk,A,pieghe:pieghe&&!bun,teglia:false,total,fridgeH,shiftNote,warm,
           flourOk: pk===`giornata`||PLANS[pk].h<=P.F.maxH};
 }
@@ -1171,7 +1196,8 @@ function ingredients(P,pl,cfg){
   const sugar=P.sugar||0, egg=P.egg||0, potato=P.potato||0;
   const flour=roundG(total/(1+(P.hyd+P.salt+P.oil+sugar+egg+potato+ypct)/100));
   // pane: impasto finito a 24 °C in giornata, 23 °C con il frigo (pizza 23 e 22); bun 25 e 24, come gli impasti ricchi
-  const ddt=(pl.pk===`giornata`?23:22)+(pl.bun?2:pl.bread?1:0), friction=cfg.mixer?8:2;
+  // al caldo l'impasto deve partire già tiepido, sui 26 °C: con acqua a 30–35 °C
+  const ddt=pl.warm?26:(pl.pk===`giornata`?23:22)+(pl.bun?2:pl.bread?1:0), friction=cfg.mixer?8:2;
   const I={n,piece,total,ddt,flour,water:roundG(flour*P.hyd/100),salt:Math.round(flour*P.salt/100),oil:roundG(flour*P.oil/100),sugar:Math.round(flour*sugar/100),egg:roundG(flour*egg/100),potato:roundG(flour*potato/100),yeast:flour*ypct/100,ypct,waterT:null};
   I.total=I.flour+I.water+I.salt+I.oil+I.sugar+I.egg+I.potato+I.yeast;   // il peso vero dell'impasto, con le dosi arrotondate
   // Tangzhong: l'8% della farina con 5 volte il suo peso di liquido, preso dal totale (resta libero almeno un quarto del liquido).
@@ -1180,7 +1206,7 @@ function ingredients(P,pl,cfg){
     const Tl=3*ddt-2*state.room-friction, room=state.room;
     const tzL=I.tz?I.tz.liquid:0, others=I.egg+I.potato, free=I.water-tzL;
     I.tzT=null; I.coldExtras=false;
-    if(!tzL&&!others) I.waterT=Math.round(clamp(Tl,4,30));
+    if(!tzL&&!others) I.waterT=Math.round(clamp(Tl,4,pl.warm?35:30));
     else {
       // Tl è la temperatura media che serve a tutta la parte liquida (latte libero, tangzhong, uova, patate),
       // pesata sulle masse. Se il latte libero è poco non basta a correggerla da solo (resta tra 4 e 35 °C):
@@ -1553,7 +1579,7 @@ const clone=o=>JSON.parse(JSON.stringify(o));
 
 function prefConfig(c){ const p=prefermentSettings(c); return {method:p.method,prefPct:p.pct,prefTemp:p.temp,prefHours:p.setHours,prefFridge:p.fridge,prefOut:p.out,prefAdd:p.add,prefKind:p.kind,prepMode:c.prepMode||`plan`,prepClock:c.prepClock||`08:00`,batch:clone(c.batch||{flour:0,water:0,yeast:0,started:0,cold:0})}; }
 function rememberForm(){
-  mem.last={...prefConfig(state),style:state.style,flour:state.flour,oven:state.oven,yeast:state.yeast,mixer:state.mixer,n:state.n,tw:state.tw,th:state.th,tn:state.tn,room:state.room,fridge:state.fridge,plan:state.plan,nightOk:!!state.nightOk,dinner:+state.dinner};
+  mem.last={...prefConfig(state),style:state.style,flour:state.flour,oven:state.oven,yeast:state.yeast,mixer:state.mixer,n:state.n,tw:state.tw,th:state.th,tn:state.tn,room:state.room,fridge:state.fridge,plan:state.plan,nightOk:!!state.nightOk,warm:!!state.warm,dinner:+state.dinner};
   persist();
 }
 /* le ultime scelte all'avvio: l'ora della cena solo se è ancora nel futuro */
@@ -1567,7 +1593,7 @@ function restoreForm(last){
    Vale solo se le impostazioni sono ancora quelle: cambiandole si prepara un piano nuovo.
    La preparazione non scade da sola: finisce con "Ho finito" o quando l'utente la interrompe. */
 const COOK_STORE=`lievita.cook`;
-function cookCfg(){ return {...prefConfig(state),style:state.style,flour:state.flour,oven:state.oven,plan:state.plan,yeast:state.yeast,mixer:state.mixer,n:state.n,tw:state.tw,th:state.th,tn:state.tn,room:state.room,fridge:state.fridge,over:clone(state.over),dinner:+state.dinner,nightOk:!!state.nightOk}; }
+function cookCfg(){ return {...prefConfig(state),style:state.style,flour:state.flour,oven:state.oven,plan:state.plan,yeast:state.yeast,mixer:state.mixer,n:state.n,tw:state.tw,th:state.th,tn:state.tn,room:state.room,fridge:state.fridge,over:clone(state.over),dinner:+state.dinner,nightOk:!!state.nightOk,warm:!!state.warm}; }
 function savedCook(){
   let s=null; try{ s=JSON.parse(localStorage.getItem(COOK_STORE)||`null`); }catch(e){}
   return s&&s.cfg&&Number.isFinite(s.t0)?s:null;
@@ -1576,7 +1602,7 @@ function savedCook(){
    quando il primo passaggio era già da fare. Aprirla prima solo per guardare non blocca il piano. */
 function cookBusy(s){ return !!s&&(Array.isArray(s.done)&&s.done.some(Boolean)||Number.isFinite(s.started)); }
 // le preparazioni salvate prima della spunta "anche di notte" non la contengono
-function sameCookCfg(s){ const c=cookCfg(); if(!(`nightOk` in s.cfg)) delete c.nightOk; return JSON.stringify(s.cfg)===JSON.stringify(c); }
+function sameCookCfg(s){ const c=cookCfg(); if(!(`nightOk` in s.cfg)) delete c.nightOk; if(!(`warm` in s.cfg)) delete c.warm; return JSON.stringify(s.cfg)===JSON.stringify(c); }
 function activeCook(){ const s=savedCook(); return cookBusy(s)&&sameCookCfg(s)?s:null; }
 function planNow(){ const s=activeCook(); return s?s.t0:Date.now(); }
 function resumeCook(){
@@ -1630,7 +1656,8 @@ function compute(){
   if(P.S.teglia&&!pl.pref) W.push({w:0,t:`La dose di lievito per la teglia è calcolata ma non ancora provata in cucina dal team. Se in frigo l'impasto cresce troppo, la prossima volta usane un po' meno.`});
   if(state.room>=28) W.push({w:1,t:`Fa molto caldo: usa acqua fredda di frigo e controlla l'impasto più spesso, perché può lievitare prima del previsto.`});
   if(state.room<=16&&!pl.pref) W.push({w:0,t:`In casa fa fresco e i tempi si allungano. Se puoi, metti l'impasto nel forno spento con la sola luce accesa.`});
-  if(!P.S.bun&&pl.yp>=2.9) W.push({w:1,t:`Con così poco tempo serve tanto lievito: ${bread?`il pane sarà meno digeribile, saprà di lievito e si conserverà meno`:`la pizza sarà meno digeribile e saprà di lievito`}. Se puoi, sposta ${bread?`l'ora del pane`:`la cena`} più avanti.`});
+  if(pl.warm) W.push({w:1,t:`Il tempo è poco: la prima lievitazione si fa al caldo, nel forno spento con la luce accesa (26–28 °C), con più lievito del solito (${num(Math.round(pl.yp*10)/10)}% sulla farina). Il pane viene, ma sa un po' di lievito, ha meno profumo e si conserva meno. Percorso calcolato, da provare in cucina.`});
+  if(!P.S.bun&&!pl.warm&&pl.yp>=2.9) W.push({w:1,t:`Con così poco tempo serve tanto lievito: ${bread?`il pane sarà meno digeribile, saprà di lievito e si conserverà meno`:`la pizza sarà meno digeribile e saprà di lievito`}. Se puoi, sposta ${bread?`l'ora del pane`:`la cena`} più avanti.`});
   if(pl.shiftNote) W.push({w:0,t:pl.shiftNote});
   P.adapt.forEach(t=>W.push({w:0,t}));
   return {P,plans,rec,pk,pl,I,steps,W,now};
@@ -1994,7 +2021,7 @@ function makeBreadSteps(pl,P,I){
     if(k===`puntata`){
       const ogni=(e-s)>=70*MIN?20:(e-s)>=55*MIN?15:10;
       const times=pl.pieghe?[1,2,3].map(i=>s+i*ogni*MIN).filter(ts=>ts<e-10*MIN):[];
-      steps.push({key:k,title:`Prima lievitazione (puntata)`,start:s,end:e,hands:false,body:`<p>Metti l'impasto in una ciotola leggermente unta, meglio ancora in un contenitore trasparente: segna con un pennarello il livello di partenza, così vedi quanto cresce. Copri bene con un coperchio o con la pellicola: all'aria la superficie si secca e fa una crosticina che poi non si gonfia più.</p><p>Lascialo a ${state.room} °C. ${hasFridge?`Deve solo iniziare a gonfiarsi: il resto lo fa in frigo.`:`Alla fine deve essere circa raddoppiato, gonfio e con qualche bolla in superficie.`}${times.length?` Nel frattempo farai ${times.length} serie di pieghe, ogni ${ogni} minuti.`:``}</p>`});
+      steps.push({key:k,title:`Prima lievitazione (puntata)`,start:s,end:e,hands:false,body:`<p>Metti l'impasto in una ciotola leggermente unta, meglio ancora in un contenitore trasparente: segna con un pennarello il livello di partenza, così vedi quanto cresce. Copri bene con un coperchio o con la pellicola: all'aria la superficie si secca e fa una crosticina che poi non si gonfia più.</p>${pl.warm?`<p><b>Il tempo è poco, quindi lievita al caldo.</b> Metti il contenitore nel forno spento con <b>solo la luce accesa</b>: dentro si arriva a 26–28 °C. Se hai un termometro, controlla dopo un quarto d'ora: sopra i 30 °C apri lo sportello per qualche minuto. Se la luce si spegne da sola o il forno non ce l'ha, metti sul ripiano basso un pentolino d'acqua appena bollita e chiudi. Per le pieghe tiralo fuori e rimettilo subito dentro.</p><p>Toglilo dal forno alle <b>${tAt(e)}</b>: poi il forno serve per cuocere. Se a quell'ora non è ancora quasi raddoppiato, lascialo crescere fuori dal forno, coperto e in un punto tiepido della cucina: in modalità cucina ti dico quanto aspettare.</p>`:``}<p>${pl.warm?``:`Lascialo a ${state.room} °C. `}${hasFridge?`Deve solo iniziare a gonfiarsi: il resto lo fa in frigo.`:`Alla fine deve essere circa raddoppiato, gonfio e con qualche bolla in superficie.`}${times.length?` Nel frattempo farai ${times.length} serie di pieghe, ogni ${ogni} minuti.`:``}</p>`});
       // impasti molto bagnati: la prima serie è una laminazione, che dà forza in un colpo solo senza impastare
       const lam=P.hyd>=72&&shape!==`ciabatta`;
       times.forEach((ts,i)=>{
@@ -2664,7 +2691,9 @@ function whenAvail(){
   const block=timeBlock(), today=dinnerToday(), mode=state.prepMode||`plan`;
   const bread=isBread(), bun=isBun();
   const ready=[`plan`,`now`,`from`].includes(mode);
-  const warn=block?`<div class="card warn-time" role="alert"><p><b>${esc(block)}</b></p><p class="hint">Più lievito non basta a recuperare il tempo: sotto le 3 ore l’impasto non matura, sa di lievito e ${bun?`i panini restano pesanti.`:bread?`il pane resta pesante.`:`si stende male.`} ${ready?`Scegli uno degli orari possibili qui sotto, in “Quando può essere pronto?”.`:mode===`day`?`Scegli “Posso iniziare da un’ora precisa” per vedere quando può essere pronto.`:bun?`Sposta più avanti l'ora dei panini.`:bread?`Sposta più avanti l'ora del pane.`:`Sposta la cena più avanti.`}</p></div>`:``;
+  // il posto caldo serve solo al pane quando il tempo è poco: la spunta compare solo allora (o se è già attiva)
+  const warmShow=bread&&!bun&&state.room<WARM_T-1&&(state.warm||!!block);
+  const warn=block?`<div class="card warn-time" role="alert"><p><b>${esc(block)}</b></p><p class="hint">Più lievito non basta a recuperare il tempo: sotto le 3 ore a temperatura di casa l’impasto non matura, sa di lievito e ${bun?`i panini restano pesanti.`:bread?`il pane resta pesante.`:`si stende male.`} ${warmShow&&!state.warm?`Se hai un posto caldo per la prima lievitazione, spunta qui sotto “Se il tempo è poco, posso far lievitare al caldo”. `:``}${ready?`Scegli uno degli orari possibili qui sotto, in “Quando può essere pronto?”.`:mode===`day`?`Scegli “Posso iniziare da un’ora precisa” per vedere quando può essere pronto.`:bun?`Sposta più avanti l'ora dei panini.`:bread?`Sposta più avanti l'ora del pane.`:`Sposta la cena più avanti.`}</p></div>`:``;
   const desc={
     plan: today?`${bun?`I panini sono per oggi`:bread?`Il pane è per oggi`:`La pizza è oggi`}: non ci sono giorni prima.`:`Il piano può partire anche uno o più giorni prima${bread?``:` della cena`}.`,
     now: `Si parte al più presto da adesso.`,
@@ -2679,6 +2708,7 @@ function whenAvail(){
   <div class="opts">${Object.entries(PREP_MODES).filter(([k])=>!bread||k!==`existing`).map(([k,label])=>opt(`prepMode`,k,shown===k,``, `<b>${bread&&k===`day`?`Preparo tutto nel giorno stesso`:label}</b><span class="od">${desc[k]}</span>`,dis(k))).join(``)}</div>
   ${mode===`day`?`<div class="card"><label class="fld" for="prep-clock">Il giorno ${bread?`stesso`:`della pizza`} posso iniziare dalle<input id="prep-clock" type="time" value="${esc(state.prepClock)}"></label><p class="hint">Nessun passaggio di preparazione verrà collocato nei giorni precedenti. Se biga o poolish non entrano nelle ore disponibili, ti spiego il motivo.</p></div>`:``}
   ${mode===`from`?`<div class="card"><label class="fld" for="prep-from">Posso iniziare<input id="prep-from" type="datetime-local" value="${toLocalInput(new Date(readyStart()))}"></label><p class="hint">Anche oggi per domani: nessun passaggio verrà prima di quest’ora.</p></div>`:``}
+  ${warmShow?`<label class="check" for="warm-ok"><input type="checkbox" id="warm-ok"${state.warm?` checked`:``}><span><b>Se il tempo è poco, posso far lievitare al caldo</b><small>La prima lievitazione nel forno spento con la luce accesa (26–28 °C), con più lievito del solito. La uso solo quando le 3 ore a temperatura di casa non ci stanno: il pane viene, ma sa un po’ di lievito e ha meno profumo. Calcolato, da provare in cucina.</small></span></label>`:``}
   <label class="check" for="night-ok"><input type="checkbox" id="night-ok"${state.nightOk?` checked`:``}><span><b>Posso fare passaggi anche di notte</b><small>Tra le 23 e le 7. Di solito l’app li evita${bread?``:` e sposta il frigo`}; con questa spunta li accetta e propone anche ore notturne.</small></span></label>
   ${ready?soonHtml():``}
   <p class="hint">${mode===`existing`?`Nella pagina Lievitazione scegli biga o poolish e registra le quantità che hai già mescolato. Non le ridimensioniamo.`:`L’inizio viene calcolato a ritroso dalla cena, da ora in poi. L’app non avvia automaticamente la preparazione.`}</p>`;
@@ -2691,10 +2721,10 @@ function soonHtml(){
   const opts=readyOptions(state,start,now), sel=new Date(state.dinner).getTime(), cur=params(state);
   const Cap=x=>x[0].toUpperCase()+x.slice(1);
   const items=opts.map(o=>{
-    const on=o.t===sel&&(o.n?o.n===state.n&&o.ball===cur.ball:true)&&(!R||R.none||R.pk===o.pk);
-    const sub=o.n?`In giornata, ${o.n} pani da ${g(o.ball)} invece di ${state.n>1?`${state.n} da`:`1 da`} ${g(cur.ball)}: si raffreddano prima`
+    const on=o.t===sel&&(o.n?o.n===state.n&&o.ball===cur.ball:true)&&(!R||R.none||R.pk===o.pk)&&!!o.warm===!!(R&&R.pl&&R.pl.warm);
+    const sub=o.warm?`In giornata, prima lievitazione al caldo (forno spento con la luce)`:o.n?`In giornata, ${o.n} pani da ${g(o.ball)} invece di ${state.n>1?`${state.n} da`:`1 da`} ${g(cur.ball)}: si raffreddano prima`
       :o.pk===`giornata`?`In giornata, senza frigo`:o.pk===`prefermento`?`Con ${(METHODS[state.method]||``).toLowerCase()}`:`${PLANS[o.pk].name}: ${PLANS[o.pk].short.toLowerCase()}`;
-    return `<button type="button" class="dchip${on?` on`:``}" data-ready-at="${o.t}" data-pk="${o.pk}"${o.n?` data-n="${o.n}" data-ball="${o.ball}"`:``} aria-pressed="${on}"><b>${Cap(when(o.t))}</b><span>${sub}</span></button>`;
+    return `<button type="button" class="dchip${on?` on`:``}" data-ready-at="${o.t}" data-pk="${o.pk}"${o.n?` data-n="${o.n}" data-ball="${o.ball}"`:``} aria-pressed="${on}"${o.warm?` data-warm="1"`:``}><b>${Cap(when(o.t))}</b>${o.out?`<span>${bun?`Esce dal forno`:`Sforni`} alle ${hm(o.out)}, ${bun?`intiepidito`:`raffreddato`} alle ${hm(o.t)}</span>`:``}<span>${sub}</span></button>`;
   });
   const what=bun?`i panini possono essere pronti`:bread?`il pane può essere pronto`:`può essere pronta la prima pizza`;
   return `<h3 class="sect">Quando può essere pronto?</h3><div class="card" id="ready-opts"><p>Partendo ${start>now+MIN?when(start):`adesso`}, ${what} al più presto:</p>
@@ -2704,6 +2734,7 @@ function soonHtml(){
 function applyReady(ds){
   state.dinner=new Date(Number(ds.readyAt));
   if(ds.n){ state.n=Number(ds.n); state.over.ball=Number(ds.ball); }
+  if(ds.warm) state.warm=true;
   renderAll(); rememberForm();
   // il percorso scelto resta fisso, così non ne viene proposto uno più lungo al suo posto
   if(ds.pk!==`prefermento`) requestChange({k:`plan`,v:ds.pk});
@@ -3202,6 +3233,7 @@ $(`#page`).addEventListener(`change`,e=>{
   if(el.dataset.batch){ const value=el.dataset.batch===`started`?new Date(el.value).getTime():v; if(!Number.isFinite(value)){ renderAll(); return; } requestChange({k:`batch`,o:el.dataset.batch,v:value}); return; }
   if(id===`prep-clock`){ requestChange({k:`prepClock`,v:el.value}); return; }
   if(id===`night-ok`){ state.nightOk=el.checked; renderResults(); rememberForm(); return; }
+  if(id===`warm-ok`){ state.warm=el.checked; renderResults(); rememberForm(); return; }
   if(id===`prep-from`){ const t=new Date(el.value).getTime(); if(Number.isFinite(t)) state.prepFrom=t; renderResults(); rememberForm(); return; }
   if(id===`bw`){ if(v) state.over.ball=isBun()?clamp(Math.round(v),50,200):clamp(Math.round(v),150,1500); renderAll(); return; }
   if(id===`dinner`){ const d=new Date(el.value); if(!isNaN(d)) state.dinner=d; }

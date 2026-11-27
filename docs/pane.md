@@ -47,6 +47,18 @@ Dal confronto con la pagnotta in pentola di Davide Zambelli (`docs/ricerca/zambe
 - **Laminazione** come prima serie di pieghe, con le stesse condizioni (chiave `pieghe1`, così le note restano al loro posto): sul piano bagnato l'impasto si allarga in un foglio sottilissimo e si richiude a pacchetto. Dura 10 minuti se le pieghe sono ogni 15–20 minuti.
 - **Frigo breve** (`frigobreve`, `CHILL_H` = 1,5 ore, le ricette dicono 1–2) dopo l'appretto, per i pani tondi nel cestino (`shape:'boule'`: pagnotta e pane di semola). L'impasto freddo si capovolge senza allargarsi e si incide netto, e il forno si scalda mentre il pane aspetta. In giornata c'è solo se a temperatura di casa restano almeno 3 ore; con la notte in frigo si accorcia il frigo lungo. In `heqOf` conta tutto alla temperatura media tra casa e frigo, perché in un'ora e mezza il pane si raffredda poco. In modalità cucina la prova del dito si fa **prima** di metterlo in frigo (dopo, l'impasto freddo risponde piano anche quando è pronto e il controllo ingannerebbe): se è in anticipo va in frigo subito e ci resta di più, se è indietro si aspetta fuori e gli orari slittano. Durata e effetto sulla crescita in forno vanno provati in cucina.
 
+### Poco tempo: prima lievitazione al caldo (27 novembre 2026)
+
+Nato dal confronto con un piano scritto da un'altra chat: pane di semola iniziato alle 16:30, sfornato alle 19:15. Si tratta del 3% di lievito fresco, acqua a 35 °C, un'ora di puntata nel forno spento con la luce accesa e circa 40 minuti di appretto. La dose che dà il nostro modello per quelle fasi è la stessa (circa 2,6–3%). Il limite fisso di 3 ore, invece, non lo permetteva.
+
+- Spunta “Se il tempo è poco, posso far lievitare al caldo” nella pagina Quando (`state.warm`, ricordata in `mem.last` e in `cookCfg`). Compare solo per il pane (non i bun), quando la giornata non ci sta (o se è già attiva), con la casa sotto i 26 °C.
+- Vale solo in giornata e solo quando le 3 ore a temperatura di casa non ci stanno: con più tempo il piano resta quello di sempre.
+- Fasi (`warmSplit`): impasto 30 minuti a temperatura di casa, puntata a 27 °C (`WARM_T`) per almeno un'ora, formatura, appretto a temperatura di casa che copre il preriscaldo (il forno deve essere libero; almeno 30 minuti). Niente frigo breve.
+- Il minimo non è più fisso (`warmMin`): è il tempo più corto in cui il lievito calcolato resta entro il 3% sulla farina. Il pan bauletto (`yeastK` 4) di solito non ci rientra e non ha la scorciatoia.
+- DDT 26 °C, acqua fino a 35 °C.
+- Nella pagina Quando “Quando può essere pronto?” propone anche questa scelta se fa guadagnare almeno mezz'ora; un tocco attiva la spunta. Ogni scelta mostra anche l'ora in cui il pane esce dal forno.
+- L'app avvisa che il pane sa un po' di lievito, ha meno profumo e si conserva meno. **Calcolato, da provare in cucina.**
+
 ## Orari: si conta dall'ora del pane pronto
 
 L'ora scelta dall'utente è quella in cui il pane è **cotto e raffreddato**. All'indietro: raffreddamento (1 ora fino a 450 g, 2 ore oltre, 1,5 ore per il pan bauletto), cottura, 10 minuti per incidere e infornare, poi l'appretto.
