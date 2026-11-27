@@ -264,6 +264,9 @@ table.ing{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 .checks em{font-style:normal;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
 .checks small{display:block;color:var(--muted);font-size:.84rem;margin-top:1px}
 .checks input:checked+span b,.checks input:checked+span em{color:var(--muted);text-decoration:line-through}
+.check{display:flex;gap:10px;align-items:flex-start;margin:12px 0 0;padding:12px 14px;border:1.5px solid var(--line);border-radius:14px;background:var(--surface);cursor:pointer;font-size:.95rem}
+.check input{width:20px;height:20px;margin:1px 0 0;flex:none;accent-color:var(--accent)}
+.check small{display:block;color:var(--muted);font-size:.84rem;margin-top:2px}
 .alerts{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
 .alerts li{border-left:4px solid var(--accent);background:var(--surface);border-radius:0 10px 10px 0;padding:10px 12px;font-size:.92rem}
 .alerts li.warn{border-color:var(--ember);background:var(--ember-soft)}
@@ -772,7 +775,7 @@ const STEP_NAMES = {tangzhong:`Prepara il tangzhong`,prefermento:`Prepara il pre
 
 const state = {
   method:`diretto`, prefPct:50, prefTemp:18, prefHours:18, prefFridge:0, prefOut:0, prefAdd:false, prefKind:`corta`,
-  prepMode:`plan`, prepClock:`08:00`, batch:{flour:0,water:0,yeast:0,started:0,cold:0},
+  prepMode:`plan`, prepClock:`08:00`, prepFrom:0, nightOk:false, batch:{flour:0,water:0,yeast:0,started:0,cold:0},
   style:`contemporanea`, flour:`media`, oven:`casa_acciaio`, plan:null, yeast:`fresco`, mixer:false,
   over:{}, notes:{},
   n:4, tw:30, th:40, tn:1, room:20, fridge:4,
@@ -808,7 +811,8 @@ function yeastPct(heq){
   return clamp(0.55*Math.exp(e),0.02,3);
 }
 
-function nightAt(t){ const h=new Date(t).getHours(); return h>=23||h<7; }
+/* notte: tra le 23 e le 7 l'app non mette lavorazioni, a meno che l'utente dica che per lui va bene (state.nightOk) */
+function nightAt(t){ if(state.nightOk) return false; const h=new Date(t).getHours(); return h>=23||h<7; }
 function firstNight(a,b){ for(let t=a;t<=b;t+=15*MIN){ if(nightAt(t)) return t; } return null; }
 function at(t,hour,addDays){ const d=new Date(t); d.setDate(d.getDate()+(addDays||0)); d.setHours(hour,0,0,0); return d.getTime(); }
 
@@ -878,12 +882,52 @@ function bakeInfo(ok,sk){
 
 function preparationWindow(cfg,now){
   const mode=cfg.prepMode||`plan`;
-  if(![`plan`,`now`,`day`,`existing`].includes(mode)) return {ok:false,reason:`Scegli quando puoi iniziare la preparazione.`};
+  if(![`plan`,`now`,`from`,`day`,`existing`].includes(mode)) return {ok:false,reason:`Scegli quando puoi iniziare la preparazione.`};
+  // da un'ora precisa, anche nei giorni prima (se è già passata, da adesso)
+  if(mode===`from`) return {ok:true,start:Math.max(now,Number(cfg.prepFrom)||0)};
   if(mode!==`day`) return {ok:true,start:now};
   const match=/^(\d{2}):(\d{2})$/.exec(cfg.prepClock||`08:00`);
   if(!match||+match[1]>23||+match[2]>59) return {ok:false,reason:`Inserisci un’ora valida da cui puoi iniziare, il giorno stesso.`};
   const d=new Date(state.dinner); d.setHours(+match[1],+match[2],0,0);
   return {ok:true,start:Math.max(now,d.getTime())};
+}
+/* --- da un'ora d'inizio a quando può essere pronto ---
+   Per ogni lievitazione cerca, a passi di 15 minuti, l'ora più vicina in cui il percorso si può fare partendo
+   da start (pane pronto, o prima pizza, tra le 7 e le 23 se l'utente non ha detto che la notte va bene). Usa lo stesso buildPlan del piano: niente stime a parte. */
+const SMALL_BREAD=450;                            // fino a questo peso il pane si raffredda in un'ora
+function readyKeys(cfg){
+  const S=STYLES[cfg.style];
+  return S.bread?BREAD_PLANS:(cfg.method||`diretto`)===`diretto`?[`giornata`,`h24`,`h48`,`h72`]:[`prefermento`];
+}
+function earliestReady(pk,cfg,start,realNow,size){
+  const keep={dinner:state.dinner,n:state.n,over:state.over};
+  try{
+    if(size){ state.n=size.n; state.over={...state.over,ball:size.ball}; }
+    const P=params(state), c={...cfg,n:state.n,over:state.over,prepMode:`from`,prepFrom:start}, step=15*MIN;
+    const minH=pk===`giornata`||pk===`prefermento`?3:PLANS[pk].h-1;
+    const lo=Math.ceil((start+minH*H)/step)*step, hi=lo+(pk===`prefermento`?60:36)*H;
+    for(let t=lo;t<=hi;t+=step){
+      const d=new Date(t), h=d.getHours()+d.getMinutes()/60;
+      if(!state.nightOk&&(h<7||h>23)) continue;
+      state.dinner=d;
+      const pl=buildPlan(pk,P,c,realNow);
+      if(pl.ok&&pl.flourOk!==false) return t;
+    }
+    return null;
+  } finally { Object.assign(state,keep); }
+}
+/* le scelte da proporre: una per lievitazione, più, per il pane grande, la stessa giornata con pani più piccoli
+   (cuociono e si raffreddano prima) quando fa guadagnare almeno mezz'ora */
+function readyOptions(cfg,start,realNow){
+  const S=STYLES[cfg.style], out=[];
+  for(const pk of readyKeys(cfg)){ const t=earliestReady(pk,cfg,start,realNow); if(t!=null) out.push({pk,t}); }
+  const P=params(state);
+  if(S.bread&&!S.bun&&![`stampo`,`accavallato`].includes(S.shape)&&P.ball>SMALL_BREAD){
+    const tot=P.ball*state.n, n=Math.ceil(tot/SMALL_BREAD), ball=Math.max(150,Math.floor(tot/n/10)*10);
+    const g0=out.find(o=>o.pk===`giornata`), t=earliestReady(`giornata`,cfg,start,realNow,{n,ball});
+    if(t!=null&&(!g0||t<=g0.t-30*MIN)) out.push({pk:`giornata`,t,n,ball});
+  }
+  return out.sort((a,b)=>a.t-b.t);
 }
 /* Se i passaggi prima del frigo (pre ore da mix) cadono tra le 23 e le 7, sposta l'inizio prima o dopo,
    accorciando o allungando il frigo (65–135% di quello previsto, almeno 8 ore). */
@@ -1164,7 +1208,7 @@ function remixWaterT(I,prefTemp,room,mixer){
 /* Percorsi indiretti limitati: ipotesi e fonti in docs/prefermenti.md.
    La curva degli impasti diretti NON viene usata per la maturazione del prefermento. */
 const METHODS={diretto:`Impasto diretto`,biga:`Biga`,poolish:`Poolish`};
-const PREP_MODES={plan:`Posso preparare anche nei giorni prima`,now:`Posso iniziare da adesso`,day:`Preparo solo il giorno stesso`,existing:`Ho già preparato biga o poolish`};
+const PREP_MODES={plan:`Posso preparare anche nei giorni prima`,now:`Posso iniziare da adesso`,from:`Posso iniziare da un’ora precisa`,day:`Preparo solo il giorno stesso`,existing:`Ho già preparato biga o poolish`};
 /* Domini supportati. Poolish 8–18 h e 18–24 °C (tabelle italiane); biga 14–20 h e 16–20 °C (Giorilli 16 h a 18–20 °C,
    testimonianze in docs/ricerca/testimonianze-prefermenti.json). Revisioni in docs/prefermenti.md. */
 const PREF_LIMITS={biga:{pct:[50,100],temp:[16,20],hours:[14,20],fridge:18,fridgeAdd:24,ref:18,hyd:45,long:{temp:[18,20],hours:[22,26],cold:24,coldRange:[20,28],ref:24},frigo:{temp:[21,26],hours:[16,20],coldRange:[14,22],ref:18}},poolish:{pct:[30,50],temp:[18,24],hours:[8,18],fridge:24,ref:14,hyd:100}};
@@ -1490,7 +1534,7 @@ const clone=o=>JSON.parse(JSON.stringify(o));
 
 function prefConfig(c){ const p=prefermentSettings(c); return {method:p.method,prefPct:p.pct,prefTemp:p.temp,prefHours:p.setHours,prefFridge:p.fridge,prefOut:p.out,prefAdd:p.add,prefKind:p.kind,prepMode:c.prepMode||`plan`,prepClock:c.prepClock||`08:00`,batch:clone(c.batch||{flour:0,water:0,yeast:0,started:0,cold:0})}; }
 function rememberForm(){
-  mem.last={...prefConfig(state),style:state.style,flour:state.flour,oven:state.oven,yeast:state.yeast,mixer:state.mixer,n:state.n,tw:state.tw,th:state.th,tn:state.tn,room:state.room,fridge:state.fridge,plan:state.plan,dinner:+state.dinner};
+  mem.last={...prefConfig(state),style:state.style,flour:state.flour,oven:state.oven,yeast:state.yeast,mixer:state.mixer,n:state.n,tw:state.tw,th:state.th,tn:state.tn,room:state.room,fridge:state.fridge,plan:state.plan,nightOk:!!state.nightOk,dinner:+state.dinner};
   persist();
 }
 /* le ultime scelte all'avvio: l'ora della cena solo se è ancora nel futuro */
@@ -2513,7 +2557,9 @@ function pgStyle(){
     return opt(`style`,k,k===state.style,ART.style(k),`<span class="ot"><b>${s.name}</b>${lvl(i.lvl)}</span><span class="od">${s.desc}</span>${pc(i)}`);}).join(``);
   return `${pick}<h3 class="sect">${cat===`bun`?`Che bun vuoi?`:cat===`pane`?`Che pane vuoi?`:`Che pizza vuoi?`}</h3><div class="opts">${list}</div>${cat===`pane`?breadCompareHtml():cat===`bun`?bunCompareHtml():``}`;
 }
-function dinnerAt(add){ const d=new Date(); d.setDate(d.getDate()+add); d.setHours(20,0,0,0); return d; }
+/* orari delle scorciatoie: la pizza alle 20; pane e bun a pranzo (12:30) e a cena (19:00), già pronti */
+function dinnerAt(add,h=20,m=0){ const d=new Date(); d.setDate(d.getDate()+add); d.setHours(h,m,0,0); return d; }
+function dinnerSlots(){ return isBread()?[[12,30,`a pranzo`],[19,0,`sera`]]:[[20,0,``]]; }
 /* Lievitazione più lunga possibile con la cena all'orario t, partendo da adesso (null se non c'è tempo). */
 function longestPlanFor(t){
   const keep=state.dinner, mode=state.prepMode===`existing`?`now`:(state.prepMode||`plan`);
@@ -2523,20 +2569,22 @@ function longestPlanFor(t){
     return [`h72`,`h48`,`h24`,`giornata`].find(k=>buildPlan(k,P,cfg,now).ok)||null;
   } finally { state.dinner=keep; }
 }
-/* Scorciatoie per la cena, in ordine di tempo. "Stasera" sparisce quando non c'è più tempo per farcela. */
+/* Scorciatoie per la cena, in ordine di tempo. Quelle di oggi spariscono quando non c'è più tempo per farcela. */
 function dinnerChips(){
-  const sel=new Date(state.dinner).getTime();
-  // Sempre quattro scelte: se stasera non si fa in tempo, si aggiunge un giorno in fondo.
+  const sel=new Date(state.dinner).getTime(), slots=dinnerSlots(), bread=slots.length>1;
+  // Sempre quattro scelte: se oggi non si fa in tempo, si aggiungono quelle dei giorni dopo.
   const items=[];
-  for(let add=0;items.length<4;add++){
-    const d=dinnerAt(add), t=d.getTime(), pk=longestPlanFor(t);
+  for(let add=0;items.length<4;add++) for(const [h,m,part] of slots){
+    if(items.length>=4) break;
+    const d=dinnerAt(add,h,m), t=d.getTime(), pk=t>Date.now()?longestPlanFor(t):null;
     if(add===0&&!pk) continue;
-    const wd=DAYS[d.getDay()];
-    const name=add===0?`Stasera`:add===1?`Domani`:add===2?`Dopodomani`:wd[0].toUpperCase()+wd.slice(1);
-    const day=add===0?`alle 20`:`${wd.slice(0,3)} ${d.getDate()}/${d.getMonth()+1}, alle 20`;
+    const wd=DAYS[d.getDay()], hh=m?`${h}:${pad(m)}`:`${h}`;
+    const dayName=add===1?`Domani`:add===2?`Dopodomani`:wd[0].toUpperCase()+wd.slice(1);
+    const name=!bread?(add===0?`Stasera`:dayName):add===0?(part===`sera`?`Stasera`:`Oggi a pranzo`):`${dayName} ${part}`;
+    const day=add===0?`alle ${hh}`:`${wd.slice(0,3)} ${d.getDate()}/${d.getMonth()+1}, alle ${hh}`;
     const what=!pk?`non c'è tempo`:pk===`giornata`?`in giornata`:`lievitazione fino a ${PLANS[pk].h} ore`;
     const on=sel===t;
-    items.push(`<button type="button" class="dchip${on?` on`:``}" data-dinner="${add}" aria-pressed="${on}"><b>${name}</b><span>${day}</span><span>${what}</span></button>`);
+    items.push(`<button type="button" class="dchip${on?` on`:``}" data-dinner-at="${t}" aria-pressed="${on}"><b>${name}</b><span>${day}</span><span>${what}</span></button>`);
   }
   return `<div class="dchips">${items.join(``)}</div>`;
 }
@@ -2589,20 +2637,50 @@ function pgWhen(){
 function whenAvail(){
   const block=timeBlock(), today=dinnerToday(), mode=state.prepMode||`plan`;
   const bread=isBread(), bun=isBun();
-  const warn=block?`<div class="card warn-time" role="alert"><p><b>${esc(block)}</b></p><p class="hint">Più lievito non basta a recuperare il tempo: sotto le 3 ore l’impasto non matura, sa di lievito e ${bun?`i panini restano pesanti. Sposta più avanti l'ora dei panini.`:bread?`il pane resta pesante. Sposta più avanti l'ora del pane.`:`si stende male. Sposta la cena più avanti.`}</p></div>`:``;
+  const ready=[`plan`,`now`,`from`].includes(mode);
+  const warn=block?`<div class="card warn-time" role="alert"><p><b>${esc(block)}</b></p><p class="hint">Più lievito non basta a recuperare il tempo: sotto le 3 ore l’impasto non matura, sa di lievito e ${bun?`i panini restano pesanti.`:bread?`il pane resta pesante.`:`si stende male.`} ${ready?`Scegli uno degli orari possibili qui sotto, in “Quando può essere pronto?”.`:mode===`day`?`Scegli “Posso iniziare da un’ora precisa” per vedere quando può essere pronto.`:bun?`Sposta più avanti l'ora dei panini.`:bread?`Sposta più avanti l'ora del pane.`:`Sposta la cena più avanti.`}</p></div>`:``;
   const desc={
     plan: today?`${bun?`I panini sono per oggi`:bread?`Il pane è per oggi`:`La pizza è oggi`}: non ci sono giorni prima.`:`Il piano può partire anche uno o più giorni prima${bread?``:` della cena`}.`,
     now: `Si parte al più presto da adesso.`,
+    from: `Dimmi da quando: ti dico quando ${bun?`i panini possono essere pronti`:bread?`il pane può essere pronto`:`può essere pronta la pizza`}.`,
     day: `Inizio dopo una certa ora, il giorno stesso ${bun?`dei panini`:bread?`del pane`:`della pizza`}.`,
     existing: `Biga o poolish già pronti: si riparte dal rimpasto.`
   };
   // Se manca il tempo anche partendo subito, solo un prefermento già pronto può aiutare.
   const noTime=!!timeBlock(`now`), shown=today&&mode===`plan`?`now`:mode;
-  const dis=k=>(k===`plan`&&today)||(noTime&&k!==`existing`&&k!==`day`)||(noTime&&k===`day`&&shown!==`day`);
+  const dis=k=>(k===`plan`&&today)||(noTime&&![`existing`,`day`,`from`].includes(k))||(noTime&&k===`day`&&shown!==`day`);
   return `${warn}<h3 class="sect">Da quando puoi preparare?</h3>
   <div class="opts">${Object.entries(PREP_MODES).filter(([k])=>!bread||k!==`existing`).map(([k,label])=>opt(`prepMode`,k,shown===k,``, `<b>${bread&&k===`day`?`Preparo tutto nel giorno stesso`:label}</b><span class="od">${desc[k]}</span>`,dis(k))).join(``)}</div>
   ${mode===`day`?`<div class="card"><label class="fld" for="prep-clock">Il giorno ${bread?`stesso`:`della pizza`} posso iniziare dalle<input id="prep-clock" type="time" value="${esc(state.prepClock)}"></label><p class="hint">Nessun passaggio di preparazione verrà collocato nei giorni precedenti. Se biga o poolish non entrano nelle ore disponibili, ti spiego il motivo.</p></div>`:``}
+  ${mode===`from`?`<div class="card"><label class="fld" for="prep-from">Posso iniziare<input id="prep-from" type="datetime-local" value="${toLocalInput(new Date(readyStart()))}"></label><p class="hint">Anche oggi per domani: nessun passaggio verrà prima di quest’ora.</p></div>`:``}
+  <label class="check" for="night-ok"><input type="checkbox" id="night-ok"${state.nightOk?` checked`:``}><span><b>Posso fare passaggi anche di notte</b><small>Tra le 23 e le 7. Di solito l’app li evita${bread?``:` e sposta il frigo`}; con questa spunta li accetta e propone anche ore notturne.</small></span></label>
+  ${ready?soonHtml():``}
   <p class="hint">${mode===`existing`?`Nella pagina Lievitazione scegli biga o poolish e registra le quantità che hai già mescolato. Non le ridimensioniamo.`:`L’inizio viene calcolato a ritroso dalla cena, da ora in poi. L’app non avvia automaticamente la preparazione.`}</p>`;
+}
+function nextQuarter(t){ return Math.ceil(t/(15*MIN))*15*MIN; }
+function readyStart(){ const now=Date.now(); return state.prepMode===`from`?Math.max(now,Number(state.prepFrom)||now):now; }
+/* le ore più vicine in cui può essere pronto, partendo da adesso o dall'ora scelta: si sceglie con un tocco */
+function soonHtml(){
+  const now=Date.now(), start=readyStart(), S=STYLES[state.style], bread=!!S.bread, bun=!!S.bun;
+  const opts=readyOptions(state,start,now), sel=new Date(state.dinner).getTime(), cur=params(state);
+  const Cap=x=>x[0].toUpperCase()+x.slice(1);
+  const items=opts.map(o=>{
+    const on=o.t===sel&&(o.n?o.n===state.n&&o.ball===cur.ball:true)&&(!R||R.none||R.pk===o.pk);
+    const sub=o.n?`In giornata, ${o.n} pani da ${g(o.ball)} invece di ${state.n>1?`${state.n} da`:`1 da`} ${g(cur.ball)}: si raffreddano prima`
+      :o.pk===`giornata`?`In giornata, senza frigo`:o.pk===`prefermento`?`Con ${(METHODS[state.method]||``).toLowerCase()}`:`${PLANS[o.pk].name}: ${PLANS[o.pk].short.toLowerCase()}`;
+    return `<button type="button" class="dchip${on?` on`:``}" data-ready-at="${o.t}" data-pk="${o.pk}"${o.n?` data-n="${o.n}" data-ball="${o.ball}"`:``} aria-pressed="${on}"><b>${Cap(when(o.t))}</b><span>${sub}</span></button>`;
+  });
+  const what=bun?`i panini possono essere pronti`:bread?`il pane può essere pronto`:`può essere pronta la prima pizza`;
+  return `<h3 class="sect">Quando può essere pronto?</h3><div class="card" id="ready-opts"><p>Partendo ${start>now+MIN?when(start):`adesso`}, ${what} al più presto:</p>
+    ${items.length?`<div class="dchips">${items.join(``)}</div>`:`<p class="hint">Nessun percorso possibile nei prossimi giorni con queste scelte.</p>`}
+    <p class="hint">Tocca un orario per sceglierlo: lo uso come ${bun?`ora dei panini`:bread?`ora del pane pronto`:`ora della cena`} e calcolo il piano. ${bun?`È l’ora dei panini cotti e intiepiditi.`:bread?`È l’ora del pane già raffreddato, pronto da tagliare${state.nightOk?``:`: tra le 7 e le 23`}.`:`È l’ora della prima pizza in tavola${state.nightOk?``:`, tra le 7 e le 23`}.`}</p></div>`;
+}
+function applyReady(ds){
+  state.dinner=new Date(Number(ds.readyAt));
+  if(ds.n){ state.n=Number(ds.n); state.over.ball=Number(ds.ball); }
+  renderAll(); rememberForm();
+  // il percorso scelto resta fisso, così non ne viene proposto uno più lungo al suo posto
+  if(ds.pk!==`prefermento`) requestChange({k:`plan`,v:ds.pk});
 }
 function tempSay(t){ return t<=17?`Fresco: i tempi si allungano, l'impasto lievita piano.`:t<=23?`Temperatura ideale per la maggior parte degli impasti.`:t<=27?`Caldo: l'impasto corre, userò meno lievito e acqua più fredda.`:`Molto caldo: controlla spesso l'impasto, può lievitare prima del previsto.`; }
 function pgKitchen(){
@@ -2932,6 +3010,7 @@ function switchStyle(v){
   }
 }
 function applyChange(c){
+  if(c.k===`prepMode`&&c.v===`from`&&!(state.prepFrom>Date.now())) state.prepFrom=nextQuarter(Date.now());
   if(c.k===`batch`){ state.batch={...state.batch,[c.o]:c.v}; }
   else if(c.k===`over`){ if(c.v==null) delete state.over[c.o]; else state.over[c.o]=c.v; }
   else if(c.k===`reset`) state.over=state.over.tz!=null?{tz:state.over.tz}:{}; // il tangzhong è una scelta di metodo, non una percentuale
@@ -3055,8 +3134,10 @@ document.addEventListener(`click`,e=>{
   if(e.target.id===`pg-back`){ go(ui.page-1); return; }
   const st=e.target.closest(`[data-step]`);
   if(st){ state.n=clamp(state.n+Number(st.dataset.step),1,30); $(`#n-out`).textContent=state.n; $(`#pizzas`).innerHTML=(isBun()?ART.miniBun():isBread()?ART.miniBread():ART.mini()).repeat(Math.min(state.n,16)); renderResults(); rememberForm(); return; }
-  const dq=e.target.closest(`[data-dinner]`);
-  if(dq){ state.dinner=dinnerAt(Number(dq.dataset.dinner)); $(`#dinner`).value=toLocalInput(state.dinner); renderResults(); rememberForm(); return; }
+  const dq=e.target.closest(`[data-dinner-at]`);
+  if(dq){ state.dinner=new Date(Number(dq.dataset.dinnerAt)); $(`#dinner`).value=toLocalInput(state.dinner); renderResults(); rememberForm(); return; }
+  const ro=e.target.closest(`[data-ready-at]`);
+  if(ro){ applyReady(ro.dataset); return; }
   if(e.target.id===`c-reset`){ requestChange({k:`reset`}); return; }
   const nt=e.target.closest(`[data-note]`); if(nt){ state.editing=nt.dataset.note; renderResults(); const ta=$(`#note-`+state.editing); if(ta) ta.focus(); return; }
   const ns=e.target.closest(`[data-note-save]`); if(ns){ const k=ns.dataset.noteSave; const v=$(`#note-`+k).value.trim(); if(v) state.notes[k]=v; else delete state.notes[k]; state.editing=null; renderResults(); return; }
@@ -3083,6 +3164,8 @@ $(`#page`).addEventListener(`change`,e=>{
   if(id===`room`){ rememberForm(); return; }
   if(el.dataset.batch){ const value=el.dataset.batch===`started`?new Date(el.value).getTime():v; if(!Number.isFinite(value)){ renderAll(); return; } requestChange({k:`batch`,o:el.dataset.batch,v:value}); return; }
   if(id===`prep-clock`){ requestChange({k:`prepClock`,v:el.value}); return; }
+  if(id===`night-ok`){ state.nightOk=el.checked; renderResults(); rememberForm(); return; }
+  if(id===`prep-from`){ const t=new Date(el.value).getTime(); if(Number.isFinite(t)) state.prepFrom=t; renderResults(); rememberForm(); return; }
   if(id===`bw`){ if(v) state.over.ball=isBun()?clamp(Math.round(v),50,200):clamp(Math.round(v),150,1500); renderAll(); return; }
   if(id===`dinner`){ const d=new Date(el.value); if(!isNaN(d)) state.dinner=d; }
   else if(id===`fridge`&&v) state.fridge=clamp(v,1,10);
