@@ -229,6 +229,9 @@ table.cmp-t{width:100%;border-collapse:collapse;font-size:.88rem;min-width:620px
 .hero .lbl{display:block;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;opacity:.85;font-weight:700}
 .hero .big{font-family:var(--font-d);font-size:2rem;font-variant-numeric:tabular-nums;line-height:1.05}
 .hero .meta{font-size:.9rem;opacity:.92}
+.run-banner{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;background:var(--surface);border:1.5px solid var(--accent);border-radius:12px;padding:10px 14px;font-size:.92rem}
+.run-banner.warn{border-color:var(--ember)}
+.run-banner .run-acts{display:flex;gap:12px;align-items:center}
 .linked{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;background:var(--surface);border:1px dashed var(--accent);border-radius:12px;padding:10px 14px;font-size:.92rem}
 .dirty{color:var(--ember);font-weight:700}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow)}
@@ -1545,20 +1548,23 @@ function restoreForm(last){
 
 /* Preparazione in corso (lievita.cook): finché la modalità cucina non è finita il piano si ricalcola
    con l'ora in cui è partita, così dosi, percorso e orari restano quelli dell'impasto già fatto.
-   Vale solo se le impostazioni sono ancora quelle: cambiandole si prepara un piano nuovo. */
+   Vale solo se le impostazioni sono ancora quelle: cambiandole si prepara un piano nuovo.
+   La preparazione non scade da sola: finisce con "Ho finito" o quando l'utente la interrompe. */
 const COOK_STORE=`lievita.cook`;
-function cookCfg(){ return {...prefConfig(state),style:state.style,flour:state.flour,oven:state.oven,plan:state.plan,yeast:state.yeast,mixer:state.mixer,n:state.n,tw:state.tw,th:state.th,tn:state.tn,room:state.room,fridge:state.fridge,over:clone(state.over),dinner:+state.dinner}; }
+function cookCfg(){ return {...prefConfig(state),style:state.style,flour:state.flour,oven:state.oven,plan:state.plan,yeast:state.yeast,mixer:state.mixer,n:state.n,tw:state.tw,th:state.th,tn:state.tn,room:state.room,fridge:state.fridge,over:clone(state.over),dinner:+state.dinner,nightOk:!!state.nightOk}; }
 function savedCook(){
   let s=null; try{ s=JSON.parse(localStorage.getItem(COOK_STORE)||`null`); }catch(e){}
-  if(!s||!s.cfg||!Number.isFinite(s.t0)) return null;
-  if(Number.isFinite(s.until)&&Date.now()>s.until){ try{ localStorage.removeItem(COOK_STORE); }catch(e){} return null; }
-  return s;
+  return s&&s.cfg&&Number.isFinite(s.t0)?s:null;
 }
-// conta solo se almeno un passaggio è fatto: aprire la modalità cucina per guardare non blocca il piano
-function activeCook(){ const s=savedCook(); return s&&Array.isArray(s.done)&&s.done.some(Boolean)&&JSON.stringify(s.cfg)===JSON.stringify(cookCfg())?s:null; }
+/* iniziata: un passaggio fatto, oppure "Iniziamo", un timer, una risposta o la modalità cucina aperta
+   quando il primo passaggio era già da fare. Aprirla prima solo per guardare non blocca il piano. */
+function cookBusy(s){ return !!s&&(Array.isArray(s.done)&&s.done.some(Boolean)||Number.isFinite(s.started)); }
+// le preparazioni salvate prima della spunta "anche di notte" non la contengono
+function sameCookCfg(s){ const c=cookCfg(); if(!(`nightOk` in s.cfg)) delete c.nightOk; return JSON.stringify(s.cfg)===JSON.stringify(c); }
+function activeCook(){ const s=savedCook(); return cookBusy(s)&&sameCookCfg(s)?s:null; }
 function planNow(){ const s=activeCook(); return s?s.t0:Date.now(); }
 function resumeCook(){
-  const s=savedCook(); if(!s||!Array.isArray(s.done)||!s.done.some(Boolean)) return false;
+  const s=savedCook(); if(!cookBusy(s)) return false;
   Object.assign(state,clone(s.cfg),{dinner:new Date(s.cfg.dinner)});
   ui.page=LAST; ui.reached=LAST; ui.reviewed=true;
   return true;
@@ -2869,8 +2875,16 @@ function renderNav(){
   if(p===1&&timeBlock()) next=`<button type="button" class="btn primary" id="pg-next" disabled title="Sposta la cena più avanti">Avanti</button>`;
   else if(p<LAST-1) next=`<button type="button" class="btn primary" id="pg-next">Avanti</button>`;
   else if(p===LAST-1) next=`<button type="button" class="btn primary" id="pg-next">Vedi il mio piano</button>`;
-  else next=`<button type="button" class="btn primary" ${R.none?`disabled`:``} id="go-cook">${activeCook()?`Riprendi la modalità cucina`:`Avvia la modalità cucina`}</button>`;
+  else next=`<button type="button" class="btn primary" ${R.none?`disabled`:``} id="go-cook">${cookBtnLabel()}</button>`;
   $(`#pnav`).innerHTML=`<div class="pnav-in">${back}<span class="spacer"></span>${next}</div>`;
+}
+function cookBtnLabel(){ const r=cookRun(); return r&&r.here?`Riprendi la modalità cucina`:`Avvia la modalità cucina`; }
+/* preparazione in corso: si riprende o si interrompe solo per scelta dell'utente */
+function runBanner(){
+  const r=cookRun(); if(!r) return ``;
+  return r.here
+    ? `<div class="run-banner"><span><b>Preparazione in corso</b> · ${esc(cookRunLabel(r.s))}</span><button type="button" class="linkbtn" id="run-end">Interrompi</button></div>`
+    : `<div class="run-banner warn"><span><b>Hai una preparazione in corso</b> · ${esc(cookRunLabel(r.s))}, con impostazioni diverse da questo piano.</span><span class="run-acts"><button type="button" class="btn small primary" id="run-resume">Riprendila</button><button type="button" class="linkbtn" id="run-end">Interrompi</button></span></div>`;
 }
 function renderLive(){
   const el=$(`#live`);
@@ -2960,8 +2974,9 @@ function renderOut(){
         <div class="art-h">${ART.style(state.style,state.oven)}</div>
         <div class="meta">${qty} · ${OVENS[state.oven].name}</div>
       </div>
+      ${runBanner()}
       <div class="actions">
-        <button type="button" class="btn primary" id="go-cook2">${activeCook()?`Riprendi la modalità cucina`:`Avvia la modalità cucina`}</button>
+        <button type="button" class="btn primary" id="go-cook2">${cookBtnLabel()}</button>
         <button type="button" class="btn" id="go-save">${state.link?`Salva una nuova versione`:`Salva come mia ricetta`}</button>
         <button type="button" class="btn" id="go-cal">Aggiungi al calendario</button>
       </div>
@@ -3144,7 +3159,9 @@ document.addEventListener(`click`,e=>{
   const nd=e.target.closest(`[data-note-del]`); if(nd){ delete state.notes[nd.dataset.noteDel]; state.editing=null; renderResults(); return; }
   if(e.target.closest(`[data-note-cancel]`)){ state.editing=null; renderResults(); return; }
   if(e.target.id===`unlink`){ state.link=null; renderResults(); return; }
-  if(e.target.id===`go-cook`||e.target.id===`go-cook2`){ if(R&&!R.none) openCook({ready:true}); return; }
+  if(e.target.id===`go-cook`||e.target.id===`go-cook2`){ if(R&&!R.none) goCook(); return; }
+  if(e.target.id===`run-end`){ askEndCook(); return; }
+  if(e.target.id===`run-resume`){ backToRun(); return; }
   if(e.target.id===`go-save`){ openSave(); return; }
   if(e.target.id===`go-cal`){ openCal(); return; }
 });
@@ -3251,7 +3268,7 @@ function openCal(){
 function download(name,text,type){ try{ const b=new Blob([text],{type}); const a=document.createElement(`a`); a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000); }catch(e){} }
 
 /* ---------- modalità cucina ---------- */
-const cook={i:0,steps:[],timerEnd:null,timerId:null,wake:null,rating:0,os:[],oe:[],arr:[],done:[],sig:``,gates:{},ck:{},adj:{},view:``};
+const cook={i:0,steps:[],timer:null,started:null,timerId:null,wake:null,rating:0,os:[],oe:[],arr:[],done:[],sig:``,gates:{},ck:{},adj:{},view:``};
 async function requestWake(){ try{ if(`wakeLock` in navigator) cook.wake=await navigator.wakeLock.request(`screen`); }catch(e){} }
 document.addEventListener(`visibilitychange`,()=>{ if(!$(`#cook`).hidden&&document.visibilityState===`visible`){ requestWake(); renderCookLive(); } });
 /* Ritardi: ogni passaggio ha uno spostamento di inizio (os) e di fine (oe) in ms rispetto al piano.
@@ -3290,7 +3307,29 @@ function cookProjection(now){
 function cookSig(steps){ return steps.map(s=>s.key+`@`+s.start).join(`|`); }
 // con il piano salvo anche impostazioni e ora del calcolo (t0): riaprendo l'app si ritrova lo stesso piano (vedi planNow)
 function saveCook(){ try{ localStorage.setItem(COOK_KEY,JSON.stringify({sig:cook.sig,i:cook.i,os:cook.os,oe:cook.oe,arr:cook.arr,done:cook.done,ck:cook.ck,adj:cook.adj,
-  t0:cook.t0,cfg:cook.cfg,until:cook.steps.length?cook.steps[cook.steps.length-1].end+24*H:0})); }catch(e){} }
+  t0:cook.t0,cfg:cook.cfg,started:cook.started,timer:cook.timer})); }catch(e){} }
+function markStarted(){ if(!Number.isFinite(cook.started)) cook.started=Date.now(); }
+/* la preparazione salvata e se è quella del piano sullo schermo (stesse impostazioni e stessi passaggi) */
+function cookRun(){ const s=savedCook(); if(!cookBusy(s)) return null; return {s,here:!!(R&&!R.none&&sameCookCfg(s)&&s.sig===cookSig(R.steps))}; }
+function cookRunLabel(s){ const n=(s.sig||``).split(`|`).filter(Boolean).length, st=STYLES[(s.cfg||{}).style], i=s.i||0;
+  return `${st?st.name:`Ricetta`}${n?`, ${i>=n?`tutti i passaggi fatti`:`passaggio ${i+1} di ${n}`}`:``}`; }
+function endCookRun(){ try{ localStorage.removeItem(COOK_KEY); }catch(e){} stopTimer(); Object.assign(cook,{started:null,timer:null,done:[],arr:[],ck:{},adj:{}}); }
+function askEndCook(){
+  const r=cookRun(); if(!r) return;
+  modal(`<h3>Interrompere la preparazione?</h3><p>Hai una preparazione in corso: <b>${esc(cookRunLabel(r.s))}</b>. Interrompendola perdi i passaggi segnati come fatti, i timer e le risposte ai controlli. Le ricette salvate restano.</p>
+    <div class="actions"><button type="button" class="btn danger" id="end-run">Sì, interrompi</button><button type="button" class="btn ghost" data-close>No, continua</button></div>`);
+  $(`#end-run`).onclick=()=>{ endCookRun(); closeModal(); renderAll(); };
+}
+/* avviare un piano diverso con una preparazione in corso: prima si chiede */
+function goCook(){
+  const r=cookRun();
+  if(!r||r.here){ openCook({ready:true}); return; }
+  modal(`<h3>Hai una preparazione in corso</h3><p><b>${esc(cookRunLabel(r.s))}</b>, con impostazioni diverse da quelle sullo schermo. Se avvii questo piano, quella preparazione si perde.</p>
+    <div class="actions"><button type="button" class="btn primary" id="run-back">Riprendi quella in corso</button><button type="button" class="btn" id="run-new">Avvia il nuovo piano</button><button type="button" class="btn ghost" data-close>Annulla</button></div>`);
+  $(`#run-back`).onclick=()=>{ closeModal(); backToRun(); };
+  $(`#run-new`).onclick=()=>{ endCookRun(); closeModal(); renderAll(); openCook({ready:true}); };
+}
+function backToRun(){ if(!resumeCook()) return; renderAll(); const r=cookRun(); if(r&&r.here) openCook(); }
 function arrive(){ if(cook.i<cook.steps.length&&!cook.arr[cook.i]) cook.arr[cook.i]=Date.now(); saveCook(); }
 function commitStep(){
   const i=cook.i, now=Date.now(); if(cook.done[i]) return;
@@ -3303,18 +3342,21 @@ function openCook(opts){
   cook.gates=planGates(cook.steps,R.pl);
   let saved=null; try{ saved=JSON.parse(localStorage.getItem(COOK_KEY)||`null`); }catch(e){}
   if(saved&&saved.sig===cook.sig&&Array.isArray(saved.os)&&saved.os.length===n){
-    Object.assign(cook,{i:Math.min(saved.i,n),os:saved.os,oe:saved.oe,arr:saved.arr||[],done:saved.done||[],ck:saved.ck||{},adj:saved.adj||{},t0:Number.isFinite(saved.t0)?saved.t0:R.now});
+    Object.assign(cook,{i:Math.min(saved.i,n),os:saved.os,oe:saved.oe,arr:saved.arr||[],done:saved.done||[],ck:saved.ck||{},adj:saved.adj||{},t0:Number.isFinite(saved.t0)?saved.t0:R.now,
+      started:Number.isFinite(saved.started)?saved.started:null,timer:saved.timer&&Number.isFinite(saved.timer.end)?saved.timer:null});
   } else {
     cook.t0=R.now;
     const i=cook.steps.findIndex(s=>s.end>now); cook.i=i<0?0:i;
-    cook.os=Array(n).fill(0); cook.oe=Array(n).fill(0); cook.arr=[]; cook.done=[]; cook.ck={}; cook.adj={};
+    cook.os=Array(n).fill(0); cook.oe=Array(n).fill(0); cook.arr=[]; cook.done=[]; cook.ck={}; cook.adj={}; cook.started=null; cook.timer=null;
   }
   cook.rating=0;
   // dal pulsante del piano, prima del primo passaggio: la lista "Prima di partire"
   cook.ready=!!(opts&&opts.ready)&&!cook.done.some(Boolean)&&!readyGet().go;
+  // aperta quando il passaggio è già da fare: la preparazione è partita e un ricaricamento non la perde
+  if(!cook.ready&&cook.steps[cook.i]&&cook.steps[cook.i].start<=now+5*MIN) markStarted();
   $(`#cook`).hidden=false; document.body.classList.add(`noscroll`); requestWake(); arrive(); renderCook();
 }
-function closeCook(){ if(cook.i>=cook.steps.length){ try{ localStorage.removeItem(COOK_KEY); }catch(e){} } stopTimer(); $(`#cook`).hidden=true; document.body.classList.remove(`noscroll`); try{ cook.wake&&cook.wake.release(); }catch(e){} cook.wake=null; renderResults(); }
+function closeCook(){ if(cook.i>=cook.steps.length) endCookRun(); stopTimer(); $(`#cook`).hidden=true; document.body.classList.remove(`noscroll`); try{ cook.wake&&cook.wake.release(); }catch(e){} cook.wake=null; renderResults(); }
 function shortTime(t){ return dayLabel(t)===`oggi`?hm(t):dayLabel(t)+` `+hm(t); }
 const ICO={
   clock:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`,
@@ -3637,6 +3679,7 @@ function ckCtx(i,mode){
 }
 /* risponde al controllo: riparte dagli orari di prima, applica la decisione e registra cosa è cambiato */
 function ckAnswer(i,mode,opt,extra,again){
+  markStarted();
   const rec=ckRec(i,mode,true), now=Date.now(), src=ckKey(i,mode), x=extra||{};
   if(rec.base){ cook.os=rec.base.os.slice(); cook.oe=rec.base.oe.slice(); }
   else rec.base={os:cook.os.slice(),oe:cook.oe.slice()};
@@ -3739,8 +3782,9 @@ document.addEventListener(`click`,e=>{
   renderCook();
 });
 
-function cookNext(){ stopTimer(); ckSeal(cook.i); commitStep(); cook.i++; arrive(); renderCook(); const m=$(`.ck-main`); if(m) m.scrollTop=0; }
-function stopTimer(){ clearInterval(cook.timerId); cook.timerId=null; cook.timerEnd=null; }
+function cookNext(){ stopTimer(); cook.timer=null; ckSeal(cook.i); commitStep(); cook.i++; arrive(); renderCook(); const m=$(`.ck-main`); if(m) m.scrollTop=0; }
+// ferma solo il conteggio sullo schermo: il timer del passaggio (cook.timer) resta salvato finché non lo fermi
+function stopTimer(){ clearInterval(cook.timerId); cook.timerId=null; }
 function fmtClock(ms){ const s=Math.max(0,Math.round(ms/1000)); return pad(Math.floor(s/60))+`:`+pad(s%60); }
 let actx=null;
 function beep(){ try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); [0,.45,.9].forEach(dt=>{ const o=actx.createOscillator(),gn=actx.createGain(); o.frequency.value=880; o.connect(gn); gn.connect(actx.destination); const t0=actx.currentTime+dt; gn.gain.setValueAtTime(.001,t0); gn.gain.exponentialRampToValueAtTime(.3,t0+.02); gn.gain.exponentialRampToValueAtTime(.001,t0+.35); o.start(t0); o.stop(t0+.4); }); }catch(e){} try{ navigator.vibrate&&navigator.vibrate([300,150,300,150,300]); }catch(e){} }
@@ -3755,7 +3799,7 @@ function renderReady(){
     </div></div>
     <div class="ck-nav"><button type="button" class="btn primary" id="rd-go">${readyGoLabel()}</button></div>`;
   $(`#ck-close`).onclick=closeCook;
-  $(`#rd-go`).onclick=()=>{ const st=readyGet(); st.go=true; readySet(st); cook.ready=false; renderCook(); const m=$(`.ck-main`); if(m) m.scrollTop=0; };
+  $(`#rd-go`).onclick=()=>{ const st=readyGet(); st.go=true; readySet(st); cook.ready=false; markStarted(); saveCook(); renderCook(); const m=$(`.ck-main`); if(m) m.scrollTop=0; };
 }
 function renderCook(){
   const c=$(`#cook`), n=cook.steps.length;
@@ -3784,7 +3828,7 @@ function renderCook(){
     </div></div>
     <div class="ck-nav"><button type="button" class="btn" id="ck-prev" ${cook.i===0?`disabled`:``}>Indietro</button><button type="button" class="btn primary" id="ck-next">${cook.i===n-1?`Ho finito`:answered?`Avanti`:`Fatto, avanti`}</button></div>`;
   $(`#ck-close`).onclick=closeCook;
-  $(`#ck-prev`).onclick=()=>{ stopTimer(); ckSeal(cook.i); cook.i--; saveCook(); renderCook(); };
+  $(`#ck-prev`).onclick=()=>{ stopTimer(); cook.timer=null; ckSeal(cook.i); cook.i--; saveCook(); renderCook(); };
   $(`#ck-next`).onclick=()=>{
     // passaggio con un controllo alla fine: prima la domanda, poi si va avanti
     if(G&&G.after&&(!ra||ra.st!==`ok`)){ stopTimer(); ckRec(cook.i,`after`,true).st=`ask`; saveCook(); renderCook(); const m=$(`.ck-main`); if(m) m.scrollTop=0; return; }
@@ -3793,12 +3837,22 @@ function renderCook(){
   if(s.timer){
     $(`#t-start`).onclick=()=>{
       try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); actx.resume&&actx.resume(); }catch(e){}
-      cook.timerEnd=Date.now()+s.timer*60e3; $(`#t-start`).hidden=true; $(`#t-stop`).hidden=false; $(`#timer`).classList.remove(`done`);
-      clearInterval(cook.timerId);
-      cook.timerId=setInterval(()=>{ const left=cook.timerEnd-Date.now(); const cl=$(`#clock`); if(!cl){ stopTimer(); return; } cl.textContent=fmtClock(left); if(left<=0){ stopTimer(); cl.textContent=`Tempo!`; $(`#timer`).classList.add(`done`); $(`#t-start`).hidden=false; $(`#t-start`).textContent=`Riavvia`; $(`#t-stop`).hidden=true; beep(); } },250);
+      markStarted(); cook.timer={i:cook.i,end:Date.now()+s.timer*60e3}; saveCook(); runStepTimer();
     };
-    $(`#t-stop`).onclick=()=>{ stopTimer(); $(`#clock`).textContent=fmtClock(s.timer*60e3); $(`#t-start`).hidden=false; $(`#t-stop`).hidden=true; };
+    $(`#t-stop`).onclick=()=>{ stopTimer(); cook.timer=null; saveCook(); $(`#clock`).textContent=fmtClock(s.timer*60e3); $(`#t-start`).hidden=false; $(`#t-stop`).hidden=true; };
+    // timer avviato prima di uscire o di ricaricare la pagina: riprende da dove era
+    if(cook.timer&&cook.timer.i===cook.i) runStepTimer();
   }
+}
+function runStepTimer(){
+  const tick=()=>{
+    const cl=$(`#clock`), t=cook.timer; if(!cl||!t){ stopTimer(); return; }
+    const left=t.end-Date.now(); if(left>0){ cl.textContent=fmtClock(left); return; }
+    stopTimer(); cl.textContent=`Tempo!`; $(`#timer`).classList.add(`done`); $(`#t-start`).hidden=false; $(`#t-start`).textContent=`Riavvia`; $(`#t-stop`).hidden=true;
+    if(!t.rang){ t.rang=true; saveCook(); beep(); }
+  };
+  $(`#t-start`).hidden=true; $(`#t-stop`).hidden=false; $(`#timer`).classList.remove(`done`);
+  clearInterval(cook.timerId); cook.timerId=setInterval(tick,250); tick();
 }
 function renderRate(){
   const c=$(`#cook`);
@@ -3914,7 +3968,7 @@ if(mem.last) restoreForm(mem.last);
 // preparazione in corso: si riparte dalle stesse impostazioni e si riapre la modalità cucina dov'era
 const resumed=resumeCook();
 renderAll(); renderRecCount();
-if(resumed&&R&&!R.none&&activeCook()) openCook();
+if(resumed){ const r=cookRun(); if(r&&r.here) openCook(); }
 if(location.hash===`#ricette`) showTab(`rec`);
 setInterval(()=>{ if(!$(`#view-new`).hidden&&$(`#cook`).hidden&&$(`#modal`).hidden&&!state.editing&&!document.activeElement.matches(`input,textarea`)) renderResults(); },60000);
 // Uso offline (sw.js). Solo su http(s): aperta come file locale o dentro un'anteprima isolata la registrazione non riesce e l'app funziona lo stesso.
