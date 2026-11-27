@@ -250,6 +250,20 @@ table.ing{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 .ing tr:last-child td{border-bottom:0}
 .ing small{color:var(--muted)}
 .why{font-size:.85rem;color:var(--muted);margin:10px 0 0}
+.ready summary{list-style:none;cursor:pointer}
+.ready summary::-webkit-details-marker{display:none}
+.ready summary h3{margin-bottom:0}
+.ready[open] summary h3{margin-bottom:10px}
+.ready h3 small{font-family:var(--font-b,inherit);font-size:.8rem;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:99px;padding:2px 10px}
+.ready h4{font-size:.95rem;margin:16px 0 4px;color:var(--muted)}
+.checks{list-style:none;margin:0;padding:0}
+.checks li{border-bottom:1px solid var(--line)}
+.checks li:last-child{border-bottom:0}
+.checks label{display:flex;gap:10px;align-items:flex-start;padding:9px 0;cursor:pointer;font-size:.95rem}
+.checks input{width:20px;height:20px;margin:1px 0 0;flex:none;accent-color:var(--accent)}
+.checks em{font-style:normal;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.checks small{display:block;color:var(--muted);font-size:.84rem;margin-top:1px}
+.checks input:checked+span b,.checks input:checked+span em{color:var(--muted);text-decoration:line-through}
 .alerts{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
 .alerts li{border-left:4px solid var(--accent);background:var(--surface);border-radius:0 10px 10px 0;padding:10px 12px;font-size:.92rem}
 .alerts li.warn{border-color:var(--ember);background:var(--ember-soft)}
@@ -1538,6 +1552,134 @@ function compute(){
   return {P,plans,rec,pk,pl,I,steps,W,now};
 }
 
+/* ---------- prima di partire ----------
+   Tutto quello che serve oltre alle dosi dell'impasto: ingredienti da avere in casa (con quanto comprarne),
+   attrezzatura e controlli da fare prima di iniziare. Condimento indicativo, per una margherita.
+   Ogni voce ha un id fisso: le spunte si salvano in lievita.ready. */
+function readyList(r){
+  const {P,pl,I,steps}=r, S=P.S, teglia=!!S.teglia, bread=!!S.bread, bun=!!S.bun, oven=state.oven, shape=S.shape;
+  const n=I.n, many=n>1, buy=[], tools=[], checks=[];
+  const add=(a,id,name,qty=``,note=``)=>a.push({id,name,qty,note});
+  const r10=x=>Math.max(10,Math.round(x/10)*10);
+  const step=k=>steps.find(s=>s.key===k), at=t=>`${dayLabel(t)} alle ${hm(t)}`;
+  const actual=pl.pref&&pl.pref.actual;
+  // farina: con un prefermento già fatto si pesa solo quella del rimpasto
+  const fl=actual?I.final.flour:I.flour, fname=flourInfo(state.flour,catOf(state.style)).name;
+  const pack=x=>{ const k=Math.ceil(x/1000); return k<=1?`un pacco da 1 kg basta`:`${k} pacchi da 1 kg`; };
+  if(state.flour===`mix`){
+    add(buy,`farina`,bread?`Farina 0 o per pizza`:`Farina per pizza`,g(fl*.7),pack(fl*.7+50));
+    add(buy,`manitoba`,`Farina Manitoba`,g(fl*.3),pack(fl*.3));
+  } else add(buy,`farina`,fname,g(fl),`${pack(fl+(bread?100:50))}, contando lo spolvero`);
+  const liq=actual?I.final.water:I.water;
+  if(bun) add(buy,`latte`,S.fat===`olio`?`Latte (anche vegetale, o metà acqua)`:`Latte intero`,g(liq),`un litro basta${liq>900?` appena: prendine due`:``}${I.tz?`; comprende quello del tangzhong`:``}`);
+  else add(buy,`acqua`,`Acqua`,g(liq),`del rubinetto va bene`);
+  add(buy,`sale`,`Sale fino`,g(I.salt));
+  const yTot=actual?I.final.yeast:I.yeast;
+  if(yTot>0){
+    if(state.yeast===`secco`) add(buy,`lievito`,`Lievito di birra secco`,gy(yTot),`${Math.max(1,Math.ceil(yTot/7))} ${yTot>7?`bustine`:`bustina`} da 7 g; controlla la scadenza`);
+    else add(buy,`lievito`,`Lievito di birra fresco`,gy(yTot),`${Math.max(1,Math.ceil(yTot/25))} ${yTot>25?`cubetti`:`cubetto`} da 25 g, compatto e color nocciola; controlla la scadenza`);
+  }
+  if(I.egg>0){ const e=Math.ceil(I.egg/50)+(S.fat===`olio`?0:1); add(buy,`uova`,`Uova`,`${e}`,`${g(I.egg)} nell'impasto${S.fat===`olio`?``:`, più uno per spennellare`}`); }
+  else if(bun&&S.fat!==`olio`) add(buy,`uova`,`Uova`,`1`,`per spennellare`);
+  if(I.potato>0) add(buy,`patate`,`Patate farinose`,g(r10(I.potato*1.15)),`da lessare e schiacciare: ne servono ${g(I.potato)}`);
+  if(I.oil>0||teglia||!bread){
+    const nm=bun?(S.fat===`olio`?`Olio di semi o extravergine`:`Burro`):S.soft?`Olio o burro`:`Olio extravergine`;
+    const extra=teglia?`più 1–2 cucchiai per ${state.tn>1?`ogni teglia`:`la teglia`} e un filo per condire`:bun?(S.fat===`olio`?`più un po' per la teglia`:`morbido, più una noce per tostare i panini`):bread?``:`un filo per condire e per ungere i contenitori`;
+    add(buy,`olio`,nm,I.oil>0?g(I.oil):`qualche cucchiaio`,extra);
+  }
+  if(I.sugar>0) add(buy,`zucchero`,bun?`Zucchero`:`Zucchero o miele`,g(I.sugar));
+  // oltre all'impasto
+  if(!bread){
+    const k=teglia?state.tw*state.th*state.tn/1200:n, rom=state.style===`romana`;
+    add(buy,`pomodoro`,`Pomodori pelati o passata`,g(r10(k*(teglia?250:rom?70:80))),teglia?`per una margherita in teglia`:many?`per ${n} margherite`:`per una margherita`);
+    add(buy,`mozzarella`,`Fiordilatte (mozzarella)`,g(r10(k*(teglia?250:rom?80:100))),`ben sgocciolata`);
+    add(buy,`basilico`,`Basilico fresco`,``,`qualche foglia`);
+    if(!teglia&&!rom) add(buy,`semola`,`Semola rimacinata per stendere`,`circa ${g(r10(40+n*15))}`,`anche farina normale`);
+  } else if(bun){
+    if(S.fat===`olio`) add(buy,`spennellare`,`Latte per spennellare`,`2 cucchiai`);
+    add(buy,`sesamo`,`Semi di sesamo`,`facoltativi`,`per la superficie`);
+  } else {
+    if(shape===`mafalda`) add(buy,`sesamo`,`Semi di sesamo`,g(r10(n*25)),`per ricoprire ${many?`le mafalde`:`la mafalda`}`);
+    if(shape===`boule`) add(buy,`spolvero`,`Farina di riso o semola`,`un po'`,`per il cestino: non si attacca`);
+    else if(shape===`ciabatta`||shape===`filone`) add(buy,`spolvero`,`Farina per spolverare`,`abbondante`,`per il piano e il canovaccio`);
+    else if(S.flour===`semola`) add(buy,`spolvero`,`Semola per spolverare`,`un po'`,`per il piano e il canovaccio`);
+    if(shape===`stampo`&&!(I.oil>0)) add(buy,`ungere`,`Olio o burro`,`un cucchiaio`,`per ungere lo stampo`);
+    if(shape===`stampo`&&S.soft) add(buy,`spennellare`,`Latte per spennellare`,`2 cucchiai`,`facoltativo`);
+  }
+
+  // attrezzatura
+  const small=pl.pref?Math.min(...[I.pref.yeast,I.final.yeast].filter(y=>y>0))<(state.yeast===`secco`?.7:2):!bun&&!!yeastSol(I.yeast,I.water);
+  add(tools,`bilancia`,`Bilancia digitale`,``,small?(pl.pref?`per il lievito serve una bilancia da 0,01 g`:`per il lievito una da 0,01 g aiuta; senza, nel passaggio Impasta ti spieghiamo come scioglierlo e dosarlo`):`al grammo`);
+  add(tools,`termometro`,`Termometro da cucina`,``,`consigliato: per ${bun?`il latte`:`l'acqua`}${pl.pref?``:` a circa ${I.waterT} °C`}, il frigo e l'impasto`);
+  add(tools,`ciotola`,state.mixer?`Impastatrice con il gancio`:`Ciotola grande`,``,state.mixer?``:`per impastare`);
+  if(pl.pref&&!actual) add(tools,`barattolo`,`Ciotola o contenitore con coperchio per ${pl.pref.method===`biga`?`la biga`:`il poolish`}`,``,`deve poter triplicare`);
+  if(I.tz) add(tools,`pentolino`,`Pentolino e frusta`,``,`per il tangzhong`);
+  const lt=Math.max(1,Math.ceil(I.total*3/1000));
+  add(tools,`contenitore`,`Contenitore con coperchio da almeno ${lt} ${lt>1?`litri`:`litro`}`,``,`per la prima lievitazione; va bene anche una ciotola con la pellicola`);
+  if(!bread&&!teglia) add(tools,`cassetta`,`Contenitori con coperchio per ${n} ${many?`panetti`:`panetto`}`,``,`o una cassetta per pizza, o piatti coperti con la pellicola`);
+  add(tools,`pellicola`,`Pellicola per alimenti`,``,`o coperchi`);
+  add(tools,`tarocco`,`Tarocco (spatola di plastica)`,``,`per staccare e dividere l'impasto`);
+  if(teglia) add(tools,`teglia`,`${state.tn>1?`${state.tn} teglie`:`Teglia`} ${state.tw}×${state.th} cm`,``,`in ferro blu o alluminio`);
+  if(!bread&&state.style===`romana`) add(tools,`mattarello`,`Mattarello`);
+  if(!bread&&!teglia){
+    if(oven===`casa_pietra`) add(tools,`pietra`,`Pietra refrattaria`);
+    if(oven===`casa_acciaio`) add(tools,`acciaio`,`Piastra d'acciaio`);
+    if(oven===`casa_teglia`) add(tools,`teglia`,`Teglia da forno e carta forno`,``,`una pizza per teglia`);
+    else add(tools,`pala`,`Pala per pizza`,``,oven===`casa_pietra`||oven===`casa_acciaio`?`o una teglia capovolta senza bordi`:``);
+  }
+  if(oven===`portatile`) add(tools,`gas`,`Bombola del gas carica`,``,`controlla che basti per preriscaldo e cotture`);
+  if(oven===`legna`) add(tools,`legna`,`Legna secca`,``,`faggio, quercia o ulivo, per almeno 2 ore di fuoco`);
+  if(oven===`legna`&&!bread) add(tools,`palino`,`Palino per girare la pizza`,``,`facoltativo`);
+  if([`portatile`,`legna`].includes(oven)) add(tools,`infrarossi`,`Termometro a infrarossi`,``,`facoltativo, per misurare la platea`);
+  if(bread){
+    if(bun) add(tools,`teglia`,`Teglia e carta forno`,``,pl.bk.batches>1?`${pl.bk.batches} infornate: con una sola teglia cuoci a turni`:`fino a ${pl.bk.cap} panini per teglia`);
+    if(bun||(shape===`stampo`&&S.soft)) add(tools,`pennello`,`Pennello da cucina`,``,`per spennellare`);
+    if(shape===`boule`) add(tools,`cestino`,`${many?`${n} cestini`:`Cestino`} da lievitazione`,``,many?`o ciotole foderate con un canovaccio`:`o una ciotola foderata con un canovaccio`);
+    if([`filone`,`ciabatta`,`accavallato`].includes(shape)) add(tools,`canovaccio`,`Canovaccio di cotone`,``,`pulito, senza profumo di detersivo`);
+    if([`filone`,`ciabatta`,`mafalda`].includes(shape)) add(tools,`teglia`,`Teglia e carta forno`);
+    if(shape===`stampo`) add(tools,`stampo`,`${many?`${n} stampi`:`Stampo`} da plumcake`,``,`25–30 cm`);
+    if(shape===`mafalda`) add(tools,`spruzzino`,`Spruzzino o pennello`,``,`per bagnare la superficie prima del sesamo`);
+    if(shape===`boule`||shape===`filone`||(shape===`stampo`&&!S.soft)) add(tools,`lametta`,`Lametta o coltello molto affilato`,``,`per incidere`);
+    if(oven===`pentola`) add(tools,`pentola`,`Pentola di ghisa con coperchio`,``,`adatta al forno a 250 °C, pomelli compresi; più carta forno che regga 250 °C`);
+    else if(S.steam&&oven!==`legna`) add(tools,`vapore`,`Una teglia da mettere sul fondo del forno`,``,`per l'acqua del vapore`);
+    if(!bun&&(oven===`casa_pietra`||oven===`casa_acciaio`)) add(tools,`pala`,`Pala o teglia capovolta`,``,`per far scivolare il pane sulla ${oven===`casa_pietra`?`pietra`:`piastra`}`);
+    add(tools,`griglia`,`Griglia per raffreddare`,``,`va bene quella del forno`);
+  }
+  add(tools,`presine`,`Presine o guanti da forno`);
+
+  // controlli
+  const hands=steps.filter(s=>s.hands);
+  if(hands.length) checks.push({id:`orari`,name:`Leggi tutto il piano`,qty:``,note:`ci sono ${hands.length} passaggi da fare, da ${at(hands[0].start)} a ${at(hands[hands.length-1].start)}: controlla di essere in casa a quegli orari`});
+  const fr=step(`frigo`)||step(`bigafrigo`);
+  if(fr){ const fs=steps.filter(s=>s.key===`frigo`||s.key===`bigafrigo`), a=fs[0].start, b=fs[fs.length-1].end;
+    const what=step(`bigafrigo`)&&!step(`frigo`)?(`la biga`):!bread&&!teglia&&steps.findIndex(s=>s.key===`staglio`)<steps.findIndex(s=>s.key===`frigo`)?`${n} ${many?`panetti`:`panetto`}`:`il contenitore`;
+    checks.push({id:`frigo`,name:`Fai spazio in frigo`,qty:``,note:`per ${what}, su un ripiano centrale, da ${at(a)} a ${at(b)}. Misura che sia a ${state.fridge} °C`}); }
+  if(pl.pref&&!actual&&Math.abs(pl.pref.temp-state.room)>=2&&!pl.pref.warm) checks.push({id:`posto`,name:`Trova un posto a ${pl.pref.temp} °C`,qty:``,note:`per ${pl.pref.method===`biga`?`la biga`:`il poolish`}: cantina, ripostiglio o una stanza non riscaldata. Misuralo con il termometro`});
+  const pre=step(`preriscaldo`);
+  if(pre) checks.push({id:`forno`,name:oven===`legna`?`Il forno a legna`:`Il forno libero`,qty:``,note:oven===`legna`?`pulito dalla cenere e con la legna pronta: si accende ${at(pre.start)}`:`si accende ${at(pre.start)}: niente altro da cuocere a quell'ora`});
+  if(!bread){ const st=step(`stesura`); if(st) checks.push({id:`scola`,name:`La mozzarella`,qty:``,note:`tagliala e mettila a scolare verso le ${hm(st.start-2*H)}, due ore prima di stendere`}); }
+  if(bun&&I.egg>0&&!I.coldExtras){ const im=step(`impasto`); if(im) checks.push({id:`uova`,name:`Uova${S.fat===`olio`?``:` e burro`} fuori dal frigo`,qty:``,note:`circa un'ora prima di impastare, verso le ${hm(im.start-H)}`}); }
+  if(bun&&I.coldExtras) checks.push({id:`uova`,name:`Uova e latte in frigo`,qty:``,note:`oggi fa caldo: servono freddi`});
+  if(I.potato>0) checks.push({id:`patate`,name:`Lessa le patate in anticipo`,qty:``,note:`con la buccia, poi pelale, schiacciale e lasciale raffreddare`});
+  checks.push({id:`piano`,name:`Il piano di lavoro`,qty:``,note:`libero e pulito, con tutto a portata di mano`});
+  return {buy,tools,checks};
+}
+/* Spunte della lista, legate alle impostazioni del piano: cambiandole si riparte da zero. */
+const READY_KEY=`lievita.ready`;
+function readySig(){ return JSON.stringify(cookCfg()); }
+function readyGet(){ let s=null; try{ s=JSON.parse(localStorage.getItem(READY_KEY)||`null`); }catch(e){} return s&&s.sig===readySig()?s:{sig:readySig(),on:{},go:false}; }
+function readySet(s){ try{ localStorage.setItem(READY_KEY,JSON.stringify(s)); }catch(e){} }
+function readyCount(L,on){ const all=[...L.buy.map(x=>`b.`+x.id),...L.tools.map(x=>`t.`+x.id),...L.checks.map(x=>`c.`+x.id)]; return [all.filter(k=>on[k]).length,all.length]; }
+function readyHtml(r){
+  const L=readyList(r), st=readyGet(), [d,t]=readyCount(L,st.on);
+  const li=(p,x)=>`<li><label><input type="checkbox" data-ready="${p}.${x.id}" ${st.on[p+`.`+x.id]?`checked`:``}><span><b>${x.name}</b>${x.qty?` <em>${x.qty}</em>`:``}${x.note?`<small>${x.note}</small>`:``}</span></label></li>`;
+  return `<p class="why" style="margin-top:0">Spunta quello che hai già: le spunte restano salvate su questo telefono. Le dosi sono quelle della ricetta, con le confezioni da comprare.</p>
+    <h4>Ingredienti</h4><ul class="checks">${L.buy.map(x=>li(`b`,x)).join(``)}</ul>
+    <h4>Attrezzatura</h4><ul class="checks">${L.tools.map(x=>li(`t`,x)).join(``)}</ul>
+    <h4>Controlli</h4><ul class="checks">${L.checks.map(x=>li(`c`,x)).join(``)}</ul>`;
+}
+function readyCountText(r){ const [d,t]=readyCount(readyList(r),readyGet().on); return d===t?`tutto pronto`:`${d} di ${t}`; }
+
 /* Lievito difficile da pesare (meno di 2 g fresco, 0,7 g secco): 1 g sciolto in D−1 g di liquido fa D g di soluzione,
    e X = dose × D grammi contengono la dose giusta. D è 100 se la soluzione sta nel 90% del liquido libero della ricetta,
    altrimenti 50, 20 o 10; null se non ci sta nemmeno così. W è il liquido che la soluzione porta con sé. */
@@ -2711,6 +2853,7 @@ function renderOut(){
         ${pl.pref?prefIngredientsHtml(I,pl)+prefermentAdvice():``}
         <p class="why">${pl.pref?.actual?`Lievito già presente nel preparato, conservato senza ricalcolarlo. Durata dei passaggi rimanenti: `:pl.pref?`Dose di lievito riferita ${pl.pref.warm?`alle ${fmtDur(pl.pref.hours)} della biga a ${pl.pref.temp} °C e alle ${fmtDur(pl.pref.cold)} in frigo`:`alle ${pl.pref.long?`${fmtDur(pl.pref.cold)} in frigo e alle `:``}${fmtDur(pl.pref.hours)} di maturazione del prefermento a ${pl.pref.temp} °C`}${pl.pref.addYp>0?`, più una piccola aggiunta al rimpasto calcolata per le fasi successive`:`; nessuna aggiunta nell’impasto finale`}. Durata totale del percorso: `:`Dose di lievito calcolata per `}${fmtDur(pl.total)}${pl.pref?``:` di lievitazione`}${pl.fridgeH?`, di cui ${fmtDur(pl.fridgeH)} in frigo a ${state.fridge} °C`:``}, con ${state.room} °C in casa. Il peso include un 2% in più per le perdite.${bread?` Tempi in forno: ${pl.bk.batches>1?`${pl.bk.batches} infornate da `:``}${pl.bk.per} minuti, poi ${fmtDur(pl.bk.cool)} di raffreddamento.`:``}</p>
       </div>
+      <details class="panel ready" id="ready-panel" open><summary><h3>Prima di partire <small id="ready-count">${readyCountText(R)}</small></h3></summary>${readyHtml(R)}</details>
       <div class="panel"><h3>Cosa aspettarti</h3><p class="why" style="margin-top:0">${outlook()}</p>${pc(exp)}</div>
       ${W.length?`<ul class="alerts">${W.map(w=>`<li class="${w.w?`warn`:``}">${w.t}</li>`).join(``)}</ul>`:``}
       <div class="panel"><h3>Le tue scelte</h3><ul class="choices">
@@ -2881,15 +3024,23 @@ document.addEventListener(`click`,e=>{
   const nd=e.target.closest(`[data-note-del]`); if(nd){ delete state.notes[nd.dataset.noteDel]; state.editing=null; renderResults(); return; }
   if(e.target.closest(`[data-note-cancel]`)){ state.editing=null; renderResults(); return; }
   if(e.target.id===`unlink`){ state.link=null; renderResults(); return; }
-  if(e.target.id===`go-cook`||e.target.id===`go-cook2`){ if(R&&!R.none) openCook(); return; }
+  if(e.target.id===`go-cook`||e.target.id===`go-cook2`){ if(R&&!R.none) openCook({ready:true}); return; }
   if(e.target.id===`go-save`){ openSave(); return; }
   if(e.target.id===`go-cal`){ openCal(); return; }
 });
 $(`#page`).addEventListener(`input`,e=>{
   if(e.target.id===`room`){ state.room=Number(e.target.value); $(`#room-out`).textContent=state.room+` °C`; $(`#room-say`).textContent=tempSay(state.room); renderResults(); }
 });
+/* spunte di "Prima di partire", nel piano e in modalità cucina */
+document.addEventListener(`change`,e=>{
+  const k=e.target.dataset&&e.target.dataset.ready; if(!k||!R||R.none) return;
+  const st=readyGet(); if(e.target.checked) st.on[k]=1; else delete st.on[k]; readySet(st);
+  const c=$(`#ready-count`); if(c) c.textContent=readyCountText(R);
+  const b=$(`#rd-go`); if(b) b.textContent=readyGoLabel();
+});
 $(`#page`).addEventListener(`change`,e=>{
   const el=e.target, id=el.id, v=Number(el.value);
+  if(el.dataset.ready) return;
   if(id===`room`){ rememberForm(); return; }
   if(el.dataset.batch){ const value=el.dataset.batch===`started`?new Date(el.value).getTime():v; if(!Number.isFinite(value)){ renderAll(); return; } requestChange({k:`batch`,o:el.dataset.batch,v:value}); return; }
   if(id===`prep-clock`){ requestChange({k:`prepClock`,v:el.value}); return; }
@@ -3025,7 +3176,7 @@ function commitStep(){
   if(d){ if(d.self){ cook.os[i]+=d.self; cook.oe[i]+=d.self; } pushDelay(cook.os,cook.oe,d.j,d.r); }
   cook.done[i]=now;
 }
-function openCook(){
+function openCook(opts){
   cook.steps=R.steps; const now=Date.now(), n=cook.steps.length; cook.sig=cookSig(cook.steps); cook.cfg=cookCfg();
   cook.gates=planGates(cook.steps,R.pl);
   let saved=null; try{ saved=JSON.parse(localStorage.getItem(COOK_KEY)||`null`); }catch(e){}
@@ -3037,6 +3188,8 @@ function openCook(){
     cook.os=Array(n).fill(0); cook.oe=Array(n).fill(0); cook.arr=[]; cook.done=[]; cook.ck={}; cook.adj={};
   }
   cook.rating=0;
+  // dal pulsante del piano, prima del primo passaggio: la lista "Prima di partire"
+  cook.ready=!!(opts&&opts.ready)&&!cook.done.some(Boolean)&&!readyGet().go;
   $(`#cook`).hidden=false; document.body.classList.add(`noscroll`); requestWake(); arrive(); renderCook();
 }
 function closeCook(){ if(cook.i>=cook.steps.length){ try{ localStorage.removeItem(COOK_KEY); }catch(e){} } stopTimer(); $(`#cook`).hidden=true; document.body.classList.remove(`noscroll`); try{ cook.wake&&cook.wake.release(); }catch(e){} cook.wake=null; renderResults(); }
@@ -3457,8 +3610,22 @@ function stopTimer(){ clearInterval(cook.timerId); cook.timerId=null; cook.timer
 function fmtClock(ms){ const s=Math.max(0,Math.round(ms/1000)); return pad(Math.floor(s/60))+`:`+pad(s%60); }
 let actx=null;
 function beep(){ try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); [0,.45,.9].forEach(dt=>{ const o=actx.createOscillator(),gn=actx.createGain(); o.frequency.value=880; o.connect(gn); gn.connect(actx.destination); const t0=actx.currentTime+dt; gn.gain.setValueAtTime(.001,t0); gn.gain.exponentialRampToValueAtTime(.3,t0+.02); gn.gain.exponentialRampToValueAtTime(.001,t0+.35); o.start(t0); o.stop(t0+.4); }); }catch(e){} try{ navigator.vibrate&&navigator.vibrate([300,150,300,150,300]); }catch(e){} }
+function readyGoLabel(){ return readyCountText(R)===`tutto pronto`?`Tutto pronto, iniziamo`:`Inizia lo stesso`; }
+function renderReady(){
+  const c=$(`#cook`); cook.view=`ready`;
+  c.innerHTML=`
+    <div class="ck-top"><b>Prima di partire</b><button type="button" class="btn small" id="ck-close">Esci</button></div>
+    <div class="ck-main"><div class="ck-inner ready">
+      <h2>Hai tutto?</h2>
+      ${readyHtml(R)}
+    </div></div>
+    <div class="ck-nav"><button type="button" class="btn primary" id="rd-go">${readyGoLabel()}</button></div>`;
+  $(`#ck-close`).onclick=closeCook;
+  $(`#rd-go`).onclick=()=>{ const st=readyGet(); st.go=true; readySet(st); cook.ready=false; renderCook(); const m=$(`.ck-main`); if(m) m.scrollTop=0; };
+}
 function renderCook(){
   const c=$(`#cook`), n=cook.steps.length;
+  if(cook.ready){ renderReady(); return; }
   if(cook.i>=n){ cook.view=``; renderRate(); return; }
   const pm=ckPending(cook.i); if(pm){ renderGate(cook.i,pm); return; }
   cook.view=``;
