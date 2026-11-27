@@ -103,7 +103,7 @@ Quando il fuoco si accende prima dell'appretto o appena cominciato (forno a legn
 **Correzioni dopo l'audit (27 novembre 2026).** Il rapporto è in `docs/ricerca/audit-ricette-engine-2026-11-27.md`; le correzioni:
 
 - **Ripresa:** con un passaggio già fatto il piano si ricalcola con l'ora in cui è partita la modalità cucina (`lievita.cook` salva `cfg` e `t0`, vedi `planNow`), così dosi e percorso non cambiano; riaprendo l'app si torna in modalità cucina. `mem.last` ricorda anche ora della cena (se futura) e lievitazione.
-- **Modalità cucina:** "Prima pizza" è l'ora in cui esce la prima pizza; gli orari nei testi (`tAt`) seguono gli spostamenti (`liveTimes`); la prova del dito c'è sempre prima di stendere o infornare; dopo tre attese a vuoto l'app dice che l'impasto non cresce; con i prefermenti il frigo cuscinetto resta nei limiti del percorso.
+- **Modalità cucina:** "Prima pizza" è l'ora in cui esce la prima pizza; gli orari nei testi (`tAt`) seguono gli spostamenti (`liveTimes`); la prova del dito c'è sempre prima di stendere o infornare (con il frigo breve del pane, prima del frigo); dopo tre attese a vuoto l'app dice che l'impasto non cresce; con i prefermenti il frigo cuscinetto resta nei limiti del percorso.
 - **Dosi e avvisi:** con una biga già fatta con tutta la farina il totale segue la farina del preparato (niente farina negativa); idratazione e olio scelti dall'utente non vengono più descritti come abbassati o aggiunti.
 - **Bun:** notte in frigo solo a 5 °C o meno; in giornata al fresco puntata e appretto si allungano (fino a 6 ore) invece di promettere gli stessi tempi con il 4%; uovo da pesare per dosi piccole; 9 smash per teglia.
 - **Forni e cottura:** platea del forno a legna a circa 430 °C (volta sui 480 °C); carta forno con il limite di temperatura; pentola: istruzioni del produttore, orari per infornata, forno di nuovo a 250 °C; teglia troppo grande per fornetto e forno a gas segnalata; fornetto con un solo termostato; pietra del forno a gas da far recuperare; lievito secco mescolato alla farina con liquidi freddi.
@@ -111,6 +111,14 @@ Quando il fuoco si accende prima dell'appretto o appena cominciato (forno a legn
 Test in `test/correzioni.test.js`. Restano da decidere con prove in cucina: zucchero e grassi nella fermentazione, tangzhong nel pan bauletto, temperatura al cuore del pane morbido.
 
 **Prima di partire (27 novembre 2026).** Nel piano, sotto gli ingredienti, il pannello “Prima di partire” elenca con caselle da spuntare: gli **ingredienti da avere** (dosi della ricetta più quanto comprarne: pacchi di farina, cubetti o bustine di lievito, uova contando quella per spennellare, patate crude; con il mix le due farine separate; con un prefermento già fatto solo la farina del rimpasto), il **condimento** indicativo di una margherita e lo spolvero, l'**attrezzatura** secondo stile, forma, forno, metodo e impastatrice, e i **controlli** con gli orari del piano (essere in casa, spazio in frigo, forno libero, mozzarella a scolare, uova fuori dal frigo, posto per il prefermento). Le voci vengono da `readyList(R)`; le spunte si salvano in `lievita.ready`, legate a `cookCfg()`, quindi ripartono da zero se cambia il piano. “Avvia la modalità cucina” mostra prima la stessa lista (“Hai tutto?”), finché non si preme “Iniziamo” o non si è fatto un passaggio. Test in `test/prima-di-partire.test.js`.
+
+**Pane molto bagnato e frigo breve (27 novembre 2026).** Dal confronto con la pagnotta in pentola di Davide Zambelli (`docs/ricerca/zambelli-pane-2026-11-27.md`):
+
+- dal 72% d'acqua, a mano, il pane si impasta in ciotola (non la ciabatta, che ha il suo testo);
+- la prima serie di pieghe diventa una laminazione (stessa chiave `pieghe1`, animazione `HOW.laminate`);
+- pagnotta e pane di semola (`shape:'boule'`) passano 1,5 ore in frigo nel cestino dopo l'appretto (`frigobreve`, `CHILL_H`), poi vanno in forno freddi. In giornata solo se restano almeno 3 ore a temperatura di casa.
+
+In modalità cucina, con il frigo breve la prova del dito si fa prima del frigo e non prima di infornare: sull'impasto freddo ingannerebbe. Test in `test/pane.test.js` e `test/cucina.test.js`; dettagli in `docs/pane.md`.
 
 **Tema.** Il pulsante rotondo nella testata apre un menu Automatico (segue il telefono), Chiaro, Scuro. La scelta si salva in localStorage (`lievita.theme`) e uno script nel `<head>` la applica prima del disegno, per evitare il lampo di colore. Colori solo come variabili su `:root`: la palette scura è ripetuta in `@media (prefers-color-scheme: dark)` e in `:root[data-theme="dark"]`, da tenere uguali.
 

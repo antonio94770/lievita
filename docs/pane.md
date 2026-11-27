@@ -39,6 +39,14 @@ Solo impasto diretto, con due percorsi:
 
 Biga e poolish per il pane non sono ancora supportati.
 
+### Impasti molto bagnati e frigo breve (27 novembre 2026)
+
+Dal confronto con la pagnotta in pentola di Davide Zambelli (`docs/ricerca/zambelli-pane-2026-11-27.md`):
+
+- **Impasto in ciotola** quando l'idratazione è almeno del 72% e si impasta a mano (esclusa la ciabatta, che ha già il suo testo): 15 minuti di riposo dopo aver mescolato, poi 3–4 minuti tirando l'impasto dal fondo verso l'alto e ruotando la ciotola. Sul piano un impasto così si attacca dappertutto. Con l'impastatrice non cambia nulla.
+- **Laminazione** come prima serie di pieghe, con le stesse condizioni (chiave `pieghe1`, così le note restano al loro posto): sul piano bagnato l'impasto si allarga in un foglio sottilissimo e si richiude a pacchetto. Dura 10 minuti se le pieghe sono ogni 15–20 minuti.
+- **Frigo breve** (`frigobreve`, `CHILL_H` = 1,5 ore, le ricette dicono 1–2) dopo l'appretto, per i pani tondi nel cestino (`shape:'boule'`: pagnotta e pane di semola). L'impasto freddo si capovolge senza allargarsi e si incide netto, e il forno si scalda mentre il pane aspetta. In giornata c'è solo se a temperatura di casa restano almeno 3 ore; con la notte in frigo si accorcia il frigo lungo. In `heqOf` conta tutto alla temperatura media tra casa e frigo, perché in un'ora e mezza il pane si raffredda poco. In modalità cucina la prova del dito si fa **prima** di metterlo in frigo (dopo, l'impasto freddo risponde piano anche quando è pronto e il controllo ingannerebbe): se è in anticipo va in frigo subito e ci resta di più, se è indietro si aspetta fuori e gli orari slittano. Durata e effetto sulla crescita in forno vanno provati in cucina.
+
 ## Orari: si conta dall'ora del pane pronto
 
 L'ora scelta dall'utente è quella in cui il pane è **cotto e raffreddato**. All'indietro: raffreddamento (1 ora fino a 450 g, 2 ore oltre, 1,5 ore per il pan bauletto), cottura, 10 minuti per incidere e infornare, poi l'appretto.

@@ -548,6 +548,14 @@ table.chg{width:100%;border-collapse:collapse;font-size:.9rem;font-variant-numer
 @keyframes ro-r{0%,6%{opacity:1;transform:translateY(0) scaleY(1)}72%,90%{opacity:1;transform:translateY(67px) scaleY(1.9)}96%{opacity:0;transform:translateY(67px) scaleY(1.9)}97%,100%{opacity:0;transform:translateY(0) scaleY(1)}}
 @keyframes ro-h{0%,6%{opacity:1;transform:translateY(0)}72%,90%{opacity:1;transform:translateY(67px)}96%{opacity:0;transform:translateY(67px)}97%,100%{opacity:0;transform:translateY(0)}}
 /* allungare il cilindro */
+.la-s,.la-f1,.la-f2,.la-h1,.la-h2{animation:5.2s ease-in-out infinite}
+.la-f1,.la-f2{opacity:0}
+.la-s{animation-name:la-s}.la-f1{animation-name:la-f1}.la-f2{animation-name:la-f2}.la-h1{animation-name:la-h1}.la-h2{animation-name:la-h2}
+@keyframes la-s{0%,8%{opacity:1;transform:scale(1,1)}44%,90%{opacity:1;transform:scale(2.3,2.2)}96%{opacity:0;transform:scale(2.3,2.2)}97%,100%{opacity:0;transform:scale(1,1)}}
+@keyframes la-f1{0%,46%{opacity:0;transform:scaleX(1)}48%{opacity:1;transform:scaleX(1)}62%,90%{opacity:1;transform:scaleX(-1)}96%,100%{opacity:0;transform:scaleX(-1)}}
+@keyframes la-f2{0%,62%{opacity:0;transform:scaleX(1)}64%{opacity:1;transform:scaleX(1)}78%,90%{opacity:1;transform:scaleX(-1)}96%,100%{opacity:0;transform:scaleX(-1)}}
+@keyframes la-h1{0%,8%{opacity:1;transform:translate(0,0)}44%{opacity:1;transform:translate(-30px,-14px)}50%,92%{opacity:0;transform:translate(-30px,-14px)}100%{opacity:1;transform:translate(0,0)}}
+@keyframes la-h2{0%,8%{opacity:1;transform:translate(0,0)}44%{opacity:1;transform:translate(30px,-14px)}50%,92%{opacity:0;transform:translate(30px,-14px)}100%{opacity:1;transform:translate(0,0)}}
 .al-l,.al-h1,.al-h2{animation:4.6s ease-in-out infinite}
 .al-l{animation-name:al-l}.al-h1{animation-name:al-h1}.al-h2{animation-name:al-h2}
 @keyframes al-l{0%,6%{opacity:1;transform:scale(1,1)}78%,90%{opacity:1;transform:scale(1.95,.72)}96%{opacity:0;transform:scale(1.95,.72)}97%,100%{opacity:0;transform:scale(1,1)}}
@@ -760,7 +768,7 @@ const PLANS = {
   h72:      {name:`72 ore`, short:`Tre notti in frigo`, h:72}
 };
 
-const STEP_NAMES = {tangzhong:`Prepara il tangzhong`,prefermento:`Prepara il prefermento`,maturazione:`Maturazione del prefermento`,bigainfrigo:`Metti la biga in frigo`,bigafrigo:`Biga in frigo`,bigafuori:`Togli la biga dal frigo`,avvio:`Riposo prima del frigo`,impasto:`Impasta`, puntata:`Prima lievitazione`, pieghe1:`Pieghe, 1ª serie`, pieghe2:`Pieghe, 2ª serie`, pieghe3:`Pieghe, 3ª serie`, staglio:`Panetti`, frigo:`Frigorifero`, appretto:`Seconda lievitazione`, preriscaldo:`Accendi il forno`, stesura:`Stesura`, cottura:`Cottura`, formatura:`Formatura del pane`, incisione:`Incisione e infornata`, raffreddamento:`Raffreddamento`};
+const STEP_NAMES = {tangzhong:`Prepara il tangzhong`,prefermento:`Prepara il prefermento`,maturazione:`Maturazione del prefermento`,bigainfrigo:`Metti la biga in frigo`,bigafrigo:`Biga in frigo`,bigafuori:`Togli la biga dal frigo`,avvio:`Riposo prima del frigo`,impasto:`Impasta`, puntata:`Prima lievitazione`, pieghe1:`Pieghe, 1ª serie`, pieghe2:`Pieghe, 2ª serie`, pieghe3:`Pieghe, 3ª serie`, staglio:`Panetti`, frigo:`Frigorifero`, appretto:`Seconda lievitazione`, preriscaldo:`Accendi il forno`, stesura:`Stesura`, cottura:`Cottura`, formatura:`Formatura del pane`, incisione:`Incisione e infornata`, raffreddamento:`Raffreddamento`, frigobreve:`Pane in frigo prima di cuocerlo`};
 
 const state = {
   method:`diretto`, prefPct:50, prefTemp:18, prefHours:18, prefFridge:0, prefOut:0, prefAdd:false, prefKind:`corta`,
@@ -783,6 +791,8 @@ function fT(T){ T=clamp(T,2,35); return T>=12 ? Math.pow(1.145,T-20) : Math.pow(
    4 per la massa unica della teglia) contano alla temperatura media tra casa e frigo. */
 function heqOf(phases,room,teglia){
   return phases.reduce((s,[k,d,T])=>{
+    // il pane formato resta in frigo poco: si raffredda appena, conta tutto alla media tra casa e frigo
+    if(k===`frigobreve`) return s+d*fT((room+T)/2);
     if(k!==`frigo`) return s+d*fT(T);
     const L=Math.min(d,teglia?4:2);
     return s+L*fT((room+T)/2)+(d-L)*fT(T);
@@ -959,7 +969,8 @@ function breadBakeInfo(ok,S,piece,n){
   if(batches>1) how+=`<p>${pot?`Nella pentola entra un pane per volta`:`Nel forno ne entrano ${cap} per volta`}: in tutto ${batches} infornate da circa ${per} minuti. Mentre aspettano, tieni gli altri pani in frigo: così non lievitano troppo.${pot?` Tra un pane e l'altro riporta il forno a 250 °C e rimetti dentro la pentola vuota con il coperchio per 10 minuti, così torna rovente. Ogni pane si capovolge sulla carta e si incide appena prima di calarlo nella pentola.`:` Incidi ogni infornata appena prima di metterla in forno.`}</p>`;
   return {per,batches,gap,total,cool,T1,T2,steamMin,dry,timer:steamMin||per,preheat,pre,how,warn:warn.join(` `)||null,oven,cap};
 }
-const BUN_YCAP=4;                                 // tetto del lievito fresco nei bun, in % sulla farina
+const CHILL_H=1.5;                                // ore di frigo del pane formato, prima di cuocerlo (le ricette: 1–2)
+const BUN_YCAP=4;                               // tetto del lievito fresco nei bun, in % sulla farina
 const BUN_REF_HEQ=3*fT(20.5);                     // la prova di riferimento del tetto: 3 ore a 20–21 °C
 function buildBreadPlan(pk,P,cfg,now,realNow){
   if(!BREAD_PLANS.includes(pk)) return {ok:false,pk,reason:`Per il pane sono disponibili la lievitazione in giornata e quella con una notte in frigo.`};
@@ -969,6 +980,9 @@ function buildBreadPlan(pk,P,cfg,now,realNow){
   const tFirst=state.dinner.getTime();            // pane pronto da tagliare, già raffreddato
   const coolStart=tFirst-bk.cool*H, cottStart=coolStart-bk.total*MIN, stesDur=10, stesStart=cottStart-stesDur*MIN;
   const pieghe=!!S.fold||P.hyd>=66;
+  // pagnotte: dopo l'appretto un po' di frigo nel cestino. Freddo l'impasto è più sodo: si capovolge senza
+  // allargarsi e si incide con un taglio netto (Zambelli, video del 2023: 2 ore). Da provare in cucina, vedi docs/pane.md
+  const chill=!bun&&S.shape===`boule`?CHILL_H:0;
   let phases, shiftNote=null, A;
   if(pk===`giornata`){
     const avail=(stesStart-now)/H-lead;
@@ -991,11 +1005,14 @@ function buildBreadPlan(pk,P,cfg,now,realNow){
       else if(start>now) return {ok:false,pk,reason:`In giornata ${nightAt(start)?`dovresti iniziare di notte, ${when(start)}`:`alcuni passaggi cadrebbero di notte (dalle ${hm(fn)})`}: dalle 7:30 non c'è tempo per farlo lievitare almeno 3 ore. Scegli la notte in frigo oppure un orario più tardi.`};
     }
     G=Math.floor(G*4)/4;
+    // il frigo breve solo se a temperatura di casa restano almeno 3 ore
+    const C=chill&&G-chill>=3?chill:0, Gr=G-C;
     // nel pane la prima lievitazione è la più lunga: circa il 55% del tempo dopo impasto e formatura.
     // Nei bun le due lievitazioni si equivalgono (1,5 + 1,5 ore nelle ricette a 20–21 °C)
-    let B=bun?clamp(q((G-.75)*.5),1,2.5):clamp(q((G-.75)*.55),1,4.5);
-    A=G-.75-B;
+    let B=bun?clamp(q((Gr-.75)*.5),1,2.5):clamp(q((Gr-.75)*.55),1,4.5);
+    A=Gr-.75-B;
     phases=[[`impasto`,.5,room],[`puntata`,B,room],[`formatura`,.25,room],[`appretto`,A,room]];
+    if(C) phases.push([`frigobreve`,C,fr]);
     // Bun al fresco: il 4% è provato in 3 ore a 20–21 °C (Malati di Pizza). Sotto quelle ore equivalenti
     // il tetto del lievito non basta più: allunghiamo puntata e appretto fino a tornarci, al massimo 6 ore;
     // oltre si propone la notte in frigo o un punto più caldo. Stima da provare in cucina (docs/bun.md).
@@ -1013,10 +1030,11 @@ function buildBreadPlan(pk,P,cfg,now,realNow){
     const B=bun?1:pieghe?2:1.5, pre=.5+B;
     // il pane formato con l'impasto freddo ci mette di più; i panini piccoli si scaldano prima
     A=bun?clamp(q(2.5/fT(room)),1.5,3.5):clamp(q(3.5/fT(room)),2.5,5);
-    let mix, Fh=24-pre-.25-A;
+    let mix, Fh=24-pre-.25-A-chill;
     ({mix,Fh,shiftNote}=avoidNight(stesStart-24*H,pre,Fh,now,lead));
     if(mix-lead*H<now) return {ok:false,pk,reason:`Dovresti iniziare ${when(mix-lead*H)}, che è già passato.`};
     phases=[[`impasto`,.5,room],[`puntata`,B,room],[`frigo`,Fh,fr],[`formatura`,.25,room],[`appretto`,A,room]];
+    if(chill) phases.push([`frigobreve`,chill,fr]);
   }
   const total=phases.reduce((s,p)=>s+p[1],0);
   const mixStart=stesStart-total*H;
@@ -1654,6 +1672,8 @@ function readyList(r){
   if(fr){ const fs=steps.filter(s=>s.key===`frigo`||s.key===`bigafrigo`), a=fs[0].start, b=fs[fs.length-1].end;
     const what=step(`bigafrigo`)&&!step(`frigo`)?(`la biga`):!bread&&!teglia&&steps.findIndex(s=>s.key===`staglio`)<steps.findIndex(s=>s.key===`frigo`)?`${n} ${many?`panetti`:`panetto`}`:`il contenitore`;
     checks.push({id:`frigo`,name:`Fai spazio in frigo`,qty:``,note:`per ${what}, su un ripiano centrale, da ${at(a)} a ${at(b)}. Misura che sia a ${state.fridge} °C`}); }
+  const fb=step(`frigobreve`);
+  if(fb) checks.push({id:`frigobreve`,name:`Spazio in frigo per ${n>1?`i cestini`:`il cestino`}`,qty:``,note:`da ${at(fb.start)} a ${at(fb.end)}, prima di infornare: ${n>1?`i cestini vanno`:`il cestino va`} in piano, senza nulla sopra`});
   if(pl.pref&&!actual&&Math.abs(pl.pref.temp-state.room)>=2&&!pl.pref.warm) checks.push({id:`posto`,name:`Trova un posto a ${pl.pref.temp} °C`,qty:``,note:`per ${pl.pref.method===`biga`?`la biga`:`il poolish`}: cantina, ripostiglio o una stanza non riscaldata. Misuralo con il termometro`});
   const pre=step(`preriscaldo`);
   if(pre) checks.push({id:`forno`,name:oven===`legna`?`Il forno a legna`:`Il forno libero`,qty:``,note:oven===`legna`?`pulito dalla cenere e con la legna pronta: si accende ${at(pre.start)}`:`si accende ${at(pre.start)}: niente altro da cuocere a quell'ora`});
@@ -1893,6 +1913,7 @@ function makeBreadSteps(pl,P,I){
         b+=`<p>In una ciotola capiente versa l'acqua${keep?` (tienine da parte ${keepG} g)`:``}${I.sugar>0?`, aggiungi lo zucchero `:` `}${yeastIn(I)}. Aggiungi la farina e mescola con la mano finché non vedi più farina asciutta. Aggiungi il sale${keep?` e, un po' alla volta, l'acqua tenuta da parte`:``}${I.oil>0?`, poi ${soft?`l'olio o il burro`:`l'olio`}`:``}.</p>`;
         // la ciabatta si lavora in ciotola solo se è davvero bagnata (con una farina debole l'idratazione scende al 60%)
         b+=shape===`ciabatta`&&P.hyd>=70?`<p>Non provare a impastarla sul piano: è troppo morbida, ed è giusto così. Lavorala in ciotola per 5 minuti con la mano bagnata, pizzicando e ripiegando l'impasto. Le pieghe dei passaggi successivi gli daranno forza.</p>`
+          :P.hyd>=72?`<p>Con il ${num(P.hyd)}% d'acqua l'impasto è troppo morbido per il piano: si attaccherebbe dappertutto. Lavoralo <b>nella ciotola</b>. Prima mescola e lascia riposare coperto 15 minuti: la farina beve l'acqua e diventa più facile. Poi, con la mano bagnata e le dita a uncino, prendi l'impasto dal fondo, tiralo su verso l'esterno e lascialo ricadere, ruotando la ciotola un po' a ogni gesto. Continua 3–4 minuti, finché diventa più liscio e si stacca dalle pareti. Non aggiungere farina: bagnati le mani quando si attacca. Le pieghe dei passaggi successivi finiranno il lavoro.</p>`
           :`<p>Trasferisci sul piano e impasta 10 minuti: spingi l'impasto in avanti con il palmo, ripiegalo verso di te e ruotalo. Se si attacca alle mani non aggiungere farina: bagnati le mani, copri l'impasto, aspetta 10 minuti e riprendi.</p>`;
       }
       if((shape!==`ciabatta`||P.hyd<70)&&state.flour!==`integrale`) b+=`<p><b>Come capire se è impastato bene:</b> prendi un pezzetto e allargalo piano tra le dita. Se si forma una pellicola sottile che lascia passare la luce senza strapparsi (la “prova del velo”), è pronto.</p>`;
@@ -1904,7 +1925,14 @@ function makeBreadSteps(pl,P,I){
       const ogni=(e-s)>=70*MIN?20:(e-s)>=55*MIN?15:10;
       const times=pl.pieghe?[1,2,3].map(i=>s+i*ogni*MIN).filter(ts=>ts<e-10*MIN):[];
       steps.push({key:k,title:`Prima lievitazione (puntata)`,start:s,end:e,hands:false,body:`<p>Metti l'impasto in una ciotola leggermente unta, meglio ancora in un contenitore trasparente: segna con un pennarello il livello di partenza, così vedi quanto cresce. Copri bene con un coperchio o con la pellicola: all'aria la superficie si secca e fa una crosticina che poi non si gonfia più.</p><p>Lascialo a ${state.room} °C. ${hasFridge?`Deve solo iniziare a gonfiarsi: il resto lo fa in frigo.`:`Alla fine deve essere circa raddoppiato, gonfio e con qualche bolla in superficie.`}${times.length?` Nel frattempo farai ${times.length} serie di pieghe, ogni ${ogni} minuti.`:``}</p>`});
+      // impasti molto bagnati: la prima serie è una laminazione, che dà forza in un colpo solo senza impastare
+      const lam=P.hyd>=72&&shape!==`ciabatta`;
       times.forEach((ts,i)=>{
+        if(lam&&i===0){
+          steps.push({key:`pieghe1`,title:`Laminazione (1ª serie di pieghe)`,start:ts,end:ts+(ogni>=15?10:5)*MIN,hands:true,timer:times.length>1?ogni:null,
+            body:`<p>Bagna il piano di lavoro con un velo d'acqua e bagnati le mani: questo impasto ama l'acqua, non la farina. Rovescia l'impasto al centro.</p><p>Infila le mani sotto e allargalo piano, tirando dal centro verso l'esterno in tutte le direzioni, finché diventa un foglio grande e sottilissimo, quasi trasparente: è la <b>laminazione</b>. Se in un punto si strappa non importa, continua altrove.</p><p>Poi richiudilo come un pacchetto: piega verso il centro il lato destro, poi il sinistro, poi arrotolalo dall'alto verso di te. Rimettilo nel contenitore con la chiusura sotto e copri.</p><p>In due minuti allinea il glutine come una serie di pieghe fatte con calma: dopo l'impasto si sente subito più forte e meno appiccicoso.</p>`});
+          return;
+        }
         const body=shape===`ciabatta`?`<p>Con le mani bagnate infila le dita sotto il centro dell'impasto e sollevalo: i lembi si ripiegano sotto da soli. Ruota la ciotola di un quarto e ripeti, 4 volte in tutto. Poi copri di nuovo. Fai piano: le bolle che si formano sono i buchi della ciabatta.</p>`
           :`<p>Con la mano bagnata afferra un lembo di impasto, tiralo verso l'alto senza strapparlo e ripiegalo sopra il resto. Ruota la ciotola di un quarto e ripeti, 4 volte in tutto. Poi copri di nuovo.</p>`;
         steps.push({key:`pieghe`+(i+1),title:`Pieghe, ${i+1}ª serie`,start:ts,end:ts+5*MIN,hands:true,timer:i<times.length-1?ogni:null,body:body+(i===times.length-1?`<p>Dopo questa serie l'impasto dovrebbe essere più liscio, elastico e meno appiccicoso.</p>`:``)});
@@ -1926,8 +1954,12 @@ function makeBreadSteps(pl,P,I){
     }
     if(k===`appretto`){
       const ot=proofOvenTip(s,preheatAt,`lo`);
+      const chill=pl.phases.some(p=>p[0]===`frigobreve`);
       const where=shape===`mafalda`?(many?`le mafalde`:`la mafalda`):shape===`boule`?(many?`i cestini`:`il cestino`):shape===`stampo`?(many?`gli stampi`:`lo stampo`):(many?`i pani`:`il pane`);
-      steps.push({key:k,title:`Seconda lievitazione (appretto)`,start:s,end:e,hands:false,body:`<p>Copri ${where} con un sacchetto o un canovaccio e lascia a ${state.room} °C per circa ${fmtDur(d)}${hasFridge?`: l'impasto esce freddo dal frigo, per questo ci mette più del solito`:``}. ${S.shape===`stampo`?`È pronto quando la cupola supera di 1–2 cm il bordo dello stampo.`:`Deve diventare gonfio e leggero, quasi raddoppiato.`}</p><p>Come capire se è pronto: premi piano con un dito infarinato. Se l'impronta risale lentamente, è pronto. Se risale di scatto, aspetta ancora. Se il buco resta, è al limite: inforna appena puoi.</p><p><b>Umidità:</b> se l'aria in casa è secca (termosifoni accesi), la superficie non deve seccarsi: copri con un sacchetto di plastica o con un canovaccio appena umido.${ot?` Puoi anche metterlo ${ot.where}, con accanto una tazza d'acqua bollente: fa umido e un po' più tiepido, quindi controllalo prima.${ot.rem}`:``}</p><p>Se in casa fa più caldo del previsto può essere pronto prima: controlla già dalle ${tAt(Math.max(s,e-45*MIN))}.</p>`});
+      steps.push({key:k,title:`Seconda lievitazione (appretto)`,start:s,end:e,hands:false,body:`<p>Copri ${where} con un sacchetto o un canovaccio e lascia a ${state.room} °C per circa ${fmtDur(d)}${hasFridge?`: l'impasto esce freddo dal frigo, per questo ci mette più del solito`:``}. ${S.shape===`stampo`?`È pronto quando la cupola supera di 1–2 cm il bordo dello stampo.`:`Deve diventare gonfio e leggero, quasi raddoppiato.`}</p><p>Come capire se è pronto: premi piano con un dito infarinato. Se l'impronta risale lentamente, è pronto. Se risale di scatto, aspetta ancora. Se il buco resta, è al limite: ${chill?`mettilo subito in frigo`:`inforna appena puoi`}.</p>${chill?`<p>Alla fine non va subito in forno: ${many?`i cestini passano`:`il cestino passa`} ${fmtDur(CHILL_H)} in frigo, così il pane si rassoda.</p>`:``}<p><b>Umidità:</b> se l'aria in casa è secca (termosifoni accesi), la superficie non deve seccarsi: copri con un sacchetto di plastica o con un canovaccio appena umido.${ot?` Puoi anche metterlo ${ot.where}, con accanto una tazza d'acqua bollente: fa umido e un po' più tiepido, quindi controllalo prima.${ot.rem}`:``}</p><p>Se in casa fa più caldo del previsto può essere pronto prima: controlla già dalle ${tAt(Math.max(s,e-45*MIN))}.</p>`});
+    }
+    if(k===`frigobreve`){
+      steps.push({key:k,title:`Metti ${many?`i cestini`:`il cestino`} in frigo`,start:s,end:e,hands:true,body:`<p>Chiudi ${many?`i cestini`:`il cestino`} in un sacchetto di plastica, o copri bene con la pellicola, e ${many?`mettili`:`mettilo`} in frigo su un ripiano centrale per <b>${fmtDur(d)}</b>. Il pane resta così com'è, con la chiusura in alto.</p><p>Al freddo il lievito quasi si ferma e l'impasto si rassoda: ${many?`i pani si capovolgono`:`il pane si capovolge`} senza allargarsi, la lama incide netta senza trascinare l'impasto, e hai tempo per scaldare bene il forno senza che ${many?`vadano`:`vada`} oltre.</p><p>Togli${many?` un cestino alla volta`:`lo`} dal frigo <b>solo al momento di infornare</b>, alle ${tAt(e)}: va in forno freddo, non serve farlo tornare a temperatura.</p>`});
     }
     t=e;
   }
@@ -1937,7 +1969,7 @@ function makeBreadSteps(pl,P,I){
   else if(shape===`mafalda`) inc=`<p>La mafalda non si incide: le curve della serpentina fanno da incisione e si aprono da sole in forno. Se il sesamo si è asciugato, spruzza appena un velo d'acqua.</p>`;
   else if(shape===`accavallato`) inc=`<p>Metti un foglio di carta forno accanto al pane e, aiutandoti con il canovaccio, rovescialo sulla carta senza schiacciarlo: la piega deve restare in alto. Questo pane non si incide: si apre lungo la piega, che è il suo segno. Spazzola via la semola in eccesso.</p>`;
   else if(shape===`stampo`) inc=S.soft?`<p>Se vuoi una superficie lucida e dorata, spennella piano con un po' di latte (o uovo sbattuto con un goccio di latte), senza farlo colare ai lati.</p>`:`<p>Spruzza o spennella la superficie con un po' d'acqua e, se vuoi, fai un taglio lungo al centro, profondo mezzo centimetro: il pane si apre lì invece che di lato.</p>`;
-  else inc=`<p>${shape===`boule`?`Metti un foglio di carta forno sul cestino e capovolgilo con decisione: il pane si appoggia sulla carta con la chiusura sotto. Spazzola via la farina in eccesso.`:`Lascia i filoncini sulla carta forno.`}</p><p>Incidi con una lametta o un coltello molto affilato, inclinato a 45°, con un gesto unico e deciso, profondo circa 1 cm: ${shape===`boule`?`una croce, un quadrato o un taglio lungo`:`3–4 tagli lunghi in diagonale, quasi paralleli al filoncino, che si sovrappongono di un terzo`}. L'incisione decide dove il pane si apre in forno: senza, si spacca dove capita. Non tornare sul taglio: un colpo solo.</p>`;
+  else inc=`<p>${shape===`boule`?`${pl.phases.some(p=>p[0]===`frigobreve`)?`Prendi il cestino dal frigo adesso, non prima: freddo il pane è sodo e tiene la forma. `:``}Metti un foglio di carta forno sul cestino e capovolgilo con decisione: il pane si appoggia sulla carta con la chiusura sotto. Spazzola via la farina in eccesso.`:`Lascia i filoncini sulla carta forno.`}</p><p>Incidi con una lametta o un coltello molto affilato, inclinato a 45°, con un gesto unico e deciso, profondo circa 1 cm: ${shape===`boule`?`una croce, un quadrato o un taglio lungo`:`3–4 tagli lunghi in diagonale, quasi paralleli al filoncino, che si sovrappongono di un terzo`}. L'incisione decide dove il pane si apre in forno: senza, si spacca dove capita. Non tornare sul taglio: un colpo solo.</p>`;
   steps.push({key:`incisione`,title:[`ciabatta`,`stampo`,`mafalda`,`accavallato`].includes(shape)?`Inforna`:`Incidi e inforna`,start:pl.stesStart,end:pl.cottStart,hands:true,body:inc+`<p>Lavora in fretta: il forno aperto perde calore e il vapore.</p>`});
   steps.push({key:`cottura`,title:`Cuoci`,start:pl.cottStart,end:pl.coolStart,first:pl.cottStart+bk.per*MIN,hands:true,timer:bk.timer,body:bk.how+batchTimes(pl)});
   steps.push({key:`raffreddamento`,title:`Lascia raffreddare`,start:pl.coolStart,end:pl.tFirst,hands:false,body:`<p>Sforna e appoggia ${it} su una griglia, mai su un piano pieno: il vapore deve uscire anche da sotto, se no il fondo si inumidisce.${S.shape===`stampo`?` Toglilo subito dallo stampo.`:``}</p><p>Aspetta almeno <b>${fmtDur(bk.cool)}</b> prima di tagliarlo. È dura, ma dentro il pane sta ancora cuocendo con il suo vapore: tagliato caldo, la mollica diventa collosa. Sarà pronto alle <b>${tAt(pl.tFirst)}</b>.</p><p><b>Per conservarlo:</b> quando è freddo mettilo in un sacchetto di carta o avvolto in un canovaccio, non nella plastica (la crosta diventa gommosa). Dura ${shape===`accavallato`?`fino a una settimana, se la pagnotta resta intera`:S.flour===`semola`||S.soft?`3–4 giorni`:`2–3 giorni`}. Per tempi più lunghi taglialo a fette e congelalo: le fette si tostano direttamente da congelate. Per ravvivare un pane del giorno prima, bagnalo appena sotto l'acqua e passalo 5–8 minuti in forno a 200 °C.</p>`});
@@ -2230,6 +2262,11 @@ const HOW={
   pieghe(){
     return hwSvg(`${HWP.boardTop}${hwG(`translate(100 66)`,`pf-c`,`<rect x="-48" y="-48" width="96" height="96" rx="16" class="hw-glass"/><circle r="34" class="hw-dough"/><g class="pf-f"><path class="hw-dough hw-flap" d="M-34 0 A34 34 0 0 0 34 0 Z"/></g>`)}${hwG(`translate(100 128)`,`pf-h`,HWP.hand)}`);
   },
+  /* laminazione: il foglio si allarga sotto le mani, poi i due lati si ripiegano al centro (perni sulle pieghe) */
+  laminate(){
+    const flap=x=>`<rect x="${x}" y="-31" width="22" height="62" rx="6" class="hw-dough hw-flap"/>`;
+    return hwSvg(`${HWP.boardTop}${hwG(`translate(100 70)`,`la-s`,`<rect x="-20" y="-14" width="40" height="28" rx="10" class="hw-dough"/>`)}${hwG(`translate(76 70)`,`la-f1`,flap(-22))}${hwG(`translate(124 70)`,`la-f2`,flap(0))}${hwG(`translate(88 96)`,`la-h1`,`<g transform="scale(.7)">${HWP.hand}</g>`)}${hwG(`translate(112 96)`,`la-h2`,`<g transform="scale(-.7 .7)">${HWP.hand}</g>`)}`);
+  },
   rise(kind){
     const h=kind===`poolish`?28:33;
     const top=kind===`biga`?`M-37 0 V-22 Q-31 -31 -23 -25 Q-15 -34 -6 -26 Q3 -35 12 -27 Q21 -34 28 -26 Q35 -30 37 -22 V0 Z`:kind===`poolish`?`M-37 0 V-28 Q0 -31 37 -28 V0 Z`:`M-37 0 V-22 Q-24 -34 0 -33 Q24 -34 37 -22 V0 Z`;
@@ -2385,13 +2422,15 @@ const HOW={
 function howScenes(key,c){
   const k=key.replace(/\d+$/,``), pz=c.cat===`pizza`;
   switch(k){
-    case `impasto`: return c.mixer?[[HOW.mixer(),`Gancio a velocità bassa finché la farina sparisce, poi più veloce: è pronto quando si stacca dalle pareti.`]]:[[HOW.knead(),`Spingi l'impasto in avanti con il palmo, ripiegalo verso di te e giralo di un quarto. Ripeti finché è liscio.`]];
+    case `impasto`: return c.mixer?[[HOW.mixer(),`Gancio a velocità bassa finché la farina sparisce, poi più veloce: è pronto quando si stacca dalle pareti.`]]:c.bread&&!c.bun&&c.hyd>=72&&c.shape!==`ciabatta`?[[HOW.pieghe(),`Nella ciotola, con la mano bagnata: prendi l'impasto dal fondo, tiralo su e lascialo ricadere, girando la ciotola.`]]:[[HOW.knead(),`Spingi l'impasto in avanti con il palmo, ripiegalo verso di te e giralo di un quarto. Ripeti finché è liscio.`]];
     case `prefermento`: return c.method===`poolish`?[[HOW.prefMix(c),`Mescola con un cucchiaio finché è una pastella liscia, senza grumi di farina.`]]:[[HOW.prefMix(c),`Mescola appena: la biga deve restare a grumi asciutti, non diventare una palla liscia.`]];
     case `tangzhong`: return [[HOW.tz(),`Fuoco basso e frusta sempre in movimento. È pronto quando diventa una crema e la frusta lascia una scia.`]];
     case `puntata`: return [[HOW.rise(`dough`),`Ciotola coperta: l'impasto cresce piano. La linea rossa è il punto di partenza.`]];
     case `maturazione`: case `avvio`: case `acclimata`: return [[HOW.rise(c.method===`poolish`?`poolish`:`biga`),c.method===`poolish`?`Il poolish si riempie di bolle e cresce: è maturo quando la superficie inizia appena ad abbassarsi al centro.`:`La biga coperta matura lentamente: cresce poco e profuma di lievito.`]];
-    case `pieghe`: return [[HOW.pieghe(),`Mano bagnata: tira su un lembo e piegalo sopra l'impasto. Gira il contenitore e ripeti sui quattro lati.`]];
+    case `pieghe`: if(key===`pieghe1`&&c.bread&&!c.bun&&c.hyd>=72&&c.shape!==`ciabatta`) return [[HOW.laminate(),`Sul piano bagnato allarga l'impasto in un foglio sottilissimo, poi richiudilo a pacchetto.`]];
+      return [[HOW.pieghe(),`Mano bagnata: tira su un lembo e piegalo sopra l'impasto. Gira il contenitore e ripeti sui quattro lati.`]];
     case `bigainfrigo`: case `frigo`: return [[HOW.fridge(c,`in`),`Coperto, su un ripiano centrale del frigo: la porta è il punto più caldo.`]];
+    case `frigobreve`: return [[HOW.fridge(c,`in`),`Il cestino chiuso in un sacchetto, in piano sul ripiano centrale: esce solo al momento di infornare.`]];
     case `bigafrigo`: return [[HOW.fridge(c,`rest`),`Lascia lavorare il freddo: non serve aprire il frigo per controllare.`]];
     case `bigafuori`: return [[HOW.fridge(c,`out`),`Tira fuori il contenitore e lascialo coperto sul piano.`]];
     case `staglio`: case `formatura`:
@@ -2421,7 +2460,7 @@ function howScenes(key,c){
 }
 function howCtx(){
   const S=STYLES[state.style]||{};
-  return {style:state.style,cat:catOf(state.style),teglia:!!S.teglia,bread:!!S.bread,bun:!!S.bun,shape:S.shape,mixer:!!state.mixer,method:state.method,pref:state.method&&state.method!==`diretto`,oven:state.oven,fridge:state.fridge,piece:R&&R.I&&R.I.piece?g(R.I.piece):``};
+  return {style:state.style,cat:catOf(state.style),teglia:!!S.teglia,bread:!!S.bread,bun:!!S.bun,shape:S.shape,mixer:!!state.mixer,method:state.method,pref:state.method&&state.method!==`diretto`,oven:state.oven,fridge:state.fridge,piece:R&&R.I&&R.I.piece?g(R.I.piece):``,hyd:R&&R.P?R.P.hyd:0};
 }
 function howHtml(key){
   const sc=howScenes(key,howCtx());
@@ -3136,7 +3175,7 @@ document.addEventListener(`visibilitychange`,()=>{ if(!$(`#cook`).hidden&&docume
    Un ritardo si propaga ai passaggi successivi; il frigo lungo ne assorbe una parte (fino al 25%,
    restando almeno 8 ore), così l'ora di cena non cambia. I ritardi non anticipano mai il piano;
    solo le risposte ai controlli sull'impasto (più sotto) possono farlo, e sempre chiedendo. */
-const COOK_KEY=`lievita.cook`, LATE_GRACE=5*MIN, ABSORB=TL.absorb, START_ACT=[`frigo`,`appretto`,`preriscaldo`];
+const COOK_KEY=`lievita.cook`, LATE_GRACE=5*MIN, ABSORB=TL.absorb, START_ACT=[`frigo`,`frigobreve`,`appretto`,`preriscaldo`];
 function absorbCap(s){ const d=s.end-s.start; return ABSORB.includes(s.key)&&d>8*H?Math.max(0,Math.min(.25*d,d-8*H,d-(s.fmin||0))):0; }
 function pushDelay(os,oe,j,r){ tlPush({steps:cook.steps,os,oe},j,r); }
 /* ritardo che si accumula restando sul passaggio i adesso */
@@ -3275,7 +3314,11 @@ function planGates(steps,pl){
   // appretto: prima di accendere il forno; con il forno a legna, che si scalda per due ore, anche prima di stendere.
   // Se il fuoco si accende prima dell'appretto o appena cominciato (forno a legna con i bun, o con la pizza a 26 °C),
   // a quell'ora l'impasto non dice ancora niente: resta solo il controllo prima di stendere o infornare.
-  if(app>=0&&pre>=0){
+  // pane con il frigo breve dopo l'appretto: la prova del dito si fa prima di metterlo in frigo.
+  // Dopo, freddo e sodo, l'impronta risale piano anche se è pronto: un secondo controllo ingannerebbe
+  const fb=first(`frigobreve`);
+  if(app>=0&&fb>app) add(fb,`before`,`proof`,{a:app,s:fb,oven:false,chill:true});
+  else if(app>=0&&pre>=0){
     const st=steps.findIndex((s,m)=>m>Math.max(pre,app)&&(s.key===`stesura`||s.key===`incisione`));
     if(st>0){
       const A=steps[app], late=steps[pre].start-A.start>=Math.max(20*MIN,.25*(A.end-A.start));
@@ -3458,8 +3501,8 @@ const CHECKS={
     }
   },
   proof:{
-    title:c=>c.W.pl?`${c.W.They} sono pronti per il forno?`:`${c.W.They} è pronto per il forno?`,
-    lead:c=>`<p>${c.def.oven?`Prima di accendere il forno`:`Prima di ${c.W.cat===`pizza`?`stendere`:`infornare`}`}, fai la <b>prova del dito</b>: infarina un dito e premi piano sul fianco dell'impasto, per circa un centimetro. Poi guarda come risale l'impronta.</p>${STYLES[state.style]&&STYLES[state.style].shape===`stampo`?`<p>Nello stampo guarda anche la cupola: è pronto quando supera il bordo di 1–2 cm.</p>`:``}${c.def.oven?`<p>Il forno impiega circa ${fmtDur((cook.steps[c.i].end-cook.steps[c.i].start)/H)} a scaldarsi: nel frattempo ${c.W.them} ${c.W.pl?`continuano`:`continua`} a lievitare.</p>`:``}`,
+    title:c=>c.def.chill?(c.W.pl?`${c.W.They} sono pronti per il frigo?`:`${c.W.They} è pronto per il frigo?`):c.W.pl?`${c.W.They} sono pronti per il forno?`:`${c.W.They} è pronto per il forno?`,
+    lead:c=>`<p>${c.def.chill?`Prima di metterlo in frigo`:c.def.oven?`Prima di accendere il forno`:`Prima di ${c.W.cat===`pizza`?`stendere`:`infornare`}`}, fai la <b>prova del dito</b>: infarina un dito e premi piano sul fianco dell'impasto, per circa un centimetro. Poi guarda come risale l'impronta.</p>${STYLES[state.style]&&STYLES[state.style].shape===`stampo`?`<p>Nello stampo guarda anche la cupola: è pronto quando supera il bordo di 1–2 cm.</p>`:``}${c.def.oven?`<p>Il forno impiega circa ${fmtDur((cook.steps[c.i].end-cook.steps[c.i].start)/H)} a scaldarsi: nel frattempo ${c.W.them} ${c.W.pl?`continuano`:`continua`} a lievitare.</p>`:``}`,
     why:c=>[`Come leggere la prova del dito`,`<p>Il dito schiaccia le bollicine di gas. Se l'impasto è ancora giovane, la maglia glutinica è tesa e l'impronta sparisce subito, come su una palla di gomma. Quando è pronto la maglia è rilassata ma tiene ancora: l'impronta risale piano e resta appena visibile. Se è andato oltre, la maglia non ha più forza e il buco resta: il gas sta scappando.</p><p>In forno un impasto giovane si strappa e resta compatto; uno andato oltre si sgonfia e resta piatto${c.W.cat===`pizza`?`, e si attacca alla pala`:``}.</p>`],
     opts:c=>{ const P=c.W.pl, a=(s,p)=>P?p:s; return [
       {id:`fermo`,label:a(`Piccolo e sodo, quasi come all'inizio`,`Piccoli e sodi, quasi come all'inizio`),sub:`L'impronta sparisce subito`,art:pokeSvg(0)},
@@ -3475,6 +3518,14 @@ const CHECKS={
       if(v.gaveUp) return {tone:`warn`,head:c.opt===`fermo`?(W.pl?`Non stanno crescendo`:`Non sta crescendo`):`Andiamo avanti, ma non è al punto giusto`,html:c.opt===`fermo`
         ?`<p>Dopo tre attese ${W.them} ${W.pl?`sono`:`è`} ancora ${W.pl?`piccoli e sodi`:`piccolo e sodo`}: di solito il lievito non è più attivo (scaduto, sciolto in un liquido troppo caldo) oppure in casa fa più freddo di quanto indicato.</p><p>Puoi aspettare ancora in un punto tiepido (il forno spento con la luce accesa) e ricontrollare tra un'ora, oppure ${W.cat===`pizza`?`stendere`:`infornare`} lo stesso: ${W.cat===`pizza`?`la pizza verrà bassa e dura`:`verrà basso e compatto`}. Annotalo nel voto finale: ci aiuta a capire cosa è andato storto.</p>`
         :`<p>Dopo tre attese conviene procedere: in forno ${W.them} ${W.pl?`si gonfieranno`:`si gonfierà`} ancora un po', ma ${W.cat===`pizza`?`il cornicione verrà meno alto`:`la mollica verrà più fitta`} del solito.</p>`};
+      if(def.chill&&!v.gaveUp){
+        const C=W.pl?`mettili`:`mettilo`;
+        if(v.v===`ok`) return {head:`Perfetto`,html:`<p>${W.pl?`Sono pronti`:`È pronto`}: ${C} in frigo come indicato qui sotto.</p>`};
+        if(v.v===`slow`){ const t=now+v.wait*H; return {wait:v.wait,tone:`warn`,head:`Serve ancora un po' di tempo`,html:`<p>${W.They} ${W.pl?`hanno`:`ha`} bisogno di circa <b>${fmtDur(v.wait)}</b> in più a temperatura di casa: ricontrolliamo alle <b>${hm(t)}</b>, poi ${W.pl?`li metti`:`lo metti`} in frigo. Gli orari successivi si spostano di conseguenza.</p>${PROOF_P[c.opt]<=.3?warmTip(W.lo):``}`}; }
+        // avanti o andato oltre: in frigo subito, il freddo lo frena. Il frigo dura di più e l'orario non cambia
+        if(early>0) tlStartNow(T,c.i,c.i,now);
+        return {tone:`warn`,head:v.v===`over`?(W.pl?`Sono andati un po' oltre`:`È andato un po' oltre`):(W.pl?`Sono più avanti del previsto`:`È più avanti del previsto`),html:`<p>${C[0].toUpperCase()+C.slice(1)} in frigo <b>adesso</b>, senza aspettare: il freddo ${W.lo} frena${early>5*MIN?` e ${W.pl?`ci restano`:`ci resta`} un po' di più, fino all'ora prevista`:``}.</p>${v.v===`over`?`<p>Maneggia${W.lo} con delicatezza: quando inforni, incidi poco profondo, o non incidere affatto.</p>`:``}`};
+      }
       if(v.v===`ok`) return {head:v.gaveUp?`Andiamo avanti`:`Perfetto`,html:v.gaveUp?`<p>Dopo tre attese conviene procedere: in forno ${W.them} ${W.pl?`si gonfieranno`:`si gonfierà`} ancora un po'.</p>`:def.oven?`<p>Accendi il forno ${early>10*MIN?`alle <b>${hm(at)}</b>`:`adesso`}: mentre si scalda ${W.them} ${W.pl?`finiscono`:`finisce`} di lievitare.</p>`:`<p>${W.pl?`Sono pronti`:`È pronto`}: puoi procedere.</p>`};
       if(v.v===`slow`){ const t=now+v.wait*H; return {wait:v.wait,tone:`warn`,head:`Serve ancora un po' di tempo`,html:`<p>${W.They} ${W.pl?`hanno`:`ha`} bisogno di circa <b>${fmtDur(v.wait)}</b> in più. ${def.oven?`Aspetta ad accendere il forno: ricontrolliamo alle <b>${hm(t)}</b>.`:`Tieni il forno caldo e ricontrolla alle <b>${hm(t)}</b>.`}</p>${PROOF_P[c.opt]<=.3?warmTip(W.lo):``}`}; }
       // avanti o andato oltre: anticipare il forno, oppure frenare l'impasto in frigo mentre si aspetta

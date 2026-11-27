@@ -428,3 +428,36 @@ test(`appretto: il forno spento come cella solo quando non va acceso subito`, ()
     assert.ok(pre >= ap.start + 30 * MIN, `${style} ${oven} ${room} °C ${pk}`);
   }
 });
+
+test(`pagnotta con il frigo breve: la prova del dito si fa prima del frigo`, () => {
+  const a = app();
+  for (const pk of [`giornata`, `h24`]) {
+    plan(a, `pagnotta`, `state.plan='${pk}'; state.oven='pentola';`); open(a);
+    const fb = idx(a, `frigobreve`), ap = lastIdx(a, `appretto`), st = idx(a, `incisione`), pre = idx(a, `preriscaldo`);
+    assert.ok(fb === ap + 1, `${pk}: ${keys(a).join(` `)}`);
+    assert.equal(endOf(a, fb), startOf(a, st), `${pk}: dal frigo direttamente in forno`);
+    assert.ok(startOf(a, pre) >= startOf(a, fb), `${pk}: il forno si accende mentre il pane è in frigo`);
+    const G = gates(a);
+    assert.equal(G[fb].before.id, `proof`, pk);
+    assert.ok(!G[st] && !(G[pre] || {}).before, `${pk}: nessun altro controllo sul pane freddo`);
+    const d0 = dinner(a), t0 = startOf(a, fb);
+    // pronto all'ora giusta
+    at(a, t0);
+    let rec = answer(a, fb, `before`, `pronto`);
+    assert.equal(rec.st, `ok`); assert.match(rec.res.html, /in frigo/);
+    assert.equal(dinner(a), d0);
+    assert.ok(clean(screen(a, fb)));
+    // ancora indietro: aspetta fuori, poi frigo, e gli orari slittano
+    rec = answer(a, fb, `before`, `meta`);
+    assert.equal(rec.st, `wait`); assert.match(rec.res.html, /temperatura di casa/);
+    assert.ok(dinner(a) > d0, `${pk}: la cena slitta`);
+    // pronto in anticipo: in frigo subito, più a lungo, stessa ora di cottura
+    at(a, t0 - 40 * MIN);
+    rec = answer(a, fb, `before`, `oltre`);
+    assert.match(rec.res.html, /in frigo <b>adesso<\/b>/);
+    assert.equal(startOf(a, fb), t0 - 40 * MIN);
+    assert.equal(endOf(a, fb), startOf(a, st));
+    assert.equal(dinner(a), d0);
+    assert.ok(clean(screen(a, fb)));
+  }
+});

@@ -377,3 +377,50 @@ test(`testi giusti per pizza, pane e panini; canotto con farina media e teglia c
   const r = a.run(`R`), st = r.steps.find(s => s.key === `staglio`);
   assert.match(st.body, new RegExp(`2 pezzi da ${Math.round(r.I.piece)} g`));
 });
+
+test(`pagnotte: frigo breve nel cestino prima di cuocere, solo per le forme tonde`, () => {
+  const a = app();
+  for (const style of BREADS) for (const pk of [`giornata`, `h24`]) {
+    const r = bread(a, style, `state.room=20; state.plan='${pk}';${pk === `giornata` ? ` state.dinner.setHours(19,0,0,0);` : ``}`);
+    const keys = r.pl.phases.map(p => p[0]), boule = a.run(`STYLES['${style}'].shape`) === `boule`;
+    assert.equal(keys.includes(`frigobreve`), boule, `${style} ${pk}: ${keys.join(` `)}`);
+    if (!boule) continue;
+    assert.equal(keys[keys.length - 1], `frigobreve`);
+    assert.equal(keys[keys.length - 2], `appretto`);
+    const fb = r.pl.phases.find(p => p[0] === `frigobreve`);
+    assert.equal(fb[1], a.run(`CHILL_H`));
+    assert.equal(fb[2], a.run(`state.fridge`));
+    // le ore a temperatura di casa restano almeno 3 in giornata, e il totale è sempre 24 con la notte in frigo
+    const roomH = r.pl.phases.filter(p => p[0] !== `frigobreve` && p[0] !== `frigo`).reduce((s, p) => s + p[1], 0);
+    if (pk === `giornata`) assert.ok(roomH >= 3 - 1e-9, `${style}: ${roomH}`); else assert.ok(Math.abs(r.pl.total - 24) < 1e-9);
+    const s = r.steps.find(x => x.key === `frigobreve`);
+    assert.match(s.body, /solo al momento di infornare/);
+    assert.match(r.steps.find(x => x.key === `incisione`).body, /dal frigo adesso/);
+  }
+  // giornata corta: niente frigo breve se a temperatura di casa resterebbero meno di 3 ore
+  const r = bread(a, `pagnotta`, `state.room=20; state.plan='giornata'; state.dinner=new Date(Date.now()+8*H);`);
+  if (!r.none) {
+    const roomH = r.pl.phases.filter(p => p[0] !== `frigobreve`).reduce((s, p) => s + p[1], 0);
+    assert.ok(roomH >= 3 - 1e-9);
+  }
+  // il frigo breve rallenta poco: conta alla media tra casa e frigo
+  assert.ok(Math.abs(a.run(`heqOf([['frigobreve',2,4]],20,true)`) - 2 * a.run(`fT(12)`)) < 1e-12);
+});
+
+test(`pane molto bagnato: impasto in ciotola e laminazione come prima serie di pieghe`, () => {
+  const a = app();
+  for (const [style, hyd, wet] of [[`pagnotta`, 68, false], [`pagnotta`, 78, true], [`semola`, 72, true], [`ciabatta`, 78, false], [`filoni`, 74, true]]) {
+    const flour = style === `semola` ? `semola` : `forte`;
+    const r = bread(a, style, `state.room=20; state.plan='h24'; state.flour='${flour}'; state.over={hyd:${hyd}};`);
+    const tag = `${style} ${hyd}%`;
+    assert.ok(!r.none, tag);
+    const imp = r.steps.find(s => s.key === `impasto`), p1 = r.steps.find(s => s.key === `pieghe1`);
+    assert.equal(/nella ciotola<\/b>/.test(imp.body), wet, tag);
+    assert.ok(p1, tag);
+    assert.equal(/laminazione/.test(p1.body), wet, tag);
+    assert.equal(/^Laminazione/.test(p1.title), wet, tag);
+    a.run(`state.mixer=true; R=compute();`);
+    assert.doesNotMatch(a.run(`R.steps.find(s=>s.key==='impasto').body`), /nella ciotola<\/b>/, `${tag}: con l'impastatrice si usa il gancio`);
+    a.run(`state.mixer=false;`);
+  }
+});

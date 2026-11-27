@@ -211,13 +211,22 @@ test(`lievito secco con liquido freddo: si mescola alla farina`, () => {
 });
 
 test(`appretto: la prova del dito resta sempre prima di stendere o infornare`, () => {
-  for (const [style, oven] of [[`classica`, `casa_acciaio`], [`pagnotta`, `pentola`], [`bun`, `casa_teglia`]]) {
+  for (const [style, oven] of [[`classica`, `casa_acciaio`], [`filoni`, `casa_pietra`], [`bun`, `casa_teglia`]]) {
     const a = app();
     setup(a, style, `state.oven='${oven}'`);
     const st = a.run(`R.steps.findIndex(s=>s.key==='stesura'||s.key==='incisione')`);
     a.run(`openCook();`);
     assert.equal(a.run(`cook.gates[${st}]&&cook.gates[${st}].before&&cook.gates[${st}].before.id`), `proof`, `${style} ${oven}`);
   }
+  // pagnotta con il frigo breve: la prova si fa prima del frigo, non sull'impasto freddo
+  const a = app();
+  setup(a, `pagnotta`, `state.oven='pentola'`);
+  const fb = a.run(`R.steps.findIndex(s=>s.key==='frigobreve')`), st = a.run(`R.steps.findIndex(s=>s.key==='incisione')`);
+  assert.ok(fb > 0);
+  a.run(`openCook();`);
+  assert.equal(a.run(`cook.gates[${fb}].before.id`), `proof`);
+  assert.ok(a.run(`cook.gates[${fb}].before.chill`));
+  assert.ok(!a.run(`cook.gates[${st}]`), `nessuna seconda prova sul pane freddo`);
 });
 
 test(`prefermento: il frigo che fa da cuscinetto resta nei limiti del percorso`, () => {
