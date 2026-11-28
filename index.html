@@ -658,6 +658,20 @@ table.chg{width:100%;border-collapse:collapse;font-size:.9rem;font-variant-numer
 @keyframes pm-j{from{transform:translate(-1.5px,0)}to{transform:translate(1.5px,-1.5px)}}
 .pm-w{animation:pm-w 2.4s linear infinite}
 @keyframes pm-w{from{transform:scaleX(1)}50%{transform:scaleX(-1)}to{transform:scaleX(1)}}
+/* patate e condimento */
+.pt-b{animation:pt-b 1.2s ease-in-out infinite alternate}
+@keyframes pt-b{from{transform:translate(-1px,1px) rotate(-8deg)}to{transform:translate(1px,-3px) rotate(8deg)}}
+.dr-d{animation:dr-d 1.5s ease-in infinite}
+@keyframes dr-d{0%{opacity:0;transform:translateY(-4px)}20%{opacity:1}100%{opacity:0;transform:translateY(12px)}}
+/* pesata */
+.wg-scr{fill:#9FE3B8;font-size:8px}
+.wg-s,.wg-f,.wg-m,.wg-z,.wg-n{animation:5s ease-in-out infinite}
+.wg-s{animation-name:wg-s}.wg-f{animation-name:wg-f}.wg-m{animation-name:wg-m}.wg-z{animation-name:wg-z}.wg-n{animation-name:wg-n}
+@keyframes wg-s{0%,10%{transform:rotate(0deg)}20%,58%{transform:rotate(-48deg)}70%,100%{transform:rotate(0deg)}}
+@keyframes wg-f{0%,20%{opacity:0;transform:translateY(-4px)}26%,56%{opacity:1;transform:translateY(4px)}62%,100%{opacity:0;transform:translateY(8px)}}
+@keyframes wg-m{0%,20%{transform:scale(.25,.08)}60%,94%{transform:scale(1,1)}100%{transform:scale(.25,.08)}}
+@keyframes wg-z{0%,22%{opacity:1}28%,94%{opacity:0}100%{opacity:1}}
+@keyframes wg-n{0%,56%{opacity:0}62%,92%{opacity:1}98%,100%{opacity:0}}
 .tz-w{animation:tz-w 1.1s ease-in-out infinite alternate}
 @keyframes tz-w{from{transform:translateX(-22px) rotate(-10deg)}to{transform:translateX(22px) rotate(10deg)}}
 .tz-c,.tz-t{animation:6s ease-in-out infinite}
@@ -734,6 +748,18 @@ const STYLES = {
 const catOf=k=>STYLES[k]&&STYLES[k].bun?`bun`:STYLES[k]&&STYLES[k].bread?`pane`:`pizza`;
 /* Tangzhong: l'8% della farina cotto con 5 volte il suo peso di liquido (vedi docs/bun.md). Per bun e pan bauletto. */
 const TZ={pct:8,ratio:5,lead:1,free:.25};
+/* Pesare gli ingredienti prende tempo, soprattutto la prima volta: è un passaggio a sé prima di impastare
+   (10 minuti, 15 per i bun con latte, uova, burro e zucchero). Non conta nel lievito: l'impasto non c'è ancora.
+   Sposta indietro l'inizio; con il tangzhong, un'ora prima, la pesata sta nell'attesa e l'inizio non cambia.
+   Con un prefermento da maturare si pesa mentre matura, senza tempo in più. */
+const WEIGH_MIN={pizza:10,pane:10,bun:15};
+const weighH=P=>WEIGH_MIN[P.S.bun?`bun`:P.S.bread?`pane`:`pizza`]/60;
+/* Patate lesse dei bun: a pezzi in acqua fredda, circa 35 minuti tra bollore e cottura, poi schiacciate e lasciate
+   raffreddare almeno 45 minuti, perché entrano nell'impasto a temperatura di casa (o fredde di frigo, vedi coldExtras).
+   Si comincia un'ora e mezza prima di impastare: la pesata e il tangzhong stanno dentro quest'attesa. */
+const POTATO={lead:1.5,cook:35};
+/* Condimento della pizza: la mozzarella tagliata scola due ore prima di stendere, mentre i panetti fanno l'appretto. */
+const TOPPING={before:2,min:15};
 /* % di farina nel tangzhong: l'8%, ma almeno un quarto del liquido resta libero per sciogliere il lievito
    (brioche bun 6%, smash 6,75%: le fonti vanno dal 3 al 10%) */
 const tzPct=hyd=>Math.min(TZ.pct,hyd*(1-TZ.free)/TZ.ratio);
@@ -774,7 +800,7 @@ const PLANS = {
   h72:      {name:`72 ore`, short:`Tre notti in frigo`, h:72}
 };
 
-const STEP_NAMES = {tangzhong:`Prepara il tangzhong`,prefermento:`Prepara il prefermento`,maturazione:`Maturazione del prefermento`,bigainfrigo:`Metti la biga in frigo`,bigafrigo:`Biga in frigo`,bigafuori:`Togli la biga dal frigo`,avvio:`Riposo prima del frigo`,impasto:`Impasta`, puntata:`Prima lievitazione`, pieghe1:`Pieghe, 1ª serie`, pieghe2:`Pieghe, 2ª serie`, pieghe3:`Pieghe, 3ª serie`, staglio:`Panetti`, frigo:`Frigorifero`, appretto:`Seconda lievitazione`, preriscaldo:`Accendi il forno`, stesura:`Stesura`, cottura:`Cottura`, formatura:`Formatura del pane`, incisione:`Incisione e infornata`, raffreddamento:`Raffreddamento`, frigobreve:`Pane in frigo prima di cuocerlo`};
+const STEP_NAMES = {tangzhong:`Prepara il tangzhong`,patate:`Lessa le patate`,pesata:`Pesa gli ingredienti`,condimento:`Prepara il condimento`,prefermento:`Prepara il prefermento`,maturazione:`Maturazione del prefermento`,bigainfrigo:`Metti la biga in frigo`,bigafrigo:`Biga in frigo`,bigafuori:`Togli la biga dal frigo`,avvio:`Riposo prima del frigo`,impasto:`Impasta`, puntata:`Prima lievitazione`, pieghe1:`Pieghe, 1ª serie`, pieghe2:`Pieghe, 2ª serie`, pieghe3:`Pieghe, 3ª serie`, staglio:`Panetti`, frigo:`Frigorifero`, appretto:`Seconda lievitazione`, preriscaldo:`Accendi il forno`, stesura:`Stesura`, cottura:`Cottura`, formatura:`Formatura del pane`, incisione:`Incisione e infornata`, raffreddamento:`Raffreddamento`, frigobreve:`Pane in frigo prima di cuocerlo`};
 
 const state = {
   method:`diretto`, prefPct:50, prefTemp:18, prefHours:18, prefFridge:0, prefOut:0, prefAdd:false, prefKind:`corta`,
@@ -1048,7 +1074,10 @@ function buildBreadPlan(pk,P,cfg,now,realNow){
   if(!BREAD_PLANS.includes(pk)) return {ok:false,pk,reason:`Per il pane sono disponibili la lievitazione in giornata e quella con una notte in frigo.`};
   const S=P.S, room=state.room, fr=state.fridge, bun=!!S.bun;
   const bk=breadBakeInfo(cfg.oven,S,P.ball,state.n);
-  const lead=P.tz?TZ.lead:0;                      // il tangzhong si prepara un'ora prima di impastare, poi si raffredda
+  const tzLead=P.tz?TZ.lead:0;                    // il tangzhong si prepara un'ora prima di impastare, poi si raffredda
+  const potLead=P.potato>0?POTATO.lead:0;         // le patate da lessare e raffreddare
+  const lead=Math.max(tzLead,potLead,weighH(P));  // pesata e tangzhong stanno nell'attesa più lunga; da sola la pesata è tempo in più
+  const leadTxt=potLead?`, più un'ora e mezza per lessare e raffreddare le patate`:tzLead?`, più un'ora per il tangzhong`:`, più ${Math.round(lead*60)} minuti per pesare gli ingredienti`;
   const tFirst=state.dinner.getTime();            // pane pronto da tagliare, già raffreddato
   const coolStart=tFirst-bk.cool*H, cottStart=coolStart-bk.total*MIN, stesDur=10, stesStart=cottStart-stesDur*MIN;
   const pieghe=!!S.fold||P.hyd>=66;
@@ -1064,7 +1093,7 @@ function buildBreadPlan(pk,P,cfg,now,realNow){
       if(tFirst<=realNow) return {ok:false,pk,short:true,reason:`L'orario scelto è già passato.`};
       const need=wMin??3;
       const earliest=Math.ceil((now+(need+lead)*H+(tFirst-stesStart))/(15*MIN))*15*MIN;
-      return {ok:false,pk,short:true,earliest,reason:`Non c'è abbastanza tempo: ${wMin!=null?`anche con la prima lievitazione al caldo l'impasto ha bisogno di almeno ${fmtDur(need)} prima della cottura`:`l'impasto deve lievitare almeno 3 ore`}${lead?`, più un'ora per il tangzhong`:``}, poi servono cottura e raffreddamento. ${bun?`I panini possono essere pronti`:`Il pane può essere pronto`} al più presto ${when(earliest)}.`};
+      return {ok:false,pk,short:true,earliest,reason:`Non c'è abbastanza tempo: ${wMin!=null?`anche con la prima lievitazione al caldo l'impasto ha bisogno di almeno ${fmtDur(need)} prima della cottura`:`l'impasto deve lievitare almeno 3 ore`}${leadTxt}, poi servono cottura e raffreddamento. ${bun?`I panini possono essere pronti`:`Il pane può essere pronto`} al più presto ${when(earliest)}.`};
     }
     if(avail<3){
       const G=Math.floor(avail*4)/4, start=stesStart-G*H-lead*H, fn=firstNight(start,coolStart);
@@ -1124,7 +1153,7 @@ function buildBreadPlan(pk,P,cfg,now,realNow){
   const fridgeH=(phases.find(p=>p[0]===`frigo`)||[0,0])[1];
   // con zucchero e grassi i bun reggono più lievito: tetto al 4% (le ricette in 3 ore arrivano al 4–5%)
   const warm=phases.some(p=>p[0]===`puntata`&&p[2]===WARM_T)&&room<WARM_T;
-  return {ok:true,pk,bread:true,bun,phases,mixStart,begin:mixStart-lead*H,tzLead:lead,stesStart,cottStart,coolStart,tFirst,stesDur,heq,yp:Math.min(bun?BUN_YCAP:3,yeastPct(heq)*(S.yeastK||2)),bk,A,pieghe:pieghe&&!bun,teglia:false,total,fridgeH,shiftNote,warm,
+  return {ok:true,pk,bread:true,bun,phases,mixStart,begin:mixStart-lead*H,tzLead,potLead,weighLead:weighH(P),stesStart,cottStart,coolStart,tFirst,stesDur,heq,yp:Math.min(bun?BUN_YCAP:3,yeastPct(heq)*(S.yeastK||2)),bk,A,pieghe:pieghe&&!bun,teglia:false,total,fridgeH,shiftNote,warm,
           flourOk: pk===`giornata`||PLANS[pk].h<=P.F.maxH};
 }
 function buildPlan(pk,P,cfg,now){
@@ -1145,18 +1174,19 @@ function buildPlan(pk,P,cfg,now){
   const pieghe=teglia||P.hyd>=66;
   const A=teglia?clamp(q(4/fT(room)),3.5,6):clamp(q(4/fT(room)),2,6); // la massa della teglia esce fredda dal frigo: almeno 3,5 h
   let phases, shiftNote=null;
+  const W=weighH(P);                               // la pesata prima di impastare
   if(pk===`giornata`){
-    const avail=(stesStart-now)/H;
+    const avail=(stesStart-now)/H-W;
     if(avail<3){
       if(tFirst<=realNow) return {ok:false,pk,short:true,reason:`L'orario scelto è già passato.`};
-      const earliest=Math.ceil((now+3*H+(tFirst-stesStart))/(15*MIN))*15*MIN;
-      return {ok:false,pk,short:true,earliest,reason:`Non c'è abbastanza tempo: l'impasto deve lievitare almeno 3 ore, poi servono stesura e cottura. La prima pizza può essere pronta al più presto ${when(earliest)}.`};
+      const earliest=Math.ceil((now+(3+W)*H+(tFirst-stesStart))/(15*MIN))*15*MIN;
+      return {ok:false,pk,short:true,earliest,reason:`Non c'è abbastanza tempo: servono ${Math.round(W*60)} minuti per pesare gli ingredienti, l'impasto deve lievitare almeno 3 ore, poi servono stesura e cottura. La prima pizza può essere pronta al più presto ${when(earliest)}.`};
     }
     let G=Math.min(8,avail);
-    const start=stesStart-G*H;
+    const start=stesStart-G*H-W*H;
     if(nightAt(start)){
       const morning=(new Date(start).getHours()>=23 ? at(start,7,1) : at(start,7))+30*MIN;
-      const G2=(stesStart-morning)/H;
+      const G2=(stesStart-morning)/H-W;
       if(G2>=3) G=Math.min(G2,8);
       else if(start>now) return {ok:false,pk,reason:`In giornata dovresti iniziare di notte, ${when(start)}: dalle 7:30 non c'è tempo per farlo lievitare almeno 3 ore. Scegli una lievitazione più lunga oppure un orario più tardi.`};
     }
@@ -1169,8 +1199,8 @@ function buildPlan(pk,P,cfg,now){
     const pre=teglia?.5+B:.5+B+.25;
     let Fh=tot-pre-A-(teglia?.25:0);
     let mix;
-    ({mix,Fh,shiftNote}=avoidNight(stesStart-tot*H,pre,Fh,now));
-    if(mix<now) return {ok:false,pk,reason:`Dovresti iniziare ${when(mix)}, che è già passato.`};
+    ({mix,Fh,shiftNote}=avoidNight(stesStart-tot*H,pre,Fh,now,W));
+    if(mix-W*H<now) return {ok:false,pk,reason:`Dovresti iniziare ${when(mix-W*H)}, che è già passato.`};
     phases = teglia
       ? [[`impasto`,.5,room],[`puntata`,B,room],[`frigo`,Fh,fr],[`staglio`,.25,room],[`appretto`,A,room]]
       : [[`impasto`,.5,room],[`puntata`,B,room],[`staglio`,.25,room],[`frigo`,Fh,fr],[`appretto`,A,room]];
@@ -1179,7 +1209,7 @@ function buildPlan(pk,P,cfg,now){
   const mixStart=stesStart-total*H;
   const heq=heqOf(phases,room,teglia);
   const fridgeH=(phases.find(p=>p[0]===`frigo`)||[0,0])[1];
-  return {ok:true,pk,phases,mixStart,stesStart,cottStart,tFirst,stesDur,heq,yp:Math.min(3,yeastPct(heq)*(P.S.yeastK||1)),bk,A,pieghe,teglia,total,fridgeH,shiftNote,
+  return {ok:true,pk,phases,mixStart,begin:mixStart-W*H,weighLead:W,stesStart,cottStart,tFirst,stesDur,heq,yp:Math.min(3,yeastPct(heq)*(P.S.yeastK||1)),bk,A,pieghe,teglia,total,fridgeH,shiftNote,
           flourOk: pk===`giornata`||PLANS[pk].h<=P.F.maxH};
 }
 
@@ -1424,7 +1454,9 @@ function buildPrefermentPlan(pk,P,cfg,now){
   }
   phases.push([`appretto`,A,room]);
   const total=phases.reduce((s,x)=>s+x[1],0), mixStart=stesStart-total*H;
-  if(mixStart<now) return fail(`${existing?`L’impasto finale dovrebbe iniziare`:`Dovresti preparare ${biga?`la biga`:`il poolish`}`} ${when(mixStart)}, prima di quando puoi iniziare (${when(now)}). ${cfg.prepMode===`day`?`Questo percorso non entra nel giorno della pizza. Scegli un metodo più breve o preparalo prima.`:`Riduci le ore di frigo se previste, scegli un percorso più breve o sposta la cena più avanti.`}`);
+  // la pesata del rimpasto: mentre il prefermento matura; con un preparato già pronto è tempo in più prima
+  const W=existing?weighH(P):0, begin=mixStart-W*H;
+  if(begin<now) return fail(`${existing?`Dovresti pesare gli ingredienti dell’impasto finale`:`Dovresti preparare ${biga?`la biga`:`il poolish`}`} ${when(begin)}, prima di quando puoi iniziare (${when(now)}). ${cfg.prepMode===`day`?`Questo percorso non entra nel giorno della pizza. Scegli un metodo più breve o preparalo prima.`:`Riduci le ore di frigo se previste, scegli un percorso più breve o sposta la cena più avanti.`}`);
   // Dose fresca sulla farina del prefermento: biga 1% a 18 °C/18h;
   // poolish 5 g fresco/350 g farina a 12h (Ooni), riferimento termico assunto 20 °C.
   // Correzione termica limitata ai campi sopra; ipotesi dichiarate nella documentazione.
@@ -1435,7 +1467,7 @@ function buildPrefermentPlan(pk,P,cfg,now){
     const mature=actual.started+.25*H+(p.cold+p.hours+(p.warm?1:0))*H;
     if(mixStart<mature||mixStart>mature+.5*H) return fail(`Con le ore di maturazione indicate, il rimpasto è atteso intorno a ${when(mature)}; la cena scelta lo richiederebbe ${when(mixStart)}. Non prolunghiamo automaticamente l’attesa del prefermento maturo: modifica cena o riposo dell’impasto finale. Se è già collassato, questo piano non è applicabile.`);
   }
-  return {ok:true,pk,phases,mixStart,stesStart,cottStart,tFirst,stesDur,bk,A,pieghe:teglia||P.hyd>=66,teglia,total,fridgeH:p.fridge,shiftNote:null,flourOk:(actual?(stesStart-actual.started)/H:total)<=P.F.maxH,
+  return {ok:true,pk,phases,mixStart,begin,weighLead:weighH(P),stesStart,cottStart,tFirst,stesDur,bk,A,pieghe:teglia||P.hyd>=66,teglia,total,fridgeH:p.fridge,shiftNote:null,flourOk:(actual?(stesStart-actual.started)/H:total)<=P.F.maxH,
     yp:(actual?actual.yp:prefY)*p.pct/100+rx.add,pref:{...p,mixT:p.warm?Math.min(room,(p.fridgeT??4)+4):p.temp,hyd,yp:actual?actual.yp:prefY,addYp:rx.add,finalHeq:rx.heq,needYp:rx.need,suggestedOut,actual},heq:null};
 }
 
@@ -1701,9 +1733,9 @@ function readyList(r){
   if(I.sugar>0) add(buy,`zucchero`,bun?`Zucchero`:`Zucchero o miele`,g(I.sugar));
   // oltre all'impasto
   if(!bread){
-    const k=teglia?state.tw*state.th*state.tn/1200:n, rom=state.style===`romana`;
-    add(buy,`pomodoro`,`Pomodori pelati o passata`,g(r10(k*(teglia?250:rom?70:80))),teglia?`per una margherita in teglia`:many?`per ${n} margherite`:`per una margherita`);
-    add(buy,`mozzarella`,`Fiordilatte (mozzarella)`,g(r10(k*(teglia?250:rom?80:100))),`ben sgocciolata`);
+    const q=toppingQty(), rom=q.rom;
+    add(buy,`pomodoro`,`Pomodori pelati o passata`,g(q.tom),teglia?`per una margherita in teglia`:many?`per ${n} margherite`:`per una margherita`);
+    add(buy,`mozzarella`,`Fiordilatte (mozzarella)`,g(q.mozz),`ben sgocciolata`);
     add(buy,`basilico`,`Basilico fresco`,``,`qualche foglia`);
     if(!teglia&&!rom) add(buy,`semola`,`Semola rimacinata per stendere`,`circa ${g(r10(40+n*15))}`,`anche farina normale`);
   } else if(bun){
@@ -1770,10 +1802,10 @@ function readyList(r){
   if(pl.pref&&!actual&&Math.abs(pl.pref.temp-state.room)>=2&&!pl.pref.warm) checks.push({id:`posto`,name:`Trova un posto a ${pl.pref.temp} °C`,qty:``,note:`per ${pl.pref.method===`biga`?`la biga`:`il poolish`}: cantina, ripostiglio o una stanza non riscaldata. Misuralo con il termometro`});
   const pre=step(`preriscaldo`);
   if(pre) checks.push({id:`forno`,name:oven===`legna`?`Il forno a legna`:`Il forno libero`,qty:``,note:oven===`legna`?`pulito dalla cenere e con la legna pronta: si accende ${at(pre.start)}`:`si accende ${at(pre.start)}: niente altro da cuocere a quell'ora`});
-  if(!bread){ const st=step(`stesura`); if(st) checks.push({id:`scola`,name:`La mozzarella`,qty:``,note:`tagliala e mettila a scolare verso le ${hm(st.start-2*H)}, due ore prima di stendere`}); }
+  if(!bread){ const cd=step(`condimento`); if(cd) checks.push({id:`scola`,name:`Spazio in frigo per la mozzarella`,qty:``,note:`a scolare in un colino sopra una ciotola, dalle ${hm(cd.start)}`}); }
   if(bun&&I.egg>0&&!I.coldExtras){ const im=step(`impasto`); if(im) checks.push({id:`uova`,name:`Uova${S.fat===`olio`?``:` e burro`} fuori dal frigo`,qty:``,note:`circa un'ora prima di impastare, verso le ${hm(im.start-H)}`}); }
   if(bun&&I.coldExtras) checks.push({id:`uova`,name:`Uova e latte in frigo`,qty:``,note:`oggi fa caldo: servono freddi`});
-  if(I.potato>0) checks.push({id:`patate`,name:`Lessa le patate in anticipo`,qty:``,note:`con la buccia, poi pelale, schiacciale e lasciale raffreddare`});
+  if(I.potato>0){ const pt=step(`patate`); checks.push({id:`patate`,name:`Le patate da lessare`,qty:``,note:pt?`si cuociono ${at(pt.start)}, un'ora e mezza prima di impastare: oppure il giorno prima, e restano in frigo`:`lessale in anticipo e lasciale raffreddare`}); }
   checks.push({id:`piano`,name:`Il piano di lavoro`,qty:``,note:`libero e pulito, con tutto a portata di mano`});
   return {buy,tools,checks};
 }
@@ -1836,6 +1868,7 @@ function makeSteps(pl,P,I){
   const readyTest=`<p>Come capire se è pronto: premi piano con un dito infarinato. Se l'impronta risale lentamente, è pronto. Se risale di scatto, aspetta ancora. Se il buco resta, è al limite: cuoci appena puoi.</p>`;
   for(const [k,d] of pl.phases){
     const s=t, e=t+d*H;
+    if(k===`impasto`) steps.push(weighStep(pl,P,I,s));
     if(k===`prefermento`){
       const name=METHODS[pl.pref.method], biga=pl.pref.method===`biga`;
       steps.push({key:k,title:`Prepara ${biga?`la biga`:`il poolish`}`,start:s,end:e,hands:true,body:`<p>Pesa <b>${g(I.pref.flour)}</b> di farina, <b>${g(I.pref.water)}</b> d’acqua e <b>${gy(I.pref.yeast)}</b> di ${yName}. Sono dosi già comprese nel totale: non aggiungerle una seconda volta. Niente sale né olio in questa fase.</p>${prefermentWeighing(I.pref)}<p>Sciogli il lievito nell’acqua, poi aggiungi la farina. ${biga?`Mescola brevemente: devono restare grumi umidi e irregolari, senza farina asciutta. Non impastare fino a ottenere una palla liscia.`:`Mescola fino a ottenere una crema uniforme, senza farina asciutta.`} Metti in un contenitore capiente coperto, senza chiuderlo ermeticamente.</p>${pl.pref.warm?`<p>Questa è una biga per la casa calda: lasciala coperta a <b>${pl.pref.temp} °C</b> per circa <b>${fmtDur(pl.pref.hours)}</b>, giusto il tempo di avviarla, poi mettila in frigo per <b>${fmtDur(pl.pref.cold)}</b>.</p>`:pl.pref.long?`<p>Questa è una biga lunga: appena pronta, mettila subito in frigo, coperta, per circa <b>${fmtDur(pl.pref.cold)}</b>. Poi finirà di maturare fuori frigo a <b>${pl.pref.temp} °C</b>.</p>`:`<p>Misura con un termometro: ${name.toLowerCase()} e luogo di riposo devono essere vicini a <b>${pl.pref.temp} °C</b>. Regola l’acqua per raggiungere questa temperatura; non usare la temperatura dell’acqua prevista per un impasto diretto.</p>`}`});
@@ -1855,7 +1888,7 @@ function makeSteps(pl,P,I){
       steps.push({key:k,title:`Prepara l’impasto finale`,start:s,end:e,hands:true,timer:10,body:`<p>Usa <b>tutto il prefermento maturo</b>. Aggiungi solo le dosi rimaste: <b>${g(f.flour)}</b> di farina, <b>${g(f.water)}</b> d’acqua, <b>${g(f.salt)}</b> di sale${f.oil?` e <b>${g(f.oil)}</b> d’olio`:``}. ${f.yeast>0?`Aggiungi anche <b>${gy(f.yeast)}</b> di ${yName}, sciolto nell’acqua: serve per la lievitazione dopo il rimpasto, che il solo ${pl.pref.method===`biga`?`lievito della biga`:`poolish`} non basta a sostenere nei tempi previsti.</p>${prefermentWeighing({yeast:f.yeast,water:f.water})}`:`<b>Non aggiungere altro lievito.</b></p>`}<p>${pl.pref.method===`biga`?`Spezza la biga in piccoli pezzi e ammorbidiscila con una parte dell’acqua rimasta.`:`Diluisci il poolish con una parte dell’acqua rimasta.`} ${f.flour>.01?`Incorpora la farina rimasta, poi il sale e il resto dell’acqua poco alla volta.`:`Incorpora il sale e il resto dell’acqua poco alla volta.`}${f.oil?` Aggiungi l’olio per ultimo.`:``} ${state.mixer?`Usa il gancio a velocità bassa, fermandoti se l’impasto si scalda.`:`Lavora in ciotola, con pause di 5–10 minuti se fatichi a incorporare il prefermento.`} Devi ottenere un impasto uniforme ed elastico.</p><p>${remixWaterHtml(I.remixT)}</p>`});
     } else if(k===`impasto`){
       const keep=P.hyd>=70, keepG=Math.max(5,roundG(I.water*.1));
-      let b=`<p>Pesa tutto prima di iniziare: <b>${g(I.flour)}</b> di farina, <b>${g(I.water)}</b> di acqua a circa <b>${I.waterT} °C</b>${I.waterT<10?` (fredda di frigo)`:``}, <b>${g(I.salt)}</b> di sale, <b>${gy(I.yeast)}</b> di ${yName}${I.oil>0?`, <b>${g(I.oil)}</b> di olio extravergine`:``}.</p>`;
+      let b=`<p>Hai già pesato tutto: <b>${g(I.flour)}</b> di farina, <b>${g(I.water)}</b> di acqua a circa <b>${I.waterT} °C</b>${I.waterT<10?` (fredda di frigo)`:``}, <b>${g(I.salt)}</b> di sale, <b>${gy(I.yeast)}</b> di ${yName}${I.oil>0?`, <b>${g(I.oil)}</b> di olio extravergine`:``}.</p>`;
       const ys=yeastSol(I.yeast,I.water);
       if(ys){ const {L,X,W}=ys; b+=`<p>Il lievito è pochissimo e difficile da pesare. Sciogli 1 g di lievito in ${L} g d'acqua e usa <b>${X} g</b> di questa soluzione (il resto si butta). L'acqua da aggiungere a parte scende così a <b>${g(roundG(I.water-W))}</b>.</p>`; }
       if(state.mixer) b+=`<p>Nella ciotola dell'impastatrice versa l'acqua${keep?` (tienine da parte ${keepG} g)`:``} ${yeastIn(I)}. Aggiungi la farina in due o tre volte, con il gancio a velocità bassa. Quando l'impasto prende forma aggiungi il sale${keep?`, poi l'acqua tenuta da parte un po' alla volta, aggiungendo la successiva solo quando la precedente è stata assorbita`:``}${I.oil>0?` e per ultimo l'olio`:``}. Impasta 8–12 minuti, finché si stacca dalle pareti ed è liscio.</p>`;
@@ -1895,8 +1928,9 @@ function makeSteps(pl,P,I){
     t=e;
   }
   const O=P.O;
+  steps.push(toppingStep(pl,steps));
   steps.push({key:`preriscaldo`,title:state.oven===`legna`?`Accendi il forno a legna`:`Accendi il forno`,start:pl.stesStart-O.preheat*MIN,end:pl.stesStart,hands:true,body:`<p>${pl.bk.pre}</p>`});
-  const cond=`<p>Condisci in fretta: un velo di pomodoro e mozzarella ben sgocciolata (tagliala e lasciala scolare un paio d'ore prima). Meno ingredienti metti, meglio cuoce.</p><p>Prima di passare la pizza sulla pala, scuoti via la semola in eccesso: sulla pala ne basta un velo, perché quella in più brucia sul fondo. Una volta sulla pala, inforna subito: se aspetta, si attacca.</p>`;
+  const cond=`<p>Condisci in fretta: un velo di pomodoro e la mozzarella che hai messo a scolare. Meno ingredienti metti, meglio cuoce.</p><p>Prima di passare la pizza sulla pala, scuoti via la semola in eccesso: sulla pala ne basta un velo, perché quella in più brucia sul fondo. Una volta sulla pala, inforna subito: se aspetta, si attacca.</p>`;
   let sb;
   if(teglia) sb=`<p>Versa 1–2 cucchiai d'olio nella teglia e distribuiscilo bene. Adagia l'impasto e allargalo con i polpastrelli fino agli angoli. Se si ritira, aspetta 10 minuti e riprova.</p><p>Lascialo riposare in teglia 20–30 minuti prima di condire e infornare.</p>`;
   else if(romana) sb=`<p>Spolvera il piano di farina e stendi il panetto con il mattarello fino a 2–3 mm, quasi senza bordo. Se in cottura fa bolle grandi, bucherella appena il centro con una forchetta.</p>`+cond;
@@ -1927,6 +1961,52 @@ function breadWarnings(P,pl,I,W){
   if(state.oven===`casa_teglia`&&S.steam&&S.shape!==`stampo`) W.push({w:0,t:`Con la sola teglia il pane viene buono, ma sotto colora meno. Se hai una pietra, un acciaio o una pentola di ghisa, la crosta del fondo migliora molto.`});
   if(pl.bk.batches>1) W.push({w:0,t:`Il forno cuoce ${pl.bk.oven===`pentola`?`un pane per volta`:`${pl.bk.cap} pani per volta`}: le infornate sono ${pl.bk.batches}. Gli orari ne tengono conto, e intanto gli altri pani aspettano in frigo.`});
 }
+/* Pesata: passaggio comune a pizza, pane e bun, prima dell'impasto (vedi WEIGH_MIN). Elenca le dosi da pesare adesso:
+   con il tangzhong solo quello che resta, con un prefermento solo le dosi del rimpasto. */
+function weighStep(pl,P,I,mix){
+  const S=P.S, bun=!!S.bun, oil=S.fat===`olio`, pref=!!pl.pref, tz=I.tz, li=[];
+  const yName=state.yeast===`secco`?`lievito secco`:`lievito di birra fresco`;
+  const it=(q,name,x)=>{ if(!/^0([.,]0+)? g$/.test(q)) li.push(`<li><b>${q}</b> ${name}${x?` <small>${x}</small>`:``}</li>`); };
+  const liqName=bun?(oil?`di latte`:`di latte intero`):`d'acqua`, Liq=bun?`Il latte`:`L'acqua`;
+  let liq, temp, ys=null;
+  if(pref){
+    const f=I.final; liq=f.water; temp=I.remixT?I.remixT.t:null;
+    it(g(f.flour),`di farina`); it(g(f.water),liqName); it(g(f.salt),`di sale`);
+    if(f.yeast>0) it(gy(f.yeast),`di ${yName}`,`solo per il rimpasto`);
+    it(g(f.oil),`d'olio extravergine`);
+  } else {
+    liq=I.water-(tz?tz.liquid:0); temp=I.waterT; ys=yeastSol(I.yeast,liq);
+    it(g(I.flour-(tz?tz.flour:0)),`di farina`,tz?`quella che resta dopo il tangzhong`:``);
+    it(g(liq),liqName,S.soft&&!bun?`se vuoi, metà può essere latte`:``);
+    if(I.egg>0) it(g(I.egg),`di uova sbattute`,`sbattile in una ciotolina e pesa solo questa parte`);
+    if(I.potato>0) it(g(I.potato),`di patate lesse schiacciate`,I.coldExtras?`fredde di frigo`:`a temperatura di casa`);
+    it(g(I.sugar),`di zucchero`,S.bread&&!bun?`o miele`:``);
+    it(g(I.salt),`di sale`);
+    it(ys?`1 g`:gy(I.yeast),`di ${yName}`,ys?`è pochissimo: nel prossimo passaggio lo sciogli e ne usi solo una parte`:``);
+    it(g(I.oil),bun?(oil?`d'olio`:`di burro`):S.soft?`d'olio o burro`:`d'olio extravergine`,bun&&!oil?`tagliato a pezzetti, così si ammorbidisce`:``);
+  }
+  const body=`<p>Prima di impastare prepara tutto sul piano. Con le dosi già pronte impasti con calma e non rischi di dimenticare il sale o di sbagliare con le mani sporche.</p><ul>${li.join(``)}</ul>${tz?`<p>Farina e latte del tangzhong li hai già usati: qui pesi solo il resto.</p>`:``}${pref?`<p>Il prefermento non si pesa: lo userai tutto.</p>`:``}<p>Appoggia la ciotola sulla bilancia e premi <b>tara</b> (o “0”) prima di ogni ingrediente, poi versa piano. Metti sale e lievito in due ciotoline diverse: il sale a contatto con il lievito lo rallenta.</p><p>${Liq} ${bun?`pesalo`:`pesala`} per ultimo${temp!=null?` e misura la temperatura: deve essere circa <b>${temp} °C</b>. Se non ci arriva, mescola ${bun?`latte freddo e latte scaldato`:`acqua fredda e calda`} e ripesa`:``}.</p>`;
+  return {key:`pesata`,title:`Pesa gli ingredienti`,start:mix-pl.weighLead*H,end:mix,hands:true,body};
+}
+/* Patate dei bun (POTATO): lessate un'ora e mezza prima di impastare, schiacciate e lasciate raffreddare. */
+function potatoStep(pl,I){
+  const s=pl.mixStart-pl.potLead*H, cold=I.coldExtras;
+  return {key:`patate`,title:`Lessa le patate`,start:s,end:s+POTATO.cook*MIN,hands:true,timer:20,body:`<p>Ti servono <b>${g(I.potato)}</b> di patate lesse: sbuccia circa <b>${g(Math.round(I.potato*1.15/10)*10)}</b> di patate farinose, tagliale a pezzi di 3–4 cm e mettile in una pentola, coperte d'acqua fredda. Porta a bollore e cuoci 15–20 minuti, finché la forchetta entra senza sforzo.</p><p>Scolale bene e schiacciale subito con lo schiacciapatate, ancora calde: fredde diventano colla. Allarga la purea su un piatto largo, così si raffredda prima e perde il vapore, e coprila con la pellicola a contatto.</p><p>Quando impasti, alle <b>${tAt(pl.mixStart)}</b>, devono essere ${cold?`<b>fredde di frigo</b>, perché oggi fa caldo: appena sono tiepide mettile in frigo`:`<b>a temperatura di casa</b>: se le senti ancora tiepide, aspetta`}. Le pesi insieme agli altri ingredienti.</p><p>Se preferisci, lessale il giorno prima e tienile in frigo, coperte${cold?``:`: tirale fuori un'ora prima di impastare`}.</p>`};
+}
+/* Condimento della pizza (TOPPING): dosi indicative di una margherita, come nella lista “Prima di partire”. */
+function toppingQty(){
+  const S=STYLES[state.style]||{}, teglia=!!S.teglia, rom=state.style===`romana`, n=teglia?state.tn:state.n;
+  const k=teglia?state.tw*state.th*state.tn/1200:n, r10=x=>Math.max(10,Math.round(x/10)*10);
+  return {teglia,rom,n,tom:r10(k*(teglia?250:rom?70:80)),mozz:r10(k*(teglia?250:rom?80:100))};
+}
+function toppingStep(pl,steps){
+  const q=toppingQty(), ap=steps.filter(x=>x.key===`appretto`).pop();
+  let s=pl.stesStart-TOPPING.before*H;
+  if(ap) s=Math.max(s,ap.start+15*MIN);          // non insieme all'uscita dal frigo
+  s=Math.min(s,pl.stesStart-30*MIN);
+  const what=q.teglia?`l'impasto lievita`:`i panetti lievitano`;
+  return {key:`condimento`,title:`Prepara il condimento`,start:s,end:s+TOPPING.min*MIN,hands:true,body:`<p>Mentre ${what}, prepara quello che va sopra. Fatto adesso, al momento di stendere hai tutto pronto e la pizza non aspetta sulla pala.</p><ul><li><b>Mozzarella</b>, circa ${g(q.mozz)}: tagliala a cubetti o a striscioline e mettila a scolare in un colino sopra una ciotola, in frigo. Persa l'acqua in più, in forno non allaga la pizza.</li><li><b>Pomodoro</b>, circa ${g(q.tom)}: schiaccia i pelati con una forchetta (o usa la passata) e aggiungi un pizzico di sale e un filo d'olio. Non cuocerlo: cuoce in forno.</li><li><b>Basilico</b>: lavalo e asciugalo bene.</li></ul>${q.teglia||q.rom?``:`<p>Prepara anche la semola per stendere e, se la usi, la pala.</p>`}<p>Togli la mozzarella dal frigo una mezz'ora prima di condire: fredda di frigo rallenta la cottura.</p>`};
+}
 /* Tangzhong: passaggio comune a bun e pan bauletto (vedi docs/bun.md). */
 function tzStep(pl,I,liqName){
   const t=I.tz, s=pl.mixStart-pl.tzLead*H;
@@ -1942,7 +2022,7 @@ function bunWarnings(P,pl,I,W){
   else if(P.F.level<2&&(P.oil>=8||P.egg>=10)) W.push({w:1,t:`Con ${P.F.short} un impasto ricco di grassi e uova cresce poco e resta appiccicoso. Va meglio una Manitoba o il mix: se usi questa farina, togli un po' di latte e impasta più a lungo.`});
   if(f===`tipo1`) W.push({w:0,t:`Con la tipo 1 i panini hanno più sapore ma crescono un po' meno e la mollica è più scura. Puoi usarne metà con metà Manitoba.`});
   if(pl.bk.batches>1) W.push({w:0,t:`In una teglia entrano ${pl.bk.cap} panini: le infornate sono ${pl.bk.batches}, una per volta. Gli orari ne tengono conto.`});
-  if(P.potato>0) W.push({w:0,t:`Ti servono ${g(I.potato)} di patate già lessate (o cotte al vapore), sbucciate e schiacciate con lo schiacciapatate, fredde. Pesale dopo la cottura: con circa ${g(I.potato*1.15)} di patate crude vai sul sicuro.`});
+  if(P.potato>0) W.push({w:0,t:`Ti servono ${g(I.potato)} di patate lesse e schiacciate: le cuoci un'ora e mezza prima di impastare, e il piano ne tiene conto. Pesale dopo la cottura: con circa ${g(I.potato*1.15)} di patate crude vai sul sicuro.`});
   if(I.yeast>0&&pl.yp>=3.9) W.push({w:0,t:`Tanto lievito, come nelle ricette di bun in 3 ore: con zucchero e burro è normale. Se vuoi un panino che sa meno di lievito, scegli la notte in frigo.`});
 }
 /* Bun: impasto ricco con il burro aggiunto alla fine, palline sulla teglia, spennellata e cottura breve. */
@@ -1952,12 +2032,14 @@ function makeBunSteps(pl,P,I){
   const nEgg=I.egg/55, eggTxt=I.egg>0?`<b>${g(I.egg)}</b> di uova sbattute (${nEgg<.8?`sbatti 1 uovo e pesane solo questa parte: il resto serve per spennellare`:nEgg<1.3?`circa 1 uovo`:nEgg<1.7?`1 uovo e 1 tuorlo`:`circa ${Math.round(nEgg)} uova`})`:``;
   const preheatAt=pl.stesStart-bk.preheat*MIN;
   if(I.tz) steps.push(tzStep(pl,I,oil?`latte`:`latte`));
+  if(I.potato>0) steps.push(potatoStep(pl,I));
   let t=pl.mixStart;
   for(const [k,d] of pl.phases){
     const s=t, e=t+d*H;
+    if(k===`impasto`) steps.push(weighStep(pl,P,I,s));
     if(k===`impasto`){
       const milk=I.water-(I.tz?I.tz.liquid:0);
-      let b=`<p>Pesa tutto prima di iniziare: <b>${g(I.flour-(I.tz?I.tz.flour:0))}</b> di farina${I.tz?` (quella che resta dopo il tangzhong)`:``}, <b>${g(milk)}</b> di ${liq} a circa <b>${I.waterT} °C</b>${I.tz?`, ${tzTxt(I)}`:``}${I.egg>0?`, ${eggTxt} ${I.coldExtras?`fredde di frigo`:`a temperatura ambiente`}`:``}${I.potato>0?`, <b>${g(I.potato)}</b> di patate lesse schiacciate e fredde`:``}, <b>${gy(I.yeast)}</b> di ${yName}, <b>${g(I.sugar)}</b> di zucchero, <b>${g(I.salt)}</b> di sale e <b>${g(I.oil)}</b> di ${oil?`olio extravergine o di semi`:`burro morbido a pezzetti`}.</p>`;
+      let b=`<p>Hai già pesato tutto: <b>${g(I.flour-(I.tz?I.tz.flour:0))}</b> di farina${I.tz?` (quella che resta dopo il tangzhong)`:``}, <b>${g(milk)}</b> di ${liq} a circa <b>${I.waterT} °C</b>${I.tz?`, ${tzTxt(I)}`:``}${I.egg>0?`, ${eggTxt} ${I.coldExtras?`fredde di frigo`:`a temperatura ambiente`}`:``}${I.potato>0?`, <b>${g(I.potato)}</b> di patate lesse schiacciate e fredde`:``}, <b>${gy(I.yeast)}</b> di ${yName}, <b>${g(I.sugar)}</b> di zucchero, <b>${g(I.salt)}</b> di sale e <b>${g(I.oil)}</b> di ${oil?`olio extravergine o di semi`:`burro morbido a pezzetti`}.</p>`;
       // poco lievito: soluzione nel latte, più concentrata se il latte libero (dopo il tangzhong) è poco
       const ys=yeastSol(I.yeast,milk);
       if(ys){ const {L,X,W}=ys; b+=`<p>Il lievito è pochissimo e difficile da pesare. Sciogli 1 g di lievito in ${L} g di latte e usa <b>${X} g</b> di questo latte (il resto non serve). Il latte da pesare a parte scende così a <b>${g(roundG(milk-W))}</b>.</p>`; }
@@ -1999,9 +2081,10 @@ function makeBreadSteps(pl,P,I){
   let t=pl.mixStart;
   for(const [k,d] of pl.phases){
     const s=t, e=t+d*H;
+    if(k===`impasto`) steps.push(weighStep(pl,P,I,s));
     if(k===`impasto`){
       const free=I.water-(I.tz?I.tz.liquid:0), keep=P.hyd>=72, keepG=Math.max(5,roundG(free*.1)), soft=!!S.soft, fat=soft?`olio o burro morbido`:`olio extravergine`;
-      let b=`<p>Pesa tutto prima di iniziare: <b>${g(I.flour-(I.tz?I.tz.flour:0))}</b> di farina${I.tz?` (quella che resta dopo il tangzhong)`:``}, <b>${g(free)}</b> d'acqua a circa <b>${I.waterT} °C</b>${I.waterT<10?` (fredda di frigo)`:``}${soft?` (se vuoi, metà può essere latte alla stessa temperatura)`:``}, <b>${g(I.salt)}</b> di sale, <b>${gy(I.yeast)}</b> di ${yName}${I.sugar>0?`, <b>${g(I.sugar)}</b> di zucchero (o miele)`:``}${I.oil>0?`, <b>${g(I.oil)}</b> di ${fat}`:``}.</p>`;
+      let b=`<p>Hai già pesato tutto: <b>${g(I.flour-(I.tz?I.tz.flour:0))}</b> di farina${I.tz?` (quella che resta dopo il tangzhong)`:``}, <b>${g(free)}</b> d'acqua a circa <b>${I.waterT} °C</b>${I.waterT<10?` (fredda di frigo)`:``}${soft?` (se vuoi, metà può essere latte alla stessa temperatura)`:``}, <b>${g(I.salt)}</b> di sale, <b>${gy(I.yeast)}</b> di ${yName}${I.sugar>0?`, <b>${g(I.sugar)}</b> di zucchero (o miele)`:``}${I.oil>0?`, <b>${g(I.oil)}</b> di ${fat}`:``}.</p>`;
       if(I.tz) b+=`<p>Gli altri <b>${g(I.tz.flour)}</b> di farina e <b>${g(I.tz.liquid)}</b> di liquido sono nel tangzhong: aggiungi ${tzTxt(I)} insieme all'acqua.</p>`;
       const ys=yeastSol(I.yeast,free);
       if(ys){ const {L,X,W}=ys; b+=`<p>Il lievito è pochissimo e difficile da pesare. Sciogli 1 g di lievito in ${L} g d'acqua e usa <b>${X} g</b> di questa soluzione (il resto si butta). L'acqua da aggiungere a parte scende così a <b>${g(roundG(free-W))}</b>.</p>`; }
@@ -2511,6 +2594,29 @@ const HOW={
     const inside=poolish?`<ellipse cx="0" cy="-6" rx="40" ry="8" class="hw-batter"/>${hwG(`translate(0 -6)`,`pm-w`,`<path d="M-22 0 Q0 -6 22 0 Q0 6 -12 1" class="hw-swirl"/>`)}`:lumps;
     return hwSvg(`<ellipse cx="100" cy="72" rx="48" ry="10" class="hw-metal2"/><g transform="translate(100 80)">${inside}</g>${hwG(`translate(130 18)`,`pm-s`,`<path d="M0 0 L-26 54" class="hw-handle"/><ellipse cx="-28" cy="60" rx="5" ry="8" transform="rotate(25 -28 60)" class="hw-wood"/>`)}<path d="M52 72 Q100 86 148 72 Q146 118 100 120 Q54 118 52 72 Z" class="hw-metal"/>`);
   },
+  /* pesata: la farina scende dal pacco nella ciotola sulla bilancia, che parte da 0 e arriva alla dose.
+     Il pacco ruota attorno all'angolo da cui versa, il mucchio di farina cresce dal fondo della ciotola. */
+  weigh(c){
+    const dots=[[-3,0],[2,7],[-1,14],[3,21],[0,28]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.7"/>`).join(``);
+    return hwSvg(`${HWP.board}<rect x="34" y="92" width="92" height="5" rx="2" class="hw-metal2"/><rect x="30" y="97" width="100" height="15" rx="5" class="hw-metal"/><rect x="58" y="100" width="44" height="10" rx="2" class="hw-screen"/><text x="80" y="108" text-anchor="middle" class="hw-txt wg-scr wg-z">0 g</text><text x="80" y="108" text-anchor="middle" class="hw-txt wg-scr wg-n">${c&&c.flour||``}</text>
+      <path class="hw-bowl" d="M44 62 H116 Q114 92 80 92 Q46 92 44 62 Z"/>${hwG(`translate(80 89)`,`wg-m`,`<path class="hw-flour" d="M-30 0 Q-28 -20 0 -22 Q28 -20 30 0 Z"/>`)}
+      ${hwG(`translate(74 30)`,`wg-f hw-flour`,dots)}${hwG(`translate(100 50)`,`wg-s`,`<rect x="0" y="-36" width="30" height="36" rx="3" class="hw-cloth"/><rect x="0" y="-36" width="30" height="8" rx="2" class="hw-basket"/>`)}
+      <path class="hw-bowl" d="M144 104 H168 Q167 112 156 112 Q145 112 144 104 Z"/><circle cx="152" cy="105" r="1.3" class="hw-flour"/><circle cx="157" cy="104" r="1.3" class="hw-flour"/><circle cx="161" cy="105.5" r="1.3" class="hw-flour"/>
+      <path class="hw-bowl" d="M172 104 H196 Q195 112 184 112 Q173 112 172 104 Z"/><rect x="179" y="100" width="10" height="7" rx="1.5" class="hw-bristle"/>`);
+  },
+  /* patate: pezzi che ballano nell'acqua che bolle, con il vapore */
+  potato(){
+    const pcs=[[78,90],[98,86],[118,91],[90,97],[110,98]].map(([x,y],i)=>hwG(`translate(${x} ${y})`,`pt-b`,`<ellipse rx="9" ry="6.5" class="hw-semola" stroke="var(--a-dough-line)" stroke-width="1"/>`,`animation-delay:-${(i*.3).toFixed(1)}s`)).join(``);
+    return hwSvg(`<rect x="38" y="118" width="124" height="8" rx="4" class="hw-metal2"/>${HWP.flames([70,100,130],118,.8)}<rect x="32" y="64" width="14" height="6" rx="3" class="hw-steel"/><rect x="154" y="64" width="14" height="6" rx="3" class="hw-steel"/><path class="hw-steel" d="M46 60 H154 V104 Q154 112 146 112 H54 Q46 112 46 104 Z"/><rect x="50" y="74" width="100" height="34" rx="4" class="hw-cold"/>${pcs}${HWP.steam([80,100,120],54)}`);
+  },
+  /* condimento: il coltello taglia la mozzarella, i cubetti scolano nel colino e gocciolano nella ciotola */
+  drain(){
+    const holes=[[146,72],[156,76],[166,76],[176,72],[151,82],[161,84],[171,82]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.4" class="hw-cavity"/>`).join(``);
+    const drops=[150,161,172].map((x,i)=>hwG(`translate(${x} 92)`,`dr-d`,`<path d="M0 -3 Q2.5 1 0 3 Q-2.5 1 0 -3 Z" class="hw-cold"/>`,`animation-delay:-${(i*.5).toFixed(1)}s`)).join(``);
+    const cubes=[[150,64],[160,62],[170,64],[155,58],[166,57]].map(([x,y])=>`<rect x="${x-4}" y="${y-4}" width="8" height="8" rx="2" class="hw-cheese"/>`).join(``);
+    return hwSvg(`${HWP.board}<ellipse cx="62" cy="100" rx="30" ry="12" class="hw-cheese"/><path d="M40 98 Q62 92 84 98" class="hw-seam"/>${hwG(`translate(62 86)`,`dv-s`,`<rect x="-2.5" y="-16" width="5" height="32" rx="1" class="hw-blade"/><rect x="-10" y="-29" width="20" height="14" rx="5" class="hw-tool"/>`)}
+      <path class="hw-bowl" d="M136 100 H186 Q184 120 161 120 Q138 120 136 100 Z"/><path class="hw-metal" d="M138 64 H184 Q182 88 161 88 Q140 88 138 64 Z"/>${holes}${cubes}${drops}`);
+  },
   tz(){
     return hwSvg(`<rect x="38" y="118" width="124" height="8" rx="4" class="hw-metal2"/>${HWP.flames([70,100,130],118,.8)}<rect x="146" y="74" width="48" height="7" rx="3.5" class="hw-steel"/><path class="hw-steel" d="M52 70 H148 V104 Q148 112 140 112 H60 Q52 112 52 104 Z"/><ellipse cx="100" cy="72" rx="46" ry="7" class="hw-milk"/><ellipse cx="100" cy="72" rx="46" ry="7" class="hw-gel tz-c"/><path d="M70 72 Q100 66 130 72" class="hw-trail tz-t"/>${hwG(`translate(100 16)`,`tz-w`,`<path d="M0 0 V22" class="hw-handle"/><path d="M-2 22 Q-13 42 0 56 Q13 42 2 22 M0 22 V56" class="hw-wire"/>`)}`);
   }
@@ -2521,6 +2627,9 @@ function howScenes(key,c){
   switch(k){
     case `impasto`: return c.mixer?[[HOW.mixer(),`Gancio a velocità bassa finché la farina sparisce, poi più veloce: è pronto quando si stacca dalle pareti.`]]:c.bread&&!c.bun&&c.hyd>=72&&c.shape!==`ciabatta`?[[HOW.pieghe(),`Nella ciotola, con la mano bagnata: prendi l'impasto dal fondo, tiralo su e lascialo ricadere, girando la ciotola.`]]:[[HOW.knead(),`Spingi l'impasto in avanti con il palmo, ripiegalo verso di te e giralo di un quarto. Ripeti finché è liscio.`]];
     case `prefermento`: return c.method===`poolish`?[[HOW.prefMix(c),`Mescola con un cucchiaio finché è una pastella liscia, senza grumi di farina.`]]:[[HOW.prefMix(c),`Mescola appena: la biga deve restare a grumi asciutti, non diventare una palla liscia.`]];
+    case `pesata`: return [[HOW.weigh(c),`Ciotola sulla bilancia, premi tara e versa piano: ogni ingrediente nella sua ciotolina.`]];
+    case `patate`: return [[HOW.potato(),`A pezzi in acqua fredda, poi a bollore: sono cotte quando la forchetta entra senza sforzo.`]];
+    case `condimento`: return [[HOW.drain(),`Mozzarella a cubetti nel colino, in frigo: l'acqua in più scola nella ciotola.`]];
     case `tangzhong`: return [[HOW.tz(),`Fuoco basso e frusta sempre in movimento. È pronto quando diventa una crema e la frusta lascia una scia.`]];
     case `puntata`: return [[HOW.rise(`dough`),`Ciotola coperta: l'impasto cresce piano. La linea rossa è il punto di partenza.`]];
     case `maturazione`: case `avvio`: case `acclimata`: return [[HOW.rise(c.method===`poolish`?`poolish`:`biga`),c.method===`poolish`?`Il poolish si riempie di bolle e cresce: è maturo quando la superficie inizia appena ad abbassarsi al centro.`:`La biga coperta matura lentamente: cresce poco e profuma di lievito.`]];
@@ -2557,7 +2666,7 @@ function howScenes(key,c){
 }
 function howCtx(){
   const S=STYLES[state.style]||{};
-  return {style:state.style,cat:catOf(state.style),teglia:!!S.teglia,bread:!!S.bread,bun:!!S.bun,shape:S.shape,mixer:!!state.mixer,method:state.method,pref:state.method&&state.method!==`diretto`,oven:state.oven,fridge:state.fridge,piece:R&&R.I&&R.I.piece?g(R.I.piece):``,hyd:R&&R.P?R.P.hyd:0};
+  return {style:state.style,cat:catOf(state.style),teglia:!!S.teglia,bread:!!S.bread,bun:!!S.bun,shape:S.shape,mixer:!!state.mixer,method:state.method,pref:state.method&&state.method!==`diretto`,oven:state.oven,fridge:state.fridge,piece:R&&R.I&&R.I.piece?g(R.I.piece):``,hyd:R&&R.P?R.P.hyd:0,flour:R&&R.I&&R.I.flour?g(R.I.final?R.I.final.flour:R.I.flour-(R.I.tz?R.I.tz.flour:0)):``};
 }
 function howHtml(key){
   const sc=howScenes(key,howCtx());
@@ -3477,7 +3586,9 @@ function planGates(steps,pl){
   const G={}, add=(i,mode,id,x)=>{ if(i>=0&&i<steps.length) (G[i]=G[i]||{})[mode]={id,...(x||{})}; };
   const first=k=>steps.findIndex(s=>s.key===k), last=k=>{ for(let m=steps.length-1;m>=0;m--) if(steps[m].key===k) return m; return -1; };
   const imp=first(`impasto`), pun=last(`puntata`), fr=last(`frigo`), app=last(`appretto`), pre=first(`preriscaldo`);
-  if(imp>=0&&pl&&pl.pref) add(imp,`before`,`pref`);
+  // la maturità del prefermento si guarda prima di pesare il rimpasto: se ha bisogno di tempo, la pesata aspetta con lui
+  const pes=first(`pesata`);
+  if(imp>=0&&pl&&pl.pref) add(pes>=0&&pes<imp?pes:imp,`before`,`pref`);
   if(imp>=0) add(imp,`after`,`impasto`,{p:pun});
   const folds=steps.map((s,m)=>/^pieghe/.test(s.key)?m:-1).filter(m=>m>=0);
   if(folds.length) add(folds[folds.length-1],`after`,`pieghe`);

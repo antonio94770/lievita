@@ -344,7 +344,9 @@ test(`biga e poolish: maturità controllata prima del rimpasto`, () => {
     a.run(`R=compute()`);
     if (a.run(`R.none`)) continue;
     open(a);
-    const i = idx(a, `impasto`);
+    // la maturità si guarda prima di pesare il rimpasto
+    const i = idx(a, `pesata`);
+    assert.ok(i >= 0 && i < idx(a, `impasto`), method);
     assert.equal(a.run(`cook.gates[${i}].before.id`), `pref`, method);
     at(a, startOf(a, i));
     assert.match(screen(a, i), method === `biga` ? /La biga è matura/ : /Il poolish è maturo/);

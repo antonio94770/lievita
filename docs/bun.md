@@ -23,6 +23,8 @@ Sale sempre al 2%. Il bun al latte è la ricetta di Malati di Pizza: 500 g di fa
 
 Lo **smash burger** vuole un panino più piccolo e basso (circa 10 cm), morbido, che si comprime al morso: nelle ricette straniere è quasi sempre il *potato bun*. Le patate delle fonti vanno dal 5% (Fulvio Marino) a circa il 50% (Claire Saffitz, Billy Parisi): il 20% è una via di mezzo, con il latte ridotto di conseguenza. La formatura schiaccia le palline a 8 cm.
 
+Dal 28 novembre 2026 le patate hanno un passaggio loro, “Lessa le patate”, un'ora e mezza prima di impastare (`POTATO` in `index.html`): a pezzi in acqua fredda, 15–20 minuti dal bollore, schiacciate calde e lasciate raffreddare su un piatto largo almeno 45 minuti. L'inizio del piano si sposta di conseguenza; pesata e tangzhong stanno dentro quest'attesa. Tempi di cottura e raffreddamento sono stime da provare in cucina.
+
 ## Tangzhong
 
 Si attiva nella pagina Lievitazione (scelta con pregi e difetti e una spiegazione) per i bun e per il pan bauletto (`tzAllowed`). È salvato come `over.tz` e resta quando si torna ai valori dello stile. Di base è attivo per bun al latte, smash e brioche, spento per il bun all'olio e il pan bauletto.

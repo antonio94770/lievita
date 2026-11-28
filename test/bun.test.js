@@ -95,13 +95,20 @@ test(`bun: ogni tipo, in giornata e con una notte in frigo, a 16, 20 e 26 °C, c
     assert.equal(!!I.tz, tz, tag);
     if (tz) {
       assert.equal(tzs.start, pl.mixStart - H, tag);
-      assert.equal(pl.begin, tzs.start, tag);
+      // con le patate il piano parte dalla loro cottura, un'ora e mezza prima di impastare
+      assert.equal(pl.begin, I.potato > 0 ? pl.mixStart - 1.5 * H : tzs.start, tag);
       assert.ok(Math.abs(I.tz.liquid - 5 * I.tz.flour) < 1e-9, tag);
       assert.ok(I.tz.liquid <= I.water + 1e-9, tag);
       assert.ok(I.tz.flour <= I.flour * .08 + 1e-9, tag);
       // almeno un quarto del latte resta libero, per sciogliere il lievito
       assert.ok(I.water - I.tz.liquid >= I.water * .25 - 1e-9, tag);
-    } else assert.equal(pl.begin, pl.mixStart, tag);
+    } else {
+      // senza tangzhong il piano inizia con la pesata, 15 minuti prima dell'impasto
+      const ps = steps.find(s => s.key === `pesata`);
+      if (I.potato > 0) assert.equal(pl.begin, steps.find(s => s.key === `patate`).start, tag);
+      else assert.equal(pl.begin, ps.start, tag);
+      assert.equal(ps.start, pl.mixStart - 15 * 60e3, tag);
+    }
     if (pk === `giornata`) assert.ok(pl.total >= 3 - 1e-9 && pl.total <= (room < 20 ? 6 : 4) + 1e-9, `${tag}: ${pl.total}`);
     else assert.ok(pl.fridgeH >= 8, tag);
     // niente vapore, cottura breve sulla teglia
@@ -181,7 +188,7 @@ test(`bun: smash con patate, più piccolo e basso; infornate per teglia`, () => 
   const a = app();
   const s = bun(a, `smash`, `state.room=20; state.n=14;`);
   assert.ok(s.I.potato > 0);
-  assert.ok(s.W.some(w => /patate già lessate/.test(w.t)));
+  assert.ok(s.W.some(w => /patate lesse e schiacciate/.test(w.t)));
   assert.equal(s.I.piece, 80);
   assert.match(s.steps.find(x => x.key === `formatura`).body, /schiacciale con il palmo fino a circa 8 cm/);
   assert.match(s.steps.find(x => x.key === `raffreddamento`).body, /smash burger/);
